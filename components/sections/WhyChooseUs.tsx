@@ -136,11 +136,6 @@ const WhyChooseUs = () => {
             </h2>
           </div>
           
-          <p ref={subtitleRef} className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            국내 유일의 시험기 제작 전문기업이자 KOLAS 공인 시험·교정 기관으로서
-            <br />
-            <span className="text-blue-600 font-semibold">고객 성공을 위한 최고의 서비스</span>를 제공합니다
-          </p>
         </div>
 
         {/* Reasons Grid */}
@@ -172,41 +167,14 @@ const WhyChooseUs = () => {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-blue-600">20+</div>
-              <div className="text-sm text-gray-600">년간 축적된 기술력</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-blue-600">100%</div>
-              <div className="text-sm text-gray-600">KOLAS 공인 인증</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-blue-600">24시간</div>
-              <div className="text-sm text-gray-600">신속한 대응 서비스</div>
-            </div>
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-blue-600">1등</div>
-              <div className="text-sm text-gray-600">국내 유일 원스톱</div>
-            </div>
-          </div>
-        </div>
 
         {/* Call to Action */}
         <div className="text-center mt-16">
-          <p className="text-lg text-gray-600 mb-6">
-            국내 최고의 기술력과 신뢰성을 바탕으로 고객 성공을 위해 최선을 다하겠습니다
+          <p className="text-lg text-gray-600 mb-16">
+            국내 유일의 시험기 제작 전문기업이자 KOLAS 공인 시험·교정 기관으로서
+            <br />
+            <span className="text-blue-600 font-semibold">고객 성공을 위한 최고의 서비스</span>를 제공합니다
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-xl">
-              시험·교정 신청하기
-            </button>
-            <button className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300">
-              문의하기
-            </button>
-          </div>
         </div>
       </div>
     </section>

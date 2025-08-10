@@ -137,7 +137,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-xl md:text-2xl font-medium mb-4 text-gray-800"
+            className="text-xl md:text-2xl font-bold mb-4 text-gray-800"
           >
             국내 유일 시험기 제작·시험·교정 통합 수행기관
           </motion.p>
@@ -212,7 +212,7 @@ export default function Hero() {
                     <CountUpNew to={20} from={0} duration={2} separator="" />+
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600">년 경력</div>
+                <div className="text-sm text-gray-600 font-bold">년 경력</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">
@@ -225,7 +225,7 @@ export default function Hero() {
                     <CountUpNew to={1000} from={0} duration={2} separator="," />+
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600">고객사</div>
+                <div className="text-sm text-gray-600 font-bold">고객사</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">
@@ -238,7 +238,7 @@ export default function Hero() {
                     <CountUpNew to={50000} from={0} duration={2} separator="," />+
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600">시험 건수</div>
+                <div className="text-sm text-gray-600 font-bold">시험 건수</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">
@@ -251,7 +251,7 @@ export default function Hero() {
                     <CountUpNew to={24} from={0} duration={2} separator="" />H
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600">빠른 대응</div>
+                <div className="text-sm text-gray-600 font-bold">빠른 대응</div>
               </div>
             </div>
           </div>
