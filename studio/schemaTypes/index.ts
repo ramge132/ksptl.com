@@ -3,6 +3,7 @@ import companyInfo from './companyInfo'
 import landingPage from './landingPage'
 import aboutPage from './aboutPage'
 import testItem from './testItem'
+import testCategory from './testCategory'
 import supportPage from './supportPage'
 import resource from './resource'
 
@@ -11,7 +12,8 @@ export const schemaTypes = [
   companyInfo, 
   landingPage, 
   aboutPage, 
-  testItem, 
+  testItem,
+  testCategory, 
   supportPage, 
   resource
 ]

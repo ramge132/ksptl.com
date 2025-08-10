@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Loader2 } from "lucide-react"
 import {
   Shield,
   HardHat,
@@ -25,393 +26,36 @@ import {
   X,
 } from "lucide-react"
 
-const testCategories = {
-  mask: {
-    name: "마스크",
-    icon: Shield,
-    description: "방진, 방독, 송기마스크 전문 시험",
-    items: [
-      {
-        type: "방진마스크",
-        tests: [
-          "강도 신장율 및 영구변형율 시험",
-          "투시부의 내충격성 시험",
-          "여과재 질량 시험",
-        ],
-      },
-      {
-        type: "방독마스크",
-        tests: [
-          "강도 신장율 및 영구변형율 시험",
-          "투시부의 내충격성 시험",
-          "정화통 질량 시험",
-        ],
-      },
-      {
-        type: "송기마스크",
-        tests: [
-          "호스 및 중압호스 변형 및 구부림 시험",
-          "호스 및 중압호스 연결부 인장 시험",
-        ],
-      },
-    ],
-  },
-  shoes: {
-    name: "안전화",
-    icon: Footprints,
-    description: "가죽제, 고무제, 정전기안전화, 절연화 시험",
-    items: [
-      {
-        type: "가죽제",
-        tests: [
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답발성 시험",
-          "박리저항시험",
-          "결창인장강도 시험",
-          "결창신장율시험",
-          "내유부피변화율 시험",
-          "내유경도변화율 시험",
-          "온면결렬 시험",
-          "선심의 내부식성 시험",
-          "내답판 내부식성 시험",
-          "가죽인열강도 시험",
-        ],
-      },
-      {
-        type: "고무제",
-        tests: [
-          "고무 인장강도 시험",
-          "고무 내유부피변화율 시험",
-          "안감 및 포파일 시험",
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답판 내부식성 시험",
-          "선심의 내부식성 시험",
-          "내답발성 시험",
-        ],
-      },
-      {
-        type: "정전기안전화 (가죽제)",
-        tests: [
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답발성 시험",
-          "박리저항시험",
-          "결창인장강도 시험",
-          "결창신장율시험",
-          "내유부피변화율 시험",
-          "내유경도변화율 시험",
-          "온면결렬 시험",
-          "선심의 내부식성 시험",
-          "내답판 내부식성 시험",
-          "가죽인열강도 시험",
-          "대전방지 성능 시험",
-        ],
-      },
-      {
-        type: "정전기안전화 (고무제)",
-        tests: [
-          "고무 인장강도 시험",
-          "고무 내유부피변화율 시험",
-          "안감 및 포파일 시험",
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답판 내부식성 시험",
-          "선심의 내부식성 시험",
-          "내답발성 시험",
-          "대전방지 성능 시험",
-        ],
-      },
-      {
-        type: "발등안전화",
-        tests: [
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답발성 시험",
-          "박리저항시험",
-          "결창인장강도 시험",
-          "결창신장율시험",
-          "내유부피변화율 시험",
-          "내유경도변화율 시험",
-          "온면결렬 시험",
-          "선심의 내부식성 시험",
-          "내답판 내부식성 시험",
-          "가죽인열강도 시험",
-          "방호대 내충격성 시험",
-        ],
-      },
-      {
-        type: "절연화 (가죽제)",
-        tests: [
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답발성 시험",
-          "박리저항시험",
-          "결창인장강도 시험",
-          "결창신장율시험",
-          "내유부피변화율 시험",
-          "내유경도변화율 시험",
-          "온면결렬 시험",
-          "선심의 내부식성 시험",
-          "내답판 내부식성 시험",
-          "가죽인열강도 시험",
-          "내전압 시험 (14 000 V)",
-        ],
-      },
-      {
-        type: "절연화 (고무제)",
-        tests: [
-          "고무 인장강도 시험",
-          "고무 내유부피변화율 시험",
-          "안감 및 포파일 시험",
-          "내압박성 시험",
-          "내충격성 시험",
-          "내답판 내부식성 시험",
-          "선심의 내부식성 시험",
-          "내답발성 시험",
-          "내전압 시험 (14 000 V)",
-        ],
-      },
-      {
-        type: "절연장화",
-        tests: [
-          "내전압 시험 (20 000 V)",
-          "고무 인장강도 시험",
-          "고무 신장율 시험",
-        ],
-      },
-    ],
-  },
-  clothing: {
-    name: "보호복",
-    icon: Shirt,
-    description: "방열복, 화학물질용 보호복 시험",
-    items: [
-      {
-        type: "방열복",
-        tests: [
-          "난연성 시험",
-          "절연저항 시험",
-          "열전도율 시험",
-          "인장강도 시험",
-          "내열성 시험",
-          "내한성 시험",
-          "열충격 시험",
-          "안면렌즈의 내충격 시험",
-        ],
-      },
-      {
-        type: "화학물질용 보호복",
-        tests: [
-          "인장강도 시험",
-          "인열강도 시험",
-          "뚫림강도 시험",
-          "마모저항 시험",
-          "굴곡저항 시험",
-          "연소저항 시험",
-          "화염저항 시험",
-          "슬기강도 시험",
-          "접합부 연결강도 시험",
-          "안면창 강도 시험",
-          "호흡 및 환기호스 연결부 강도 시험",
-        ],
-      },
-    ],
-  },
-  harness: {
-    name: "추락방지대",
-    icon: AlertTriangle,
-    description: "추락방지대 전문 시험",
-    items: [
-      {
-        type: "추락방지대",
-        tests: [
-          "구조검사",
-          "죔줄 인장강도 시험",
-          "죔줄 연결부 인장강도 시험",
-          "수직구명줄 인장강도 시험",
-          "추락방지대 인장강도 시험",
-          "완성품 다리낙하 동하중성능 시험",
-          "완성품 머리낙하 동하중성능 시험",
-          "정하중성능 시험(목링)",
-          "정하중성능 시험(가랭이링)",
-          "D링 인장강도 시험",
-          "박클 인정강도 시험",
-          "훅 인정강도 시험",
-          "카라비나 인장강도 시험",
-          "훅 수직압축 시험",
-          "훅 측면압축 시험",
-        ],
-      },
-    ],
-  },
-  helmet: {
-    name: "안전모",
-    icon: HardHat,
-    description: "AB형, AE형, ABE형 안전모 시험",
-    items: [
-      {
-        type: "AB형, AE형, ABE형",
-        tests: [
-          "내관통성 시험",
-          "충격흡수성 시험",
-          "턱끈풀림시험",
-          "난연성 시험",
-          "내전압성 시험",
-          "내수성 시험",
-          "측면변형방호 시험",
-        ],
-      },
-    ],
-  },
-  gloves: {
-    name: "안전장갑",
-    icon: Hand,
-    description: "내전압용 안전장갑 시험",
-    items: [
-      {
-        type: "내전압용",
-        tests: [
-          "절연내력 시험",
-          "인장강도 시험",
-          "경년변화 시험",
-          "내열성 시험",
-          "영구신장율 시험",
-          "뚫림강도 시험",
-        ],
-      },
-    ],
-  },
-  belt: {
-    name: "안전대",
-    icon: Wrench,
-    description: "벨트식, 그네식, 안전블럭 시험",
-    items: [
-      {
-        type: "벨트식 U자걸이용",
-        tests: [
-          "구조검사",
-          "죔줄 인장강도 시험",
-          "죔줄 연결부 인장강도 시험",
-          "D링 인장강도시험",
-          "8자링 인장강도 시험",
-          "박클 인장강도 시험",
-          "훅 인장강도 시험",
-          "카라비나 인장강도 시험",
-          "훅수직압축 시험",
-          "훅 측면압축 시험",
-          "충격흡수장치 인장강도 시험",
-          "충격흡수장치 신장측정 시험",
-          "완성품 동하중성능 시험",
-          "충격흡수장치 동하중성능 시험",
-          "정하중성능 시험",
-          "벨트 인장강도 시험",
-          "보조죔줄 동하중성능 시험",
-          "지탱벨트 인장강도 시험",
-          "보조죔줄 인장강도 시험",
-          "각링 인장강도시험",
-          "신축조절기 인장강도 시험",
-        ],
-      },
-      {
-        type: "벨트식 1개걸이용",
-        tests: [
-          "구조검사",
-          "죔줄 인장강도 시험",
-          "죔줄 연결부 인장강도 시험",
-          "D링 인장강도시험",
-          "8자링 인장강도 시험",
-          "박클 인장강도 시험",
-          "훅 인장강도 시험",
-          "카라비나 인장강도 시험",
-          "훅수직압축 시험",
-          "훅 측면압축 시험",
-          "충격흡수장치 인장강도 시험",
-          "충격흡수장치 신장측정 시험",
-          "완성품 동하중성능 시험",
-          "충격흡수장치 동하중성능 시험",
-          "정하중성능 시험",
-        ],
-      },
-      {
-        type: "그네식 U자 걸이용",
-        tests: [
-          "구조검사",
-          "죔줄 인장강도 시험",
-          "죔줄 연결부 인장강도 시험",
-          "D링 인장강도시험",
-          "8자링 인장강도 시험",
-          "박클 인장강도 시험",
-          "훅 인장강도 시험",
-          "카라비나 인장강도 시험",
-          "훅수직압축 시험",
-          "훅 측면압축 시험",
-          "충격흡수장치 인장강도 시험",
-          "충격흡수장치 신장측정 시험",
-          "죔줄 다리낙하 동하중성능 시험",
-          "죔줄 머리낙하 동하중성능 시험",
-          "충격흡수장치 동하중성능 시험",
-          "정하중성능 시험 (목링)",
-          "정하중성능 시험 (가랭이링)",
-          "지탱벨트 인장강도 시험",
-          "보조죔줄 다리낙하 동하중성능 시험",
-          "보조죔줄 머리낙하 동하중성능 시험",
-          "벨트 인장강도 시험",
-          "보조죔줄 인장강도 시험",
-          "각링 인장강도 시험",
-          "신축조절기 인장강도 시험",
-        ],
-      },
-      {
-        type: "그네식 1개걸이용",
-        tests: [
-          "구조검사",
-          "죔줄 인장강도 시험",
-          "죔줄 연결부 인장강도 시험",
-          "D링 인장강도시험",
-          "8자링 인장강도 시험",
-          "박클 인장강도 시험",
-          "훅 인장강도 시험",
-          "카라비나 인장강도 시험",
-          "훅수직압축 시험",
-          "훅 측면압축 시험",
-          "충격흡수장치 인장강도 시험",
-          "충격흡수장치 신장측정 시험",
-          "죔줄 다리낙하 동하중성능 시험",
-          "죔줄 머리낙하 동하중성능 시험",
-          "충격흡수장치 동하중성능 시험",
-          "정하중성능 시험 (목링)",
-          "정하중성능 시험 (가랭이링)",
-        ],
-      },
-      {
-        type: "안전블럭",
-        tests: [
-          "구조검사",
-          "완성품 다리낙하 동하중성능 시험",
-          "완성품 머리낙하 동하중성능 시험",
-          "정하중성능 시험 (목링)",
-          "정하중성능 시험 (가랭이링)",
-          "D링 인장강도 시험",
-          "박클 인장강도 시험",
-          "훅 인장강도 시험",
-          "카라비나 인장강도 시험",
-          "훅 수직압축 시험",
-          "훅 측면압축 시험",
-          "안전블럭 동하중성능 시험",
-          "안전블럭 와이어 인장강도 시험",
-          "안전블럭 몸체 인장강도 시험",
-          "안전블럭 수축하중 시험",
-        ],
-      },
-    ],
-  },
+// 아이콘 매핑
+const iconMap: Record<string, any> = {
+  shield: Shield,
+  hardhat: HardHat,
+  footprints: Footprints,
+  shirt: Shirt,
+  alerttriangle: AlertTriangle,
+  wrench: Wrench,
+  hand: Hand,
+}
+
+interface TestCategory {
+  _id: string
+  key: string
+  name: string
+  icon: string
+  description: string
+  subcategories: Array<{
+    type: string
+    tests: string[]
+  }>
+  order: number
+  isActive: boolean
 }
 
 export default function TestsPage() {
   const searchParams = useSearchParams()
-  const [activeCategory, setActiveCategory] = useState("mask")
+  const [testCategories, setTestCategories] = useState<TestCategory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<Array<{
     category: string
@@ -423,12 +67,37 @@ export default function TestsPage() {
   const [resultsLimit, setResultsLimit] = useState(10)
   const searchBoxRef = useRef<HTMLDivElement>(null)
 
+  // Sanity에서 데이터 로드
+  useEffect(() => {
+    loadTestCategories()
+  }, [])
+
+  const loadTestCategories = async () => {
+    try {
+      const response = await fetch('/api/sanity/test-categories')
+      if (response.ok) {
+        const data = await response.json()
+        // 활성화된 카테고리만 필터링
+        const activeCategories = data.filter((cat: TestCategory) => cat.isActive)
+        setTestCategories(activeCategories)
+        // 첫 번째 카테고리를 기본값으로 설정
+        if (activeCategories.length > 0 && !activeCategory) {
+          setActiveCategory(activeCategories[0].key)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load test categories:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const category = searchParams.get("category")
-    if (category && category in testCategories) {
+    if (category && testCategories.find(cat => cat.key === category)) {
       setActiveCategory(category)
     }
-  }, [searchParams])
+  }, [searchParams, testCategories])
 
   // Click outside to close search results
   useEffect(() => {
@@ -465,14 +134,14 @@ export default function TestsPage() {
       test: string
     }> = []
 
-    Object.entries(testCategories).forEach(([categoryKey, category]) => {
-      category.items.forEach(item => {
-        item.tests.forEach(test => {
+    testCategories.forEach((category) => {
+      category.subcategories.forEach(subcategory => {
+        subcategory.tests.forEach(test => {
           if (test.toLowerCase().includes(searchQuery.toLowerCase())) {
             results.push({
-              category: categoryKey,
+              category: category.key,
               categoryName: category.name,
-              type: item.type,
+              type: subcategory.type,
               test: test
             })
           }
@@ -482,7 +151,7 @@ export default function TestsPage() {
 
     setSearchResults(results)
     setShowSearchResults(results.length > 0)
-  }, [searchQuery])
+  }, [searchQuery, testCategories])
 
   const handleSearchResultClick = (categoryKey: string) => {
     setActiveCategory(categoryKey)
@@ -491,6 +160,29 @@ export default function TestsPage() {
     setShowSearchResults(false)
     setResultsLimit(10)
   }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">시험 항목을 불러오는 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (testCategories.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">등록된 시험 항목이 없습니다.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const currentCategory = testCategories.find(cat => cat.key === activeCategory)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50">
@@ -592,67 +284,83 @@ export default function TestsPage() {
         <div className="container mx-auto px-4">
           <Tabs value={activeCategory} onValueChange={setActiveCategory}>
             <TabsList className="w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto gap-2">
-              {Object.entries(testCategories).map(([key, category]) => (
-                <TabsTrigger
-                  key={key}
-                  value={key}
-                  className="flex flex-col items-center py-3 data-[state=active]:bg-gradient-primary data-[state=active]:text-white"
-                >
-                  <category.icon className="h-5 w-5 mb-1" />
-                  <span className="text-xs">{category.name}</span>
-                </TabsTrigger>
-              ))}
+              {testCategories.map((category) => {
+                const Icon = iconMap[category.icon] || Shield
+                return (
+                  <TabsTrigger
+                    key={category.key}
+                    value={category.key}
+                    className="flex flex-col items-center py-3 data-[state=active]:bg-gradient-primary data-[state=active]:text-white"
+                  >
+                    <Icon className="h-5 w-5 mb-1" />
+                    <span className="text-xs">{category.name}</span>
+                  </TabsTrigger>
+                )
+              })}
             </TabsList>
 
-            {Object.entries(testCategories).map(([key, category]) => (
-              <TabsContent key={key} value={key} className="mt-8">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {/* Category Header */}
-                  <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-primary-light mb-4">
-                      <category.icon className="h-10 w-10 text-primary" />
+            {testCategories.map((category) => {
+              const Icon = iconMap[category.icon] || Shield
+              return (
+                <TabsContent key={category.key} value={category.key} className="mt-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {/* Category Header */}
+                    <div className="text-center mb-8">
+                      <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-primary-light mb-4">
+                        <Icon className="h-10 w-10 text-primary" />
+                      </div>
+                      <h2 className="text-3xl font-bold mb-2">{category.name} 시험</h2>
+                      <p className="text-muted-foreground">{category.description}</p>
                     </div>
-                    <h2 className="text-3xl font-bold mb-2">{category.name} 시험</h2>
-                    <p className="text-muted-foreground">{category.description}</p>
-                  </div>
 
-                  {/* Test Items */}
-                  <div className={`grid ${
-                    category.items.length > 2 ? 'grid-cols-1 lg:grid-cols-2' : 
-                    category.items.length === 1 ? 'grid-cols-1 max-w-4xl mx-auto' : 
-                    'grid-cols-1 lg:grid-cols-2'
-                  } gap-6`}>
-                    {category.items.map((item, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                      >
-                        <Card className="p-6 h-full hover-lift">
-                          <h3 className="text-xl font-semibold mb-4 flex items-center">
-                            <FileText className="h-5 w-5 mr-2 text-primary" />
-                            {item.type}
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {item.tests.map((test, idx) => (
-                              <div key={idx} className="flex items-start">
-                                <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" />
-                                <span className="text-sm">{test}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              </TabsContent>
-            ))}
+                    {/* Test Items */}
+                    {category.subcategories.length > 0 ? (
+                      <div className={`grid ${
+                        category.subcategories.length > 2 ? 'grid-cols-1 lg:grid-cols-2' : 
+                        category.subcategories.length === 1 ? 'grid-cols-1 max-w-4xl mx-auto' : 
+                        'grid-cols-1 lg:grid-cols-2'
+                      } gap-6`}>
+                        {category.subcategories.map((subcategory, index) => (
+                          <motion.div
+                            key={index}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                          >
+                            <Card className="p-6 h-full hover-lift">
+                              <h3 className="text-xl font-semibold mb-4 flex items-center">
+                                <FileText className="h-5 w-5 mr-2 text-primary" />
+                                {subcategory.type}
+                              </h3>
+                              {subcategory.tests.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                  {subcategory.tests.map((test, idx) => (
+                                    <div key={idx} className="flex items-start">
+                                      <CheckCircle className="h-4 w-4 text-primary mr-2 mt-0.5 shrink-0" />
+                                      <span className="text-sm">{test}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">시험 항목이 없습니다.</p>
+                              )}
+                            </Card>
+                          </motion.div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12">
+                        <p className="text-muted-foreground">등록된 중분류가 없습니다.</p>
+                      </div>
+                    )}
+                  </motion.div>
+                </TabsContent>
+              )
+            })}
           </Tabs>
         </div>
       </section>
@@ -673,7 +381,7 @@ export default function TestsPage() {
                 온라인으로 간편하게 신청하고, 24시간 내 견적을 받아보세요
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/apply">
+                <Link href="/test-calibration">
                   <Button size="lg" className="bg-gradient-primary text-white hover:opacity-90">
                     온라인 신청
                     <ArrowRight className="ml-2 h-4 w-4" />

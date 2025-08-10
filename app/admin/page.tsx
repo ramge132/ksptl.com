@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { toast } from 'sonner'
 import { Loader2, Plus, Trash2, Save, FileText, Building2, TestTube, HeadphonesIcon, FolderOpen, Award as AwardIcon, Upload, X } from 'lucide-react'
+import TestCategoryManager from '@/components/admin/TestCategoryManager'
 import { 
   getAwards, 
   createAward, 
@@ -456,137 +457,9 @@ export default function AdminPage() {
             </Button>
           </TabsContent>
 
-          {/* 시험항목 관리 */}
+          {/* 시험항목 관리 - 계층적 구조 */}
           <TabsContent value="tests" className="space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>시험항목 목록</CardTitle>
-                  <CardDescription>시험 가능한 항목들을 관리합니다</CardDescription>
-                </div>
-                <Button
-                  onClick={async () => {
-                    const newItem = await createTestItem({
-                      category: 'mask',
-                      name: '새 시험항목',
-                      description: '',
-                      standards: [],
-                      testPeriod: '',
-                      price: '',
-                      requiredDocuments: [],
-                      order: testItems.length,
-                      isActive: true
-                    })
-                    if (newItem) {
-                      setTestItems([...testItems, newItem])
-                      toast.success('시험항목이 추가되었습니다')
-                    }
-                  }}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  항목 추가
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {testItems.map((item) => (
-                  <Card key={item._id} className="p-4">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label>카테고리</Label>
-                          <Select
-                            value={item.category}
-                            onValueChange={(value) => {
-                              const updated = testItems.map(t => 
-                                t._id === item._id ? {...t, category: value} : t
-                              )
-                              setTestItems(updated)
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="mask">마스크</SelectItem>
-                              <SelectItem value="shoes">안전화</SelectItem>
-                              <SelectItem value="clothing">보호복</SelectItem>
-                              <SelectItem value="fall-protection">추락방지대</SelectItem>
-                              <SelectItem value="helmet">안전모</SelectItem>
-                              <SelectItem value="gloves">안전장갑</SelectItem>
-                              <SelectItem value="safety-belt">안전대</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>시험항목명</Label>
-                          <Input
-                            value={item.name}
-                            onChange={(e) => {
-                              const updated = testItems.map(t => 
-                                t._id === item._id ? {...t, name: e.target.value} : t
-                              )
-                              setTestItems(updated)
-                            }}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>시험 기간</Label>
-                          <Input
-                            value={item.testPeriod}
-                            onChange={(e) => {
-                              const updated = testItems.map(t => 
-                                t._id === item._id ? {...t, testPeriod: e.target.value} : t
-                              )
-                              setTestItems(updated)
-                            }}
-                            placeholder="예: 3-5일"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            checked={item.isActive}
-                            onCheckedChange={(checked) => {
-                              const updated = testItems.map(t => 
-                                t._id === item._id ? {...t, isActive: checked} : t
-                              )
-                              setTestItems(updated)
-                            }}
-                          />
-                          <Label>활성화</Label>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={async () => {
-                              await updateTestItem(item._id, item)
-                              toast.success('저장되었습니다')
-                            }}
-                          >
-                            저장
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={async () => {
-                              if (confirm('정말 삭제하시겠습니까?')) {
-                                await deleteTestItem(item._id)
-                                setTestItems(testItems.filter(t => t._id !== item._id))
-                                toast.success('삭제되었습니다')
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </CardContent>
-            </Card>
+            <TestCategoryManager />
           </TabsContent>
 
           {/* 고객지원 관리 */}
