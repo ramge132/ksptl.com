@@ -1,11 +1,71 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useRef } from "react";
+import SpotlightCard from "@/components/ui/spotlight-card";
 import { Badge } from "@/components/ui/badge";
-import ScrollFloat from "@/components/ui/scroll-float";
 import { Shield, Award, Cog, Target, CheckCircle, Zap } from "lucide-react";
+import GradientTextNew from "@/components/ui/gradient-text-new";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const WhyChooseUs = () => {
+  const titleRef = useRef<HTMLDivElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const cardsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Title animation
+    if (titleRef.current) {
+      const words = titleRef.current.querySelectorAll('.title-word');
+      
+      gsap.set(words, {
+        opacity: 0,
+        y: 50,
+        scale: 0.9
+      });
+
+      gsap.to(words, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: titleRef.current,
+          start: "top 80%",
+          end: "bottom 60%",
+          toggleActions: "play none none reverse"
+        }
+      });
+    }
+
+    // Subtitle animation
+    if (subtitleRef.current) {
+      gsap.fromTo(subtitleRef.current,
+        {
+          opacity: 0,
+          y: 30
+        },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.6,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: subtitleRef.current,
+            start: "top 85%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      );
+    }
+
+
+  }, []);
   const reasons = [
     {
       icon: <Shield className="w-8 h-8 text-blue-600" />,
@@ -57,19 +117,26 @@ const WhyChooseUs = () => {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <ScrollFloat
-            animationDuration={1}
-            ease="back.inOut(2)"
-            scrollStart="center bottom+=50%"
-            scrollEnd="bottom bottom-=40%"
-            stagger={0.05}
-            containerClassName="mb-6"
-            textClassName="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
-          >
-            왜 큐로를 선택해야 할까요?
-          </ScrollFloat>
+          <div ref={titleRef} className="mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold font-title leading-tight">
+              <div className="title-word block mb-2 text-gray-900">왜</div>
+              <div className="title-word block mb-2">
+                <span className="inline-flex items-baseline whitespace-nowrap break-keep gap-0 align-middle" style={{ wordBreak: "keep-all" }}>
+                  <GradientTextNew
+                    colors={["#1B64DA", "#0064FF", "#33A1FF", "#0064FF", "#1B64DA"]}
+                    animationSpeed={5}
+                    showBorder={false}
+                    className="inline-block align-baseline"
+                  >
+                    한국안전용품시험연구원
+                  </GradientTextNew><span className="inline-block align-baseline text-gray-900">을</span>
+                </span>
+              </div>
+              <div className="title-word block text-gray-900">선택해야 할까요?</div>
+            </h2>
+          </div>
           
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p ref={subtitleRef} className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             국내 유일의 시험기 제작 전문기업이자 KOLAS 공인 시험·교정 기관으로서
             <br />
             <span className="text-blue-600 font-semibold">고객 성공을 위한 최고의 서비스</span>를 제공합니다
@@ -77,13 +144,13 @@ const WhyChooseUs = () => {
         </div>
 
         {/* Reasons Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {reasons.map((reason, index) => (
-            <Card 
-              key={index} 
-              className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105"
-            >
-              <CardContent className="p-8">
+              <SpotlightCard
+                key={index}
+                className="reason-card group transition-shadow duration-300"
+                spotlightColor="rgba(120, 170, 255, 0.12)"
+              >
                 <div className="flex flex-col items-center text-center space-y-4">
                   <div className="p-4 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors duration-300">
                     {reason.icon}
@@ -101,8 +168,7 @@ const WhyChooseUs = () => {
                     {reason.description}
                   </p>
                 </div>
-              </CardContent>
-            </Card>
+              </SpotlightCard>
           ))}
         </div>
 

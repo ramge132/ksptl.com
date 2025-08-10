@@ -47,7 +47,7 @@ const ScrollFloat: React.FC<ScrollFloatProps> = ({
         ? scrollContainerRef.current
         : window;
 
-    const charElements = el.querySelectorAll(".inline-block");
+    const charElements = el.querySelectorAll(".word");
 
     gsap.fromTo(
       charElements,

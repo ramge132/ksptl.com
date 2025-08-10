@@ -202,26 +202,54 @@ export default function Hero() {
           >
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="stat-item text-center">
-                <div className="text-3xl font-bold text-primary mb-1">
-                  <CountUpNew to={20} from={0} duration={2} separator="" />+
+                <div className="text-3xl font-bold mb-1">
+                  <GradientTextNew
+                    colors={["#3B74EA", "#1A7FFF", "#5BA3FF", "#1A7FFF", "#3B74EA"]}
+                    animationSpeed={5}
+                    showBorder={false}
+                    className="inline-block"
+                  >
+                    <CountUpNew to={20} from={0} duration={2} separator="" />+
+                  </GradientTextNew>
                 </div>
                 <div className="text-sm text-gray-600">년 경력</div>
               </div>
               <div className="stat-item text-center">
-                <div className="text-3xl font-bold text-primary mb-1">
-                  <CountUpNew to={1000} from={0} duration={2} separator="," />+
+                <div className="text-3xl font-bold mb-1">
+                  <GradientTextNew
+                    colors={["#3B74EA", "#1A7FFF", "#5BA3FF", "#1A7FFF", "#3B74EA"]}
+                    animationSpeed={5}
+                    showBorder={false}
+                    className="inline-block"
+                  >
+                    <CountUpNew to={1000} from={0} duration={2} separator="," />+
+                  </GradientTextNew>
                 </div>
                 <div className="text-sm text-gray-600">고객사</div>
               </div>
               <div className="stat-item text-center">
-                <div className="text-3xl font-bold text-primary mb-1">
-                  <CountUpNew to={50000} from={0} duration={2} separator="," />+
+                <div className="text-3xl font-bold mb-1">
+                  <GradientTextNew
+                    colors={["#3B74EA", "#1A7FFF", "#5BA3FF", "#1A7FFF", "#3B74EA"]}
+                    animationSpeed={5}
+                    showBorder={false}
+                    className="inline-block"
+                  >
+                    <CountUpNew to={50000} from={0} duration={2} separator="," />+
+                  </GradientTextNew>
                 </div>
                 <div className="text-sm text-gray-600">시험 건수</div>
               </div>
               <div className="stat-item text-center">
-                <div className="text-3xl font-bold text-primary mb-1">
-                  <CountUpNew to={24} from={0} duration={2} separator="" />H
+                <div className="text-3xl font-bold mb-1">
+                  <GradientTextNew
+                    colors={["#3B74EA", "#1A7FFF", "#5BA3FF", "#1A7FFF", "#3B74EA"]}
+                    animationSpeed={5}
+                    showBorder={false}
+                    className="inline-block"
+                  >
+                    <CountUpNew to={24} from={0} duration={2} separator="" />H
+                  </GradientTextNew>
                 </div>
                 <div className="text-sm text-gray-600">빠른 대응</div>
               </div>
