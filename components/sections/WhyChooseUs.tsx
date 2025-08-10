@@ -1,160 +1,150 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { motion } from "framer-motion"
-import { Shield, Award, Users, Clock, CheckCircle, Zap, Wrench } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import ScrollFloat from "@/components/ui/scroll-float"
-import RotatingText from "@/components/ui/rotating-text"
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import ScrollFloat from "@/components/ui/scroll-float";
+import { Shield, Award, Cog, Target, CheckCircle, Zap } from "lucide-react";
 
-const reasons = [
-  {
-    icon: Shield,
-    title: "KOLAS 공인 인증",
-    description: "국가공인 시험·교정 기관으로 신뢰할 수 있는 성적서 발급",
-    highlight: "KC23-420",
-  },
-  {
-    icon: Wrench,
-    title: "국내 유일 통합 수행",
-    description: "시험기 제작부터 시험·교정까지 원스톱 서비스 제공",
-    highlight: "One-Stop",
-  },
-  {
-    icon: Clock,
-    title: "신속한 처리",
-    description: "빠른 견적 제공과 신속한 시험·교정 처리로 업무 효율성 극대화",
-    highlight: "Fast",
-  },
-  {
-    icon: Award,
-    title: "20년 전문성",
-    description: "축적된 기술력과 경험으로 정확한 결과 보장",
-    highlight: "Since 2006",
-  },
-  {
-    icon: Users,
-    title: "맞춤형 대응",
-    description: "고객사별 특성에 맞는 맞춤형 솔루션 제공",
-    highlight: "Custom",
-  },
-  {
-    icon: CheckCircle,
-    title: "국제 표준 준수",
-    description: "KS, ISO, CE 인증으로 국제 표준 품질 보증",
-    highlight: "Global",
-  },
-]
-
-const SpotlightCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
-  const divRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!divRef.current) return
-      const rect = divRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      divRef.current.style.setProperty("--mouse-x", `${x}px`)
-      divRef.current.style.setProperty("--mouse-y", `${y}px`)
+const WhyChooseUs = () => {
+  const reasons = [
+    {
+      icon: <Shield className="w-8 h-8 text-blue-600" />,
+      title: "국내 유일 원스톱 서비스",
+      description: "시험기 제작부터 교정·시험까지 모든 과정을 한 곳에서 해결할 수 있는 국내 유일의 업체입니다.",
+      highlight: "One-Stop Solution"
+    },
+    {
+      icon: <Award className="w-8 h-8 text-blue-600" />,
+      title: "KOLAS 공인기관",
+      description: "KOLAS 공인교정기관(KC23-420) 및 공인시험기관으로서 국가가 인정한 신뢰할 수 있는 기관입니다.",
+      highlight: "Government Certified"
+    },
+    {
+      icon: <Cog className="w-8 h-8 text-blue-600" />,
+      title: "축적된 기술력",
+      description: "시험기 제작 전문 기업으로서 수십 년간 축적한 기술력과 경험을 바탕으로 정확한 시험·교정을 제공합니다.",
+      highlight: "Proven Expertise"
+    },
+    {
+      icon: <Target className="w-8 h-8 text-blue-600" />,
+      title: "정밀한 교정·시험",
+      description: "국내외 규격에 부합하는 정밀 교정과 종합 시험으로 최고의 정확도를 보장합니다.",
+      highlight: "Precision Guaranteed"
+    },
+    {
+      icon: <CheckCircle className="w-8 h-8 text-blue-600" />,
+      title: "다양한 국제 인증",
+      description: "KS, ISO 9001:2015, CE 등 다양한 국제 인증을 보유하여 글로벌 표준에 부합하는 서비스를 제공합니다.",
+      highlight: "International Standards"
+    },
+    {
+      icon: <Zap className="w-8 h-8 text-blue-600" />,
+      title: "효율성 극대화",
+      description: "독립된 교정·시험으로 축적된 데이터와 노하우를 활용해 시험 장비의 효율성을 극대화합니다.",
+      highlight: "Maximized Efficiency"
     }
-
-    const div = divRef.current
-    if (div) {
-      div.addEventListener("mousemove", handleMouseMove)
-      return () => div.removeEventListener("mousemove", handleMouseMove)
-    }
-  }, [])
+  ];
 
   return (
-    <div ref={divRef} className={`spotlight-card ${className}`}>
-      {children}
-    </div>
-  )
-}
+    <section className="relative py-24 bg-gradient-to-br from-slate-50 to-blue-50 overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 left-10 w-32 h-32 border-2 border-blue-600 rounded-full"></div>
+        <div className="absolute bottom-20 right-10 w-24 h-24 border-2 border-blue-600 rounded-full"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 border-2 border-blue-600 rounded-full"></div>
+      </div>
 
-export default function WhyChooseUs() {
-  return (
-    <section className="py-20 bg-gradient-to-b from-background to-gray-50/50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <div className="mb-8 px-4">
-            <div className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold leading-tight">
-              <ScrollFloat
-                containerClassName="block"
-                textClassName="!text-5xl !md:text-6xl !lg:text-7xl !xl:text-8xl !font-bold !leading-tight"
-                animationDuration={1.5}
-                ease="power2.out"
-                scrollStart="top bottom"
-                scrollEnd="center center"
-                stagger={0.018}
-              >
-                <>
-                  왜{" "}
-                  <span className="bg-gradient-to-r from-[#0066FF] via-[#0080FF] to-[#33A1FF] bg-clip-text text-transparent">
-                    한국안전용품시험연구원
-                  </span>
-                  을 선택해야 할까요?
-                </>
-              </ScrollFloat>
-            </div>
-          </div>
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <ScrollFloat
+            animationDuration={1}
+            ease="back.inOut(2)"
+            scrollStart="center bottom+=50%"
+            scrollEnd="bottom bottom-=40%"
+            stagger={0.05}
+            containerClassName="mb-6"
+            textClassName="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent"
+          >
+            왜 큐로를 선택해야 할까요?
+          </ScrollFloat>
           
-          {/* Rotating Text Feature - 바로 아래 배치 */}
-          <div className="flex items-center justify-center gap-2 text-xl md:text-2xl font-medium mb-8">
-            <span>우리는</span>
-            <RotatingText
-              texts={["정확합니다", "신속합니다", "전문적입니다", "신뢰할 수 있습니다"]}
-              mainClassName="px-3 py-1 bg-gradient-to-r from-blue-100 to-blue-200 text-primary font-bold rounded-lg overflow-hidden inline-flex"
-              splitLevelClassName="overflow-hidden pb-0.5"
-              elementLevelClassName=""
-              splitBy="words"
-              rotationInterval={2000}
-              staggerDuration={0.025}
-              staggerFrom="last"
-              initial={{ y: "100%", opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: "-120%", opacity: 0 }}
-              transition={{ type: "spring", damping: 30, stiffness: 400 }}
-              animatePresenceMode="wait"
-              animatePresenceInitial={false}
-            />
-          </div>
-          
-          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            국내 유일의 통합 서비스로 시간과 비용을 절감하세요
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            국내 유일의 시험기 제작 전문기업이자 KOLAS 공인 시험·교정 기관으로서
+            <br />
+            <span className="text-blue-600 font-semibold">고객 성공을 위한 최고의 서비스</span>를 제공합니다
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Reasons Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {reasons.map((reason, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+            <Card 
+              key={index} 
+              className="group hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm hover:bg-white hover:scale-105"
             >
-              <SpotlightCard className="h-full">
-                <div className="flex flex-col h-full">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className="p-3 rounded-lg bg-gradient-primary-light">
-                      <reason.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-1">{reason.title}</h3>
-                      <span className="text-xs font-medium text-primary bg-gradient-primary-light px-2 py-1 rounded">
-                        {reason.highlight}
-                      </span>
-                    </div>
+              <CardContent className="p-8">
+                <div className="flex flex-col items-center text-center space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors duration-300">
+                    {reason.icon}
                   </div>
-                  <p className="text-muted-foreground text-sm flex-1">{reason.description}</p>
+                  
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                    {reason.highlight}
+                  </Badge>
+                  
+                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                    {reason.title}
+                  </h3>
+                  
+                  <p className="text-gray-600 leading-relaxed">
+                    {reason.description}
+                  </p>
                 </div>
-              </SpotlightCard>
-            </motion.div>
+              </CardContent>
+            </Card>
           ))}
+        </div>
+
+        {/* Stats Section */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="space-y-2">
+              <div className="text-3xl font-bold text-blue-600">20+</div>
+              <div className="text-sm text-gray-600">년간 축적된 기술력</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold text-blue-600">100%</div>
+              <div className="text-sm text-gray-600">KOLAS 공인 인증</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold text-blue-600">24시간</div>
+              <div className="text-sm text-gray-600">신속한 대응 서비스</div>
+            </div>
+            <div className="space-y-2">
+              <div className="text-3xl font-bold text-blue-600">1등</div>
+              <div className="text-sm text-gray-600">국내 유일 원스톱</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Call to Action */}
+        <div className="text-center mt-16">
+          <p className="text-lg text-gray-600 mb-6">
+            국내 최고의 기술력과 신뢰성을 바탕으로 고객 성공을 위해 최선을 다하겠습니다
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300 shadow-lg hover:shadow-xl">
+              시험·교정 신청하기
+            </button>
+            <button className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300">
+              문의하기
+            </button>
+          </div>
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
+
+export default WhyChooseUs;
