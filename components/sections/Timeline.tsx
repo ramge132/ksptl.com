@@ -66,7 +66,7 @@ export default function Timeline() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-gradient">30년</span>의 역사
+            <span className="text-gradient">20년</span>의 역사
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             끊임없는 혁신과 도전으로 성장해온 발자취

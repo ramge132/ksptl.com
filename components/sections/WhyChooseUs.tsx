@@ -64,6 +64,104 @@ const WhyChooseUs = () => {
       );
     }
 
+    // Cards animation - Chromatic split + soft-glitch (reveal + subtle RGB split + gentle hover)
+    if (cardsRef.current) {
+      const container = cardsRef.current;
+      const cards = Array.from(container.querySelectorAll<HTMLElement>(".reason-card"));
+
+      gsap.set(container, { perspective: 1000 });
+
+      // initial: slightly down and invisible; prepare inner elements
+      cards.forEach((card) => {
+        gsap.set(card, {
+          opacity: 0,
+          y: 28,
+          scale: 0.985,
+          transformStyle: "preserve-3d",
+          willChange: "transform, opacity",
+        });
+
+        const innerEls = card.querySelectorAll<HTMLElement>(".p-4, h3, p, .bg-blue-100");
+        gsap.set(innerEls, { y: 10, opacity: 0, scale: 0.997 });
+
+        // create lightweight chromatic layers (R/B) for soft-split effect
+        if (!card.querySelector(".glitch-r")) {
+          const r = document.createElement("div");
+          const b = document.createElement("div");
+          [r, b].forEach((el) => {
+            el.className = "pointer-events-none absolute inset-0 glitch-layer";
+            el.style.mixBlendMode = "screen";
+            el.style.opacity = "0";
+            el.style.zIndex = "2";
+            el.style.borderRadius = "inherit";
+            el.style.transform = "translateZ(0)";
+          });
+          // subtle color gradients
+          r.style.background = "linear-gradient(90deg, rgba(255,80,80,0.06), rgba(255,80,80,0.02))";
+          r.classList.add("glitch-r");
+          b.style.background = "linear-gradient(90deg, rgba(80,150,255,0.06), rgba(80,150,255,0.02))";
+          b.classList.add("glitch-b");
+
+          // ensure card is positioned
+          card.style.position = card.style.position || "relative";
+          card.appendChild(r);
+          card.appendChild(b);
+        }
+      });
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: container,
+          start: "top 88%",
+          end: "bottom 60%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      // reveal with upward motion and slight softness — reveal all simultaneously for group presence
+      tl.to(cards, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0,
+      });
+
+      // inner elements soft pop (simultaneous) for cleaner group reveal
+      cards.forEach((card) => {
+        const innerEls = Array.from(card.querySelectorAll<HTMLElement>(".p-4, h3, p, .bg-blue-100"));
+        tl.to(
+          innerEls,
+          { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power2.out", stagger: 0 },
+          "-=0.5"
+        );
+      });
+
+      // soft chromatic split pulse for a modern digital feel (animate all glitch layers together to avoid per-card sequencing)
+      const allR = Array.from(container.querySelectorAll<HTMLElement>(".glitch-r"));
+      const allB = Array.from(container.querySelectorAll<HTMLElement>(".glitch-b"));
+      if (allR.length || allB.length) {
+        tl.to(allR, { x: 6, opacity: 0.7, duration: 0.18, ease: "power2.out" }, "-=0.45");
+        tl.to(allB, { x: -6, opacity: 0.7, duration: 0.18, ease: "power2.out" }, "-=0.45");
+        tl.to([...allR, ...allB], { x: 0, opacity: 0, duration: 0.45, ease: "power2.inOut" }, "+=0.05");
+      }
+
+      // Micro-interaction removed to prevent any card movement that can cause text blurring.
+      // We keep the reveal and chromatic pulse, but do not attach per-card mouse listeners or transforms.
+
+      // Cleanup: remove glitch overlays and kill timeline on HMR/route changes
+      ScrollTrigger.addEventListener("refreshInit", () => {
+        cards.forEach((card) => {
+          const r = card.querySelector(".glitch-r");
+          const b = card.querySelector(".glitch-b");
+          if (r) r.remove();
+          if (b) b.remove();
+          gsap.set(card, { clearProps: "all" });
+        });
+        tl.kill();
+      });
+    }
 
   }, []);
   const reasons = [
@@ -146,22 +244,33 @@ const WhyChooseUs = () => {
                 className="reason-card group transition-shadow duration-300"
                 spotlightColor="rgba(120, 170, 255, 0.12)"
               >
-                <div className="flex flex-col items-center text-center space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors duration-300">
-                    {reason.icon}
+                <div className="card-inner relative overflow-hidden">
+                  <span
+                    className="sheen absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(120deg, rgba(27,100,218,0.06) 0%, rgba(51,161,255,0.12) 28%, rgba(255,255,255,0.18) 50%, rgba(51,161,255,0.08) 72%, rgba(27,100,218,0.04) 100%)",
+                      transform: "translateX(-140%) rotate(-6deg)",
+                      opacity: 0,
+                    }}
+                  />
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-4 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors duration-300">
+                      {reason.icon}
+                    </div>
+                    
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                      {reason.highlight}
+                    </Badge>
+                    
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
+                      {reason.title}
+                    </h3>
+                    
+                    <p className="text-gray-600 leading-relaxed">
+                      {reason.description}
+                    </p>
                   </div>
-                  
-                  <Badge variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                    {reason.highlight}
-                  </Badge>
-                  
-                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
-                    {reason.title}
-                  </h3>
-                  
-                  <p className="text-gray-600 leading-relaxed">
-                    {reason.description}
-                  </p>
                 </div>
               </SpotlightCard>
           ))}

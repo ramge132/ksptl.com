@@ -18,7 +18,17 @@ const features = [
   "신속한 견적 및 처리",
 ]
 
-export default function Hero() {
+interface HeroProps {
+  title?: string
+  subtitle?: string
+  buttonText?: string
+}
+
+export default function Hero({ 
+  title = "한국 안전용품 시험연구원",
+  subtitle = "국내 유일 시험기 제작·시험·교정 통합 수행기관",
+  buttonText = "무료 견적 진행"
+}: HeroProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const titleRef = useRef<HTMLDivElement>(null)
   const featuresRef = useRef<HTMLDivElement>(null)
@@ -127,8 +137,7 @@ export default function Hero() {
               animationSpeed={5}
               showBorder={false}
             >
-              한국 안전용품<br />
-              시험연구원
+              {title}
             </GradientTextNew>
           </motion.div>
 
@@ -139,7 +148,7 @@ export default function Hero() {
             transition={{ delay: 0.4 }}
             className="text-xl md:text-2xl font-bold mb-4 text-gray-800"
           >
-            국내 유일 시험기 제작·시험·교정 통합 수행기관
+            {subtitle}
           </motion.p>
 
           <motion.p
@@ -181,7 +190,7 @@ export default function Hero() {
                               -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
                 
                 {/* Text */}
-                <span className="relative z-10">무료 견적 진행</span>
+                <span className="relative z-10">{buttonText}</span>
                 
                 {/* Circle with arrow */}
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center
@@ -235,10 +244,10 @@ export default function Hero() {
                     showBorder={false}
                     className="inline-block"
                   >
-                    <CountUpNew to={50000} from={0} duration={2} separator="," />+
+                    <CountUpNew to={5000} from={0} duration={2} separator="," />+
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600 font-bold">시험 건수</div>
+                <div className="text-sm text-gray-600 font-bold">작업 건수</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">

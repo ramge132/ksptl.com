@@ -49,7 +49,8 @@ export default function SpotlightCard({
       onMouseLeave={handleMouseLeave}
       className={cn(
         // default style tuned to this project's light theme
-        "relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-sm backdrop-blur-sm",
+        // removed backdrop-blur to avoid text blurring on hover; keep subtle shadow only
+        "relative overflow-hidden rounded-2xl border border-slate-200 bg-white/90 p-8 shadow-sm",
         "transition-shadow duration-300",
         className
       )}
@@ -58,6 +59,9 @@ export default function SpotlightCard({
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-in-out"
         style={{
           opacity,
+          // promote to its own layer and avoid layout-triggering transforms that can blur text
+          transform: "translateZ(0)",
+          willChange: "opacity, transform",
           background: `radial-gradient(circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`,
         }}
       />

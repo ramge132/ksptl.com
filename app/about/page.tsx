@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Award, Target, Users, CheckCircle, Shield } from "lucide-react"
 import Image from "next/image"
+import { getAboutPage, type AboutPage } from "@/lib/sanity-extended"
 
 const values = [
   {
@@ -15,7 +17,7 @@ const values = [
   {
     icon: Target,
     title: "전문성",
-    description: "30년간 축적된 기술력과 노하우로 최고의 품질 보장"
+    description: "20년간 축적된 기술력과 노하우로 최고의 품질 보장"
   },
   {
     icon: Users,
@@ -48,6 +50,16 @@ const businessAreas = [
 ]
 
 export default function AboutPage() {
+  const [aboutData, setAboutData] = useState<AboutPage | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getAboutPage()
+      setAboutData(data)
+    }
+    fetchData()
+  }, [])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50">
       {/* Hero Section */}
@@ -113,15 +125,23 @@ export default function AboutPage() {
               className="relative"
             >
               <div className="relative h-[400px] rounded-xl overflow-hidden bg-gradient-primary-light">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Building2 className="w-32 h-32 text-primary/20" />
-                </div>
+                {aboutData?.companyImage ? (
+                  <img 
+                    src={`https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${aboutData.companyImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}`}
+                    alt="회사 대표 이미지"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Building2 className="w-32 h-32 text-primary/20" />
+                  </div>
+                )}
               </div>
               <div className="absolute -bottom-6 -left-6 bg-white rounded-lg shadow-lg p-4">
                 <div className="flex items-center gap-3">
                   <Award className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="font-semibold">30년 전통</p>
+                    <p className="font-semibold">20년 전통</p>
                     <p className="text-sm text-muted-foreground">신뢰의 파트너</p>
                   </div>
                 </div>

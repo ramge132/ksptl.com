@@ -6,6 +6,7 @@ import { MapPin, Phone, Clock, Navigation } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import NaverMapWithGeocoding from "@/components/ui/naver-map-with-geocoding"
 
 const locations = [
   {
@@ -14,9 +15,7 @@ const locations = [
     address: "경기 양주시 은현면 화합로 941번길 83",
     phone: "031-862-8556~7",
     hours: "평일 09:00 - 18:00",
-    lat: 37.8433,
-    lng: 127.0567,
-    mapUrl: "https://map.naver.com/v5/entry/place/1234567890" // 실제 네이버 지도 URL로 변경 필요
+    mapUrl: "https://map.naver.com/v5/search/경기%20양주시%20은현면%20화합로%20941번길%2083"
   },
   {
     id: "lab",
@@ -24,9 +23,7 @@ const locations = [
     address: "경기 양주시 은현면 화합로 701-11",
     phone: "031-858-3012",
     hours: "평일 09:00 - 18:00",
-    lat: 37.8392,
-    lng: 127.0521,
-    mapUrl: "https://map.naver.com/v5/entry/place/0987654321" // 실제 네이버 지도 URL로 변경 필요
+    mapUrl: "https://map.naver.com/v5/search/경기%20양주시%20은현면%20화합로%20701-11"
   }
 ]
 
@@ -63,17 +60,13 @@ export default function Location() {
                 {/* Map */}
                 <div className="lg:col-span-2">
                   <Card className="overflow-hidden h-[400px] flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-                    <div className="text-center">
-                      <MapPin className="h-12 w-12 text-primary mx-auto mb-4" />
-                      <p className="text-lg font-medium mb-2">지도 준비 중</p>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        네이버 지도 API 연동 예정
-                      </p>
-                      <a href={location.mapUrl} target="_blank" rel="noopener noreferrer">
-                        <Button variant="outline" size="sm">
-                          네이버 지도에서 보기
-                        </Button>
-                      </a>
+                    <div className="w-full h-full">
+                      <NaverMapWithGeocoding
+                        address={location.address}
+                        placeName={location.name}
+                        mapUrl={location.mapUrl}
+                        zoom={16}
+                      />
                     </div>
                   </Card>
                 </div>

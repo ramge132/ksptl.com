@@ -1,12 +1,14 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Card } from "@/components/ui/card"
 import { Award, Shield, FileCheck } from "lucide-react"
 
-const certificates = [
+// 하드코딩된 기본 데이터 (Sanity 데이터가 없을 때 사용)
+const defaultCertificates = [
   {
-    image: "/placeholder.jpg", // 나중에 실제 이미지로 교체
+    image: "/placeholder.jpg",
     title: "방송통신기자재등의 적합등록 필증",
     description: "KC인증 (5031-FC65-40CE-227C)"
   },
@@ -88,6 +90,46 @@ const certificates = [
 ]
 
 export default function CertificatesAndPatents() {
+  const [certificates, setCertificates] = useState<any[]>(defaultCertificates)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAwards = async () => {
+      try {
+        // 캐시를 무시하고 최신 데이터를 가져오기
+        const response = await fetch('/api/sanity/awards', {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log('Fetched awards data:', data)
+          
+          // Sanity 데이터가 있으면 사용, 없으면 기본 데이터 사용
+          if (data && data.length > 0) {
+            const transformedData = data.map((item: any) => ({
+              image: item.imageUrl || "/placeholder.jpg",
+              title: item.title,
+              description: item.description,
+              _id: item._id,
+              order: item.order || 0
+            }))
+            setCertificates(transformedData)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch awards:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchAwards()
+  }, [])
   return (
     <section className="py-20 bg-gradient-to-b from-gray-50/50 to-background">
       <div className="container mx-auto px-4">
@@ -109,17 +151,32 @@ export default function CertificatesAndPatents() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {certificates.map((cert, index) => (
             <motion.div
-              key={index}
+              key={cert._id || index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
             >
               <Card className="p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer group">
-                <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-blue-50 group-hover:to-blue-100 transition-colors">
-                  {index < 6 ? <Shield className="w-12 h-12 text-blue-600" /> : 
-                   index < 12 ? <Award className="w-12 h-12 text-green-600" /> : 
-                   <FileCheck className="w-12 h-12 text-purple-600" />}
+                <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center group-hover:from-blue-50 group-hover:to-blue-100 transition-colors overflow-hidden">
+                  {cert.image && cert.image !== "/placeholder.jpg" ? (
+                    <img 
+                      src={cert.image}
+                      alt={cert.title}
+                      className="w-full h-full object-contain p-2"
+                      onError={(e) => {
+                        console.error('Image load error for:', cert.title)
+                        e.currentTarget.style.display = 'none'
+                      }}
+                    />
+                  ) : (
+                    // 아이콘 표시 로직: 제목에 따라 다른 아이콘 표시
+                    cert.title.includes('특허') || cert.title.includes('디자인등록') ? 
+                      <Award className="w-12 h-12 text-green-600" /> :
+                    cert.title.includes('인정서') || cert.title.includes('인증') ? 
+                      <Shield className="w-12 h-12 text-blue-600" /> :
+                      <FileCheck className="w-12 h-12 text-purple-600" />
+                  )}
                 </div>
                 <h3 className="font-semibold text-sm mb-1 line-clamp-2">{cert.title}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-1">{cert.description}</p>

@@ -8,54 +8,52 @@ import {
   Footprints, 
   Shirt, 
   AlertTriangle,
-  Wrench,
-  ArrowRight
+  Wrench
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 
 const services = [
   {
     icon: Shield,
     title: "마스크",
     description: "방진, 방독, 송기마스크 시험",
-    items: ["강도 신장율 시험", "투시부 내충격성", "여과재 질량"],
-    href: "/tests?category=mask"
+    items: ["강도 신장율 및 영구변형율 시험", "투시부의 내충격성 시험", "여과재 질량 시험"],
+    additionalCount: 5
   },
   {
     icon: Footprints,
     title: "안전화",
-    description: "가죽제, 고무제, 정전기안전화",
+    description: "가죽제, 고무제, 정전기안전화, 절연화",
     items: ["내압박성 시험", "내충격성 시험", "박리저항시험"],
-    href: "/tests?category=shoes"
+    additionalCount: 77
   },
   {
     icon: Shirt,
     title: "보호복",
     description: "방열복, 화학물질용 보호복",
     items: ["난연성 시험", "인장강도 시험", "내열성 시험"],
-    href: "/tests?category=clothing"
+    additionalCount: 16
   },
   {
     icon: AlertTriangle,
     title: "추락방지대",
     description: "추락방지대 전문 시험",
-    items: ["구조검사", "인장강도 시험", "동하중성능"],
-    href: "/tests?category=harness"
+    items: ["구조검사", "죔줄 인장강도 시험", "동하중성능 시험"],
+    additionalCount: 12
   },
   {
     icon: HardHat,
     title: "안전모",
     description: "AB형, AE형, ABE형",
-    items: ["내관통성 시험", "충격흡수성", "난연성 시험"],
-    href: "/tests?category=helmet"
+    items: ["내관통성 시험", "충격흡수성 시험", "난연성 시험"],
+    additionalCount: 4
   },
   {
     icon: Wrench,
-    title: "안전대",
-    description: "벨트식, 그네식, 안전블럭",
+    title: "안전대 / 안전장갑",
+    description: "벨트식, 그네식, 안전블럭, 내전압용",
     items: ["구조검사", "인장강도 시험", "충격흡수"],
-    href: "/tests?category=belt"
+    additionalCount: 95
   }
 ]
 
@@ -73,8 +71,10 @@ export default function Services() {
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="text-gradient">시험·교정</span> 서비스
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            KOLAS 인증 시험 기관으로 정확하고 신뢰할 수 있는 시험 서비스를 제공합니다
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            KOLAS 인증 시험 기관으로 <span className="font-semibold text-foreground">총 227종</span>의 안전용품 시험이 가능합니다.
+            <br />
+            정확하고 신뢰할 수 있는 시험 서비스를 제공합니다
           </p>
         </motion.div>
 
@@ -99,7 +99,7 @@ export default function Services() {
                       <p className="text-sm text-muted-foreground">{service.description}</p>
                     </div>
                   </div>
-                  <ul className="space-y-2 mb-6">
+                  <ul className="space-y-2">
                     {service.items.map((item, idx) => (
                       <li key={idx} className="flex items-center text-sm text-muted-foreground">
                         <span className="w-1.5 h-1.5 bg-primary rounded-full mr-2" />
@@ -107,12 +107,11 @@ export default function Services() {
                       </li>
                     ))}
                   </ul>
-                  <Link href={service.href}>
-                    <Button variant="outline" className="w-full group/btn">
-                      자세히 보기
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm font-semibold text-primary">
+                      외 {service.additionalCount}종
+                    </p>
+                  </div>
                 </div>
               </Card>
             </motion.div>
@@ -126,7 +125,7 @@ export default function Services() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-center mt-12"
         >
-          <Link href="/apply">
+          <Link href="/tests?category=mask">
             <button className="relative group px-8 py-3 pl-10 pr-16 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0080FF] 
                              text-white font-semibold text-lg overflow-hidden transition-all duration-300 
                              hover:scale-105 hover:shadow-[0_0_30px_rgba(0,102,255,0.5)]
@@ -136,7 +135,7 @@ export default function Services() {
                             -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
               
               {/* Text */}
-              <span className="relative z-10">시험·교정 신청하기</span>
+              <span className="relative z-10">자세히 보기</span>
               
               {/* Circle with arrow */}
               <div className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center
