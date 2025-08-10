@@ -89,9 +89,19 @@ export default function NaverMapWithGeocoding({
           zoom,
           minZoom: 6,
           zoomControl: true,
+          zoomControlOptions: {
+            position: naver.maps.Position.TOP_RIGHT,
+            style: naver.maps.ZoomControlStyle.SMALL
+          },
           mapTypeControl: false,
           scaleControl: false,
           logoControl: false,
+        });
+
+        // 지도 컨트롤의 z-index 조정
+        const controls = elRef.current.querySelectorAll('.naver-map-control');
+        controls.forEach((control: any) => {
+          control.style.zIndex = '10';
         });
 
         const marker = new naver.maps.Marker({
@@ -175,8 +185,8 @@ export default function NaverMapWithGeocoding({
   }, [coordinates, zoom, address, placeName]);
 
   return (
-    <div className="w-full h-full min-h-[280px] relative">
-      <div ref={elRef} data-naver-map-container="true" className="w-full h-full" />
+    <div className="w-full h-full min-h-[280px] relative" style={{ zIndex: 1 }}>
+      <div ref={elRef} data-naver-map-container="true" className="w-full h-full relative" style={{ zIndex: 1 }} />
 
       {loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center p-4 bg-white/80 backdrop-blur-sm">

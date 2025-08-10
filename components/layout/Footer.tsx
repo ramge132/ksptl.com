@@ -14,16 +14,15 @@ const certifications = [
 const footerLinks = {
   company: [
     { title: "기관 소개", href: "/about" },
-    { title: "오시는 길", href: "/#location" },
+    { title: "오시는 길", href: "/location" },
   ],
   services: [
     { title: "시험·교정 신청", href: "/apply" },
     { title: "시험 항목", href: "/tests" },
-    { title: "견적 문의", href: "/support/inquiry" },
   ],
   support: [
     { title: "자료실", href: "/support/resources" },
-    { title: "문의하기", href: "/support/inquiry" },
+    { title: "문의하기", href: "/contact" },
   ],
   policies: [
     { title: "개인정보처리방침", href: "/privacy" },

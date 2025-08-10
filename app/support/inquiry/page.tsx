@@ -76,11 +76,11 @@ const contactMethods = [
   },
   {
     icon: MessageSquare,
-    title: "온라인 문의",
-    content: "문의 양식 작성",
-    description: "24시간 내 답변",
+    title: "문의하기",
+    content: "온라인 문의",
+    description: "견적 및 기술 상담",
     action: "문의하기",
-    href: "/#contact"
+    href: "/contact"
   },
 ]
 
@@ -204,7 +204,7 @@ export default function InquiryPage() {
                   <p className="font-medium">자료실</p>
                 </Card>
               </Link>
-              <Link href="/#location">
+              <Link href="/location">
                 <Card className="p-4 hover-lift cursor-pointer">
                   <Clock className="h-6 w-6 text-primary mb-2" />
                   <p className="font-medium">오시는 길</p>

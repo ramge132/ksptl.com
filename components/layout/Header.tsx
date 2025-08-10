@@ -24,7 +24,7 @@ const navItems = [
     directLink: "/about",
     items: [
       { title: "기관 개요", href: "/about", description: "한국안전용품시험연구원 소개" },
-      { title: "오시는 길", href: "/#location", description: "본사 및 시험소 위치" },
+      { title: "오시는 길", href: "/location", description: "본사 및 시험소 위치" },
     ]
   },
   {
@@ -46,7 +46,7 @@ const navItems = [
     href: "/support/inquiry",
     directLink: "/support/inquiry",
     items: [
-      { title: "문의하기", href: "/support/inquiry", description: "견적 및 기술 문의" },
+      { title: "고객지원", href: "/support/inquiry", description: "고객지원 센터" },
       { title: "자료실", href: "/support/resources", description: "관련 자료 다운로드" },
     ]
   },

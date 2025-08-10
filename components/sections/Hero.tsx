@@ -25,7 +25,7 @@ interface HeroProps {
 }
 
 export default function Hero({ 
-  title = "한국 안전용품 시험연구원",
+  title = "한국 안전용품\n시험연구원",
   subtitle = "국내 유일 시험기 제작·시험·교정 통합 수행기관",
   buttonText = "무료 견적 진행"
 }: HeroProps) {
@@ -137,7 +137,8 @@ export default function Hero({
               animationSpeed={5}
               showBorder={false}
             >
-              {title}
+              한국 안전용품<br />
+              시험연구원
             </GradientTextNew>
           </motion.div>
 

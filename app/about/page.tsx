@@ -242,7 +242,7 @@ export default function AboutPage() {
             <p className="text-muted-foreground">간단하고 빠른 프로세스</p>
           </motion.div>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-8 max-w-4xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-center max-w-3xl mx-auto">
             {["접수", "시험·교정", "성적서 발급", "납품"].map((step, index) => (
               <motion.div
                 key={index}
@@ -250,29 +250,43 @@ export default function AboutPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex flex-col items-center"
+                className="flex items-center"
               >
-                <div className="w-16 h-16 rounded-full bg-gradient-primary text-white flex items-center justify-center font-bold text-xl mb-3">
-                  {index + 1}
-                </div>
-                <p className="font-semibold">{step}</p>
-                {index < 3 && (
-                  <div className="hidden md:block absolute ml-32 mt-8">
-                    <svg className="w-16 h-2" viewBox="0 0 60 10">
-                      <path
-                        d="M 0 5 L 50 5"
-                        stroke="rgb(59, 130, 246)"
-                        strokeWidth="2"
-                        fill="none"
-                      />
-                      <path
-                        d="M 50 5 L 55 2 M 50 5 L 55 8"
-                        stroke="rgb(59, 130, 246)"
-                        strokeWidth="2"
-                        fill="none"
-                      />
-                    </svg>
+                <div className="flex flex-col items-center">
+                  <div className="w-16 h-16 rounded-full bg-gradient-primary text-white flex items-center justify-center font-bold text-xl mb-3">
+                    {index + 1}
                   </div>
+                  <p className="font-semibold">{step}</p>
+                </div>
+                {index < 3 && (
+                  <motion.div 
+                    className="hidden md:flex items-center mx-8 mb-6"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                  >
+                    {/* Modern dotted line */}
+                    <div className="flex items-center space-x-1">
+                      {[...Array(8)].map((_, dotIndex) => (
+                        <motion.div
+                          key={dotIndex}
+                          className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-primary/40 to-primary/60"
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ 
+                            scale: [0, 1, 1, 0],
+                            opacity: [0, 0.4, 0.8, 0]
+                          }}
+                          transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            delay: dotIndex * 0.1 + index * 0.3,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
                 )}
               </motion.div>
             ))}
