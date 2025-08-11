@@ -32,13 +32,9 @@ const navItems = [
     href: "/tests?category=mask",
     directLink: "/tests?category=mask",
     items: [
-      { title: "마스크", href: "/tests?category=mask", description: "방진, 방독, 송기마스크" },
-      { title: "안전화", href: "/tests?category=shoes", description: "가죽제, 고무제, 정전기안전화" },
-      { title: "보호복", href: "/tests?category=clothing", description: "방열복, 화학물질용 보호복" },
-      { title: "추락방지대", href: "/tests?category=harness", description: "추락방지대 시험" },
-      { title: "안전모", href: "/tests?category=helmet", description: "AB형, AE형, ABE형" },
-      { title: "안전장갑", href: "/tests?category=gloves", description: "내전압용 안전장갑" },
-      { title: "안전대", href: "/tests?category=belt", description: "벨트식, 그네식, 안전블럭" },
+      { title: "시험 항목", href: "/tests?category=mask", description: "시험 가능한 모든 항목 확인" },
+      { title: "시험 신청", href: "/test-calibration", description: "온라인으로 시험 신청하기" },
+      { title: "교정 신청", href: "/calibration", description: "교정 서비스 신청하기" },
     ]
   },
   {

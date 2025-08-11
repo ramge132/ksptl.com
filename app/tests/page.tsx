@@ -365,39 +365,6 @@ export default function TestsPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <Card className="max-w-2xl mx-auto p-8 bg-gradient-primary-light border-primary/20">
-              <h3 className="text-2xl font-bold mb-4">시험·교정 신청하기</h3>
-              <p className="text-muted-foreground mb-6">
-                온라인으로 간편하게 신청하고, 24시간 내 견적을 받아보세요
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/test-calibration">
-                  <Button size="lg" className="bg-gradient-primary text-white hover:opacity-90">
-                    온라인 신청
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link href="/#contact">
-                  <Button size="lg" variant="outline">
-                    문의하기
-                  </Button>
-                </Link>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Additional Info */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">

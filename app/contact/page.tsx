@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Mail, Phone, MessageSquare, Send, Building2, Clock } from "lucide-react"
+import { Mail, Phone, MessageSquare, Send, Building2, Clock, HelpCircle, ChevronDown } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,29 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-
-const contactInfo = [
-  {
-    icon: Phone,
-    title: "전화 문의",
-    content: "031-862-8556~7",
-    description: "평일 09:00 - 18:00",
-  },
-  {
-    icon: Mail,
-    title: "이메일",
-    content: "ymy@quro.co.kr",
-    description: "24시간 접수 가능",
-  },
-  {
-    icon: Clock,
-    title: "처리 시간",
-    content: "24시간 내",
-    description: "견적 및 답변 제공",
-  },
-]
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { type SupportInfo } from "@/lib/sanity-extended"
 
 export default function ContactPage() {
+  const [supportData, setSupportData] = useState<SupportInfo | null>(null)
   const [formData, setFormData] = useState({
     company: "",
     name: "",
@@ -48,12 +35,86 @@ export default function ContactPage() {
     message: "",
   })
 
+  useEffect(() => {
+    fetchSupportData()
+  }, [])
+
+  const fetchSupportData = async () => {
+    try {
+      const response = await fetch('/api/sanity/support-info')
+      if (response.ok) {
+        const data = await response.json()
+        setSupportData(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch support data:', error)
+    }
+  }
+
+  // 기본값 설정
+  const pageTitle = supportData?.pageTitle || '고객지원'
+  const pageSubtitle = supportData?.pageSubtitle || '고객지원 센터'
+  const pageDescription = supportData?.pageDescription || '궁금하신 사항을 빠르고 정확하게 안내해드립니다'
+  
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: supportData?.phoneTitle || "전화 상담",
+      content: supportData?.phoneNumber || "031-862-8556~7",
+      description: supportData?.phoneHours || "평일 09:00 - 18:00",
+    },
+    {
+      icon: Mail,
+      title: supportData?.emailTitle || "이메일 문의",
+      content: supportData?.emailAddress || "ymy@quro.co.kr",
+      description: supportData?.emailHours || "24시간 접수 가능",
+    },
+    {
+      icon: MessageSquare,
+      title: supportData?.onlineTitle || "온라인 문의",
+      content: supportData?.onlineDescription || "견적 및 기술 상담",
+      description: "문의 양식 작성",
+    },
+  ]
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // 이메일 발송을 위한 mailto 링크 생성
-    const subject = `[${formData.inquiryType}] ${formData.company} - ${formData.name}님의 문의`
-    const body = `
+    try {
+      // API를 통한 이메일 전송
+      const response = await fetch('/api/submit-inquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData
+        }),
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // 폼 초기화
+        setFormData({
+          company: "",
+          name: "",
+          phone: "",
+          email: "",
+          inquiryType: "",
+          message: "",
+        })
+        
+        alert("문의가 성공적으로 접수되었습니다. 24시간 내에 답변드리겠습니다.")
+      } else {
+        throw new Error(result.message || '문의 접수 중 오류가 발생했습니다.')
+      }
+    } catch (error) {
+      console.error('Submit error:', error)
+      
+      // 에러 발생 시 mailto 방식으로 폴백
+      const subject = `[${formData.inquiryType}] ${formData.company} - ${formData.name}님의 문의`
+      const body = `
 업체명: ${formData.company}
 담당자명: ${formData.name}
 연락처: ${formData.phone}
@@ -62,22 +123,11 @@ export default function ContactPage() {
 
 문의 내용:
 ${formData.message}
-    `
-    
-    const mailtoLink = `mailto:ymy@quro.co.kr?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    window.location.href = mailtoLink
-    
-    // 폼 초기화
-    setFormData({
-      company: "",
-      name: "",
-      phone: "",
-      email: "",
-      inquiryType: "",
-      message: "",
-    })
-    
-    alert("문의가 접수되었습니다. 24시간 내에 답변드리겠습니다.")
+      `
+      
+      const mailtoLink = `mailto:${supportData?.emailAddress || 'ymy@quro.co.kr'}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+      window.location.href = mailtoLink
+    }
   }
 
   const handleChange = (field: string, value: string) => {
@@ -98,13 +148,16 @@ ${formData.message}
           >
             <Badge className="mb-4" variant="outline">
               <MessageSquare className="w-3 h-3 mr-1" />
-              Contact
+              Support Center
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-gradient">문의</span>하기
+              <span className="text-gradient">{pageTitle}</span>
             </h1>
+            <h2 className="text-2xl font-semibold mb-4 text-gray-700">
+              {pageSubtitle}
+            </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              시험·교정에 대한 견적 및 기술 상담을 도와드립니다
+              {pageDescription}
             </p>
           </motion.div>
         </div>
@@ -272,6 +325,112 @@ ${formData.message}
           </div>
         </div>
       </section>
+
+      {/* FAQ Section */}
+      {supportData?.faqs && supportData.faqs.length > 0 && (
+        <section className="py-20 bg-gray-50/50">
+          <div className="container mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              className="max-w-4xl mx-auto"
+            >
+              {/* FAQ Header */}
+              <div className="text-center mb-12">
+                <Badge className="mb-4" variant="outline">
+                  <HelpCircle className="w-3 h-3 mr-1" />
+                  FAQ
+                </Badge>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  <span className="text-gradient">{supportData.faqTitle || '자주 묻는 질문'}</span>
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  {supportData.faqSubtitle || '고객님들이 자주 문의하시는 내용을 정리했습니다'}
+                </p>
+              </div>
+
+              {/* FAQ Items */}
+              <Card className="p-6">
+                <Accordion type="single" collapsible className="w-full">
+                  {supportData.faqs
+                    .sort((a, b) => (a.order || 0) - (b.order || 0))
+                    .map((faq, index) => (
+                      <AccordionItem key={index} value={`item-${index}`}>
+                        <AccordionTrigger className="text-left hover:no-underline">
+                          <div className="flex items-center gap-3">
+                            <span className="flex-shrink-0 w-8 h-8 bg-gradient-primary-light rounded-full flex items-center justify-center text-sm font-semibold text-primary">
+                              Q
+                            </span>
+                            <span className="font-medium">{faq.question}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                          <div className="flex gap-3 pl-11">
+                            <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
+                              A
+                            </div>
+                            <p className="text-muted-foreground whitespace-pre-wrap">
+                              {faq.answer}
+                            </p>
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                </Accordion>
+              </Card>
+
+              {/* Quick Menu */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                className="mt-12"
+              >
+                <Card className="p-8 bg-gradient-to-r from-blue-50 to-white">
+                  <h3 className="text-xl font-semibold mb-6 text-center">빠른 메뉴</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col py-4"
+                      onClick={() => window.location.href = '/test-calibration'}
+                    >
+                      <MessageSquare className="h-5 w-5 mb-2" />
+                      온라인 신청
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col py-4"
+                      onClick={() => window.location.href = '/tests'}
+                    >
+                      <HelpCircle className="h-5 w-5 mb-2" />
+                      시험 항목
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col py-4"
+                      onClick={() => window.location.href = '/resources'}
+                    >
+                      <Building2 className="h-5 w-5 mb-2" />
+                      자료실
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="h-auto flex-col py-4"
+                      onClick={() => window.location.href = '/location'}
+                    >
+                      <Clock className="h-5 w-5 mb-2" />
+                      오시는 길
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            </motion.div>
+          </div>
+        </section>
+      )}
     </div>
   )
 }

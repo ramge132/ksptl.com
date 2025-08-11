@@ -2,13 +2,14 @@ import { client } from './sanity'
 import { createClient } from '@sanity/client'
 
 // 서버 사이드 전용 클라이언트 (토큰 포함)
-const serverClient = typeof window === 'undefined' ? createClient({
+// API 라우트에서만 사용되므로 항상 서버 사이드
+const serverClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
   useCdn: false,
   apiVersion: '2024-01-01',
   token: process.env.SANITY_API_TOKEN,
-}) : client
+})
 
 // Landing Page 관련 함수
 export interface LandingPage {
@@ -428,6 +429,58 @@ export async function updateSupportPage(data: Partial<SupportPage>): Promise<Sup
     }
   } catch (error) {
     console.error('Failed to update support page:', error)
+    return null
+  }
+}
+
+// Support Info 관련 함수
+export interface SupportInfo {
+  _id: string
+  _type: 'supportInfo'
+  pageTitle?: string
+  pageSubtitle?: string
+  pageDescription?: string
+  phoneTitle?: string
+  phoneNumber?: string
+  phoneHours?: string
+  emailTitle?: string
+  emailAddress?: string
+  emailHours?: string
+  onlineTitle?: string
+  onlineDescription?: string
+  faqTitle?: string
+  faqSubtitle?: string
+  faqs?: Array<{
+    question: string
+    answer: string
+    order?: number
+  }>
+}
+
+export async function getSupportInfo(): Promise<SupportInfo | null> {
+  try {
+    const result = await client.fetch(`*[_type == "supportInfo"][0]`)
+    return result
+  } catch (error) {
+    console.error('Failed to fetch support info:', error)
+    return null
+  }
+}
+
+export async function updateSupportInfo(data: Partial<SupportInfo>): Promise<SupportInfo | null> {
+  try {
+    const existing = await getSupportInfo()
+    if (existing) {
+      return await serverClient.patch(existing._id).set(data).commit() as unknown as SupportInfo
+    } else {
+      return await serverClient.create({
+        _id: 'supportInfo-singleton',
+        _type: 'supportInfo',
+        ...data
+      }) as unknown as SupportInfo
+    }
+  } catch (error) {
+    console.error('Failed to update support info:', error)
     return null
   }
 }

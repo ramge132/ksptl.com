@@ -115,8 +115,7 @@ export default function Contact({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...formData,
-          to: contactEmailAddress,
+          ...formData
         }),
       })
 

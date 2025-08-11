@@ -7,6 +7,7 @@ import testCategory from './testCategory'
 import supportPage from './supportPage'
 import resource from './resource'
 import timeline from './timeline'
+import supportInfo from './supportInfo'
 
 export const schemaTypes = [
   award, 
@@ -17,5 +18,6 @@ export const schemaTypes = [
   testCategory, 
   supportPage, 
   resource,
-  timeline
+  timeline,
+  supportInfo
 ]

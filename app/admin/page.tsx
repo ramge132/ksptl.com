@@ -12,6 +12,7 @@ import HeroSectionManager from './hero-section-manager'
 import TestCategoryManager from '@/components/admin/TestCategoryManager'
 import CertificatesManager from '@/components/admin/CertificatesManager'
 import AboutPageManager from '@/components/admin/AboutPageManager'
+import SupportInfoManager from '@/components/admin/SupportInfoManager'
 import { getAwards, type Award, getTimeline, type Timeline } from '@/lib/sanity'
 import {
   getLandingPage,
@@ -1425,38 +1426,7 @@ export default function AdminPage() {
 
           {/* 고객지원 관리 */}
           <TabsContent value="support">
-            <Card>
-              <CardHeader>
-                <CardTitle>고객지원 정보</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>대표 이메일</Label>
-                  <Input defaultValue="ymy@quro.co.kr" />
-                </div>
-                <div>
-                  <Label>대표 전화</Label>
-                  <Input defaultValue="031-862-8556" />
-                </div>
-                <div>
-                  <Label>팩스</Label>
-                  <Input defaultValue="031-862-8558" />
-                </div>
-                <div>
-                  <Label>카카오톡 채널</Label>
-                  <Input defaultValue="@한국안전용품시험연구원" />
-                </div>
-                <div>
-                  <Label>자주 묻는 질문</Label>
-                  <textarea 
-                    className="w-full p-2 border rounded"
-                    rows={4}
-                    placeholder="FAQ 내용을 입력하세요"
-                  />
-                </div>
-                <Button className="w-full">저장</Button>
-              </CardContent>
-            </Card>
+            <SupportInfoManager />
           </TabsContent>
 
           {/* 자료실 관리 */}

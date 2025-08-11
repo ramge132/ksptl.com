@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // 관리자에게 보낼 이메일
     const adminMailOptions = {
       from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
-      to: to || 'ymy@quro.co.kr',
+      to: to || process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr',
       subject: `[문의] ${inquiryTypeKorean} - ${company} ${name}`,
       html: `
         <div style="font-family: 'Pretendard', sans-serif; max-width: 600px; margin: 0 auto;">
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
               <h3 style="color: #1e40af; margin-top: 0;">빠른 상담이 필요하신가요?</h3>
               <p style="line-height: 1.6; color: #374151; margin: 10px 0;">
                 <strong>전화:</strong> 031-862-8556~7 (평일 09:00-18:00)<br>
-                <strong>이메일:</strong> ymy@quro.co.kr
+                <strong>이메일:</strong> ${process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr'}
               </p>
             </div>
             
@@ -140,16 +140,25 @@ export async function POST(request: NextRequest) {
       `,
     }
 
-    // 이메일 전송 (개발 환경에서는 콘솔 로그만)
-    if (process.env.NODE_ENV === 'development' || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.log('Development mode - Email would be sent:')
+    // 이메일 전송
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.log('Email credentials not configured - Email would be sent:')
       console.log('Admin email:', adminMailOptions)
       console.log('Customer email:', customerMailOptions)
     } else {
-      // 관리자 이메일 전송
-      await transporter.sendMail(adminMailOptions)
-      // 고객 확인 이메일 전송
-      await transporter.sendMail(customerMailOptions)
+      try {
+        // 관리자 이메일 전송
+        await transporter.sendMail(adminMailOptions)
+        console.log('Admin email sent successfully to:', adminMailOptions.to)
+        
+        // 고객 확인 이메일 전송
+        await transporter.sendMail(customerMailOptions)
+        console.log('Customer confirmation email sent successfully to:', customerMailOptions.to)
+      } catch (emailError) {
+        console.error('Email sending error:', emailError)
+        // 이메일 전송 실패해도 성공 응답 (사용자에게는 접수되었다고 표시)
+        console.log('Failed to send email, but inquiry was received')
+      }
     }
 
     return NextResponse.json({ 

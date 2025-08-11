@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import nodemailer from 'nodemailer'
+import { 
+  generateEmailTemplate, 
+  formatSection, 
+  formatTableRow, 
+  formatEquipmentCard,
+  formatAlert 
+} from '@/lib/email-template'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,63 +20,123 @@ export async function POST(request: NextRequest) {
 
     const data = JSON.parse(formDataString)
 
-    // 이메일 내용 생성
-    const emailContent = `
-      <h2>교정 신청서</h2>
+    // 관리자용 이메일 내용 생성
+    const adminEmailContent = `
+      <h2 style="color: #1f2937; font-size: 24px; margin: 0 0 24px 0;">📋 교정 신청서</h2>
       
-      <h3>신청업체 정보</h3>
-      <table border="1" style="border-collapse: collapse; width: 100%;">
-        <tr><td><strong>업체명</strong></td><td>${data.companyName}</td></tr>
-        <tr><td><strong>사업자등록번호</strong></td><td>${data.businessNumber}</td></tr>
-        <tr><td><strong>대표자</strong></td><td>${data.representative}</td></tr>
-        <tr><td><strong>업태</strong></td><td>${data.businessType || '-'}</td></tr>
-        <tr><td><strong>업종</strong></td><td>${data.industry || '-'}</td></tr>
-        <tr><td><strong>주소</strong></td><td>${data.address}</td></tr>
-        <tr><td><strong>전화</strong></td><td>${data.phone}</td></tr>
-        <tr><td><strong>팩스</strong></td><td>${data.fax || '-'}</td></tr>
-        <tr><td><strong>휴대폰</strong></td><td>${data.mobile || '-'}</td></tr>
-      </table>
+      ${formatSection('신청업체 정보', '🏢', `
+        <table style="width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden;">
+          ${formatTableRow('업체명', data.companyName, true)}
+          ${formatTableRow('사업자등록번호', data.businessNumber)}
+          ${formatTableRow('대표자', data.representative)}
+          ${formatTableRow('업태', data.businessType)}
+          ${formatTableRow('업종', data.industry)}
+          ${formatTableRow('주소', data.address)}
+          ${formatTableRow('전화', data.phone)}
+          ${formatTableRow('팩스', data.fax)}
+          ${formatTableRow('휴대폰', data.mobile)}
+        </table>
+      `)}
+      
+      ${formatSection('성적서 발급처', '📧', `
+        <table style="width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden;">
+          ${formatTableRow('신청인', data.applicantName, true)}
+          ${formatTableRow('부서명', data.department)}
+          ${formatTableRow('E-mail', data.email)}
+        </table>
+      `)}
 
-      <h3>성적서 발급처</h3>
-      <table border="1" style="border-collapse: collapse; width: 100%;">
-        <tr><td><strong>부서명</strong></td><td>${data.department || '-'}</td></tr>
-        <tr><td><strong>E-mail</strong></td><td>${data.email}</td></tr>
-        <tr><td><strong>신청인</strong></td><td>${data.applicantName}</td></tr>
-      </table>
-
-      <h3>교정 주기</h3>
-      <p>${data.calibrationCycle === 'government' ? '국가에서 정한 교정주기' : `자체설정주기 (${data.customCycle})`}</p>
-
-      <h3>고객 요구 사항</h3>
-      <p>${data.requirements || '-'}</p>
-
-      <h3>기기 정보</h3>
-      <table border="1" style="border-collapse: collapse; width: 100%;">
-        <tr>
-          <th>기기명</th>
-          <th>제작회사</th>
-          <th>모델/규격</th>
-          <th>기기번호</th>
-          <th>비공인</th>
-          <th>비고</th>
-        </tr>
-        ${data.equipments.map((eq: any) => `
-          <tr>
-            <td>${eq.name}</td>
-            <td>${eq.manufacturer}</td>
-            <td>${eq.model || '-'}</td>
-            <td>${eq.serialNumber || '-'}</td>
-            <td>${eq.isUncertified ? 'Y' : 'N'}</td>
-            <td>${eq.notes || '-'}</td>
-          </tr>
-        `).join('')}
-      </table>
-
-      <h3>접수 방법</h3>
-      <p>${data.receiptMethod === 'other' ? data.otherMethod : data.receiptMethod}</p>
-
-      <p><strong>신청일시:</strong> ${new Date().toLocaleString('ko-KR')}</p>
+      ${formatSection('교정 주기', '📅', `
+        <div style="background-color: #f3f4f6; padding: 12px 16px; border-radius: 8px;">
+          <p style="margin: 0; color: #374151; font-size: 14px;">
+            ${data.calibrationCycle === 'government' ? 
+              '<strong>국가에서 정한 교정주기</strong>' : 
+              `<strong>자체설정주기:</strong> ${data.customCycle}`}
+          </p>
+        </div>
+      `)}
+      
+      ${data.requirements ? formatSection('고객 요구 사항', '💬', `
+        <div style="background-color: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+          <p style="margin: 0; color: #78350f; font-size: 14px; white-space: pre-wrap;">
+            ${data.requirements}
+          </p>
+        </div>
+      `) : ''}
+      
+      ${formatSection('기기 정보', '🔧', 
+        data.equipments.map((eq: any, index: number) => 
+          formatEquipmentCard(eq, index + 1)
+        ).join('')
+      )}
+      
+      ${formatSection('접수 정보', '📦', `
+        <table style="width: 100%; border-collapse: collapse;">
+          ${formatTableRow('접수 방법', data.receiptMethod === 'other' ? data.otherMethod : 
+            data.receiptMethod === 'visit' ? '방문' :
+            data.receiptMethod === 'delivery' ? '택배' :
+            data.receiptMethod === 'pickup' ? '픽업' :
+            data.receiptMethod === 'onsite' ? '출장' : data.receiptMethod
+          )}
+          ${formatTableRow('신청일시', new Date().toLocaleString('ko-KR'))}
+        </table>
+      `)}
     `
+
+    // 고객용 확인 이메일 내용
+    const customerEmailContent = `
+      <h2 style="color: #1f2937; font-size: 24px; margin: 0 0 8px 0;">교정 신청서 접수 확인</h2>
+      <p style="color: #6b7280; font-size: 16px; margin: 0 0 24px 0;">
+        안녕하세요, <strong>${data.applicantName}</strong>님
+      </p>
+      
+      ${formatAlert('success', '접수 완료', '교정 신청서가 정상적으로 접수되었습니다.')}
+      
+      ${formatSection('접수 정보', '📋', `
+        <table style="width: 100%; border-collapse: collapse; border-radius: 8px; overflow: hidden;">
+          ${formatTableRow('업체명', data.companyName, true)}
+          ${formatTableRow('접수일시', new Date().toLocaleString('ko-KR'))}
+          ${formatTableRow('기기 수량', `${data.equipments.length}개`)}
+          ${formatTableRow('교정 주기', data.calibrationCycle === 'government' ? 
+            '국가에서 정한 교정주기' : `자체설정주기 (${data.customCycle})`
+          )}
+        </table>
+      `)}
+      
+      ${formatSection('신청 기기 목록', '🔧', 
+        data.equipments.map((eq: any, index: number) => `
+          <div style="padding: 8px 12px; background-color: ${index % 2 === 0 ? '#f9fafb' : '#ffffff'}; border-left: 3px solid #3b82f6; margin-bottom: 8px;">
+            <strong style="color: #1f2937;">${index + 1}. ${eq.name}</strong>
+            <span style="color: #6b7280; font-size: 13px; margin-left: 8px;">
+              ${eq.manufacturer} ${eq.model ? `(${eq.model})` : ''}
+            </span>
+            ${eq.isUncertified ? '<span style="display: inline-block; margin-left: 8px; background-color: #fef3c7; color: #92400e; padding: 2px 6px; border-radius: 4px; font-size: 11px;">비공인</span>' : ''}
+          </div>
+        `).join('')
+      )}
+      
+      ${formatAlert('info', '다음 단계', '빠른 시일 내에 담당자가 연락드릴 예정입니다.')}
+      
+      <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; text-align: center; margin-top: 32px;">
+        <p style="margin: 0 0 8px 0; color: #374151; font-size: 14px;">
+          문의사항이 있으시면 언제든지 연락주세요
+        </p>
+        <p style="margin: 0; color: #6b7280; font-size: 13px;">
+          📞 031-862-8556~7 | 📧 ymy@quro.co.kr
+        </p>
+      </div>
+    `
+
+    // 이메일 전송 설정
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
 
     // 파일 첨부를 위한 처리
     const attachments = []
@@ -84,38 +149,42 @@ export async function POST(request: NextRequest) {
     }
 
     // 관리자에게 이메일 발송
-    await resend.emails.send({
-      from: '한국안전용품시험연구원 <noreply@ksptl.com>',
-      to: [process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr'],
+    const adminMailOptions = {
+      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      to: process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr',
       subject: `[교정 신청서] ${data.companyName} - ${data.applicantName}`,
-      html: emailContent,
+      html: generateEmailTemplate('[교정 신청서] 새로운 신청이 접수되었습니다', adminEmailContent, true),
       attachments: attachments
-    })
+    }
 
     // 신청자에게 확인 이메일 발송
-    await resend.emails.send({
-      from: '한국안전용품시험연구원 <noreply@ksptl.com>',
-      to: [data.email],
+    const customerMailOptions = {
+      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      to: data.email,
       subject: '[한국안전용품시험연구원] 교정 신청서 접수 확인',
-      html: `
-        <h2>교정 신청서 접수 확인</h2>
-        <p>안녕하세요, ${data.applicantName}님.</p>
-        <p>교정 신청서가 정상적으로 접수되었습니다.</p>
-        
-        <h3>접수 정보</h3>
-        <ul>
-          <li><strong>업체명:</strong> ${data.companyName}</li>
-          <li><strong>접수일시:</strong> ${new Date().toLocaleString('ko-KR')}</li>
-          <li><strong>기기 수량:</strong> ${data.equipments.length}개</li>
-        </ul>
+      html: generateEmailTemplate('교정 신청서 접수 확인', customerEmailContent, false)
+    }
 
-        <p>빠른 시일 내에 담당자가 연락드릴 예정입니다.</p>
-        <p>문의사항이 있으시면 031-862-8556~7로 연락주시기 바랍니다.</p>
+    // 이메일 전송
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+      console.log('Email credentials not configured - Email would be sent:')
+      console.log('Admin email:', adminMailOptions)
+      console.log('Customer email:', customerMailOptions)
+    } else {
+      try {
+        // 관리자 이메일 전송
+        await transporter.sendMail(adminMailOptions)
+        console.log('Admin email sent successfully to:', adminMailOptions.to)
         
-        <p>감사합니다.</p>
-        <p><strong>한국안전용품시험연구원</strong></p>
-      `
-    })
+        // 고객 확인 이메일 전송
+        await transporter.sendMail(customerMailOptions)
+        console.log('Customer confirmation email sent successfully to:', customerMailOptions.to)
+      } catch (emailError) {
+        console.error('Email sending error:', emailError)
+        // 이메일 전송 실패해도 성공 응답 (사용자에게는 접수되었다고 표시)
+        console.log('Failed to send email, but calibration request was received')
+      }
+    }
 
     return NextResponse.json({ message: '신청서가 성공적으로 제출되었습니다.' })
 

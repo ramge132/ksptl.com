@@ -1,0 +1,10 @@
+# .env.local 파일에 아래 내용을 추가하세요
+# (실제 값으로 교체해주세요)
+
+# 이메일 설정 - 파일 맨 아래에 추가
+EMAIL_USER=your-gmail@gmail.com
+EMAIL_PASS=생성한16자리비밀번호공백제거
+
+# 예시:
+# EMAIL_USER=quro.test@gmail.com
+# EMAIL_PASS=abcdefghijklmnop
