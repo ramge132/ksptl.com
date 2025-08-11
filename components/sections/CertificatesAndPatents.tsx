@@ -89,47 +89,61 @@ const defaultCertificates = [
   }
 ]
 
-export default function CertificatesAndPatents() {
-  const [certificates, setCertificates] = useState<any[]>(defaultCertificates)
-  const [loading, setLoading] = useState(true)
+interface CertificatesAndPatentsProps {
+  certificatesTitle1?: string
+  certificatesTitle2?: string
+  certificatesDescription?: string
+  certificates?: any[]
+}
+
+export default function CertificatesAndPatents({
+  certificatesTitle1 = "인증서 및",
+  certificatesTitle2 = "특허",
+  certificatesDescription = "국내외 공인 인증과 특허로 검증된 기술력",
+  certificates: propsCertificates
+}: CertificatesAndPatentsProps) {
+  const [certificates, setCertificates] = useState<any[]>(propsCertificates || defaultCertificates)
+  const [loading, setLoading] = useState(!propsCertificates)
 
   useEffect(() => {
-    const fetchAwards = async () => {
-      try {
-        // 캐시를 무시하고 최신 데이터를 가져오기
-        const response = await fetch('/api/sanity/awards', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        })
-        
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Fetched awards data:', data)
+    if (!propsCertificates) {
+      const fetchAwards = async () => {
+        try {
+          // 캐시를 무시하고 최신 데이터를 가져오기
+          const response = await fetch('/api/sanity/awards', {
+            cache: 'no-store',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
+          })
           
-          // Sanity 데이터가 있으면 사용, 없으면 기본 데이터 사용
-          if (data && data.length > 0) {
-            const transformedData = data.map((item: any) => ({
-              image: item.imageUrl || "/placeholder.jpg",
-              title: item.title,
-              description: item.description,
-              _id: item._id,
-              order: item.order || 0
-            }))
-            setCertificates(transformedData)
+          if (response.ok) {
+            const data = await response.json()
+            console.log('Fetched awards data:', data)
+            
+            // Sanity 데이터가 있으면 사용, 없으면 기본 데이터 사용
+            if (data && data.length > 0) {
+              const transformedData = data.map((item: any) => ({
+                image: item.imageUrl || "/placeholder.jpg",
+                title: item.title,
+                description: item.description,
+                _id: item._id,
+                order: item.order || 0
+              }))
+              setCertificates(transformedData)
+            }
           }
+        } catch (error) {
+          console.error('Failed to fetch awards:', error)
+        } finally {
+          setLoading(false)
         }
-      } catch (error) {
-        console.error('Failed to fetch awards:', error)
-      } finally {
-        setLoading(false)
       }
-    }
 
-    fetchAwards()
-  }, [])
+      fetchAwards()
+    }
+  }, [propsCertificates])
   return (
     <section className="py-20 bg-gradient-to-b from-gray-50/50 to-background">
       <div className="container mx-auto px-4">
@@ -141,10 +155,10 @@ export default function CertificatesAndPatents() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            인증서 및 <span className="text-gradient">특허</span>
+            {certificatesTitle1} <span className="text-gradient">{certificatesTitle2}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            국내외 공인 인증과 특허로 검증된 기술력
+            {certificatesDescription}
           </p>
         </motion.div>
 

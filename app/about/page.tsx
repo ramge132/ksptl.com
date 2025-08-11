@@ -8,47 +8,6 @@ import { Building2, Award, Target, Users, CheckCircle, Shield } from "lucide-rea
 import Image from "next/image"
 import { getAboutPage, type AboutPage } from "@/lib/sanity-extended"
 
-const values = [
-  {
-    icon: Shield,
-    title: "신뢰성",
-    description: "KOLAS 공인 기관으로서 정확하고 신뢰할 수 있는 서비스 제공"
-  },
-  {
-    icon: Target,
-    title: "전문성",
-    description: "20년간 축적된 기술력과 노하우로 최고의 품질 보장"
-  },
-  {
-    icon: Users,
-    title: "고객중심",
-    description: "고객의 성공을 위한 맞춤형 솔루션 제공"
-  },
-]
-
-const businessAreas = [
-  {
-    title: "시험기 제작",
-    description: "전 분야 시험기 주문 제작",
-    items: ["재료시험기", "안전용품시험기", "가구시험기", "자동차시험기"]
-  },
-  {
-    title: "활선접근경보기",
-    description: "전압 노출시 사용자를 감전으로부터 보호",
-    items: ["고압 감지", "경보 시스템", "안전 장비"]
-  },
-  {
-    title: "교정검사",
-    description: "KOLAS 공인교정기관 / 교정성적서 발급",
-    items: ["정밀 교정", "성적서 발급", "국가 공인"]
-  },
-  {
-    title: "시험",
-    description: "KOLAS 공인시험기관 / 시험성적서 발급",
-    items: ["안전용품 시험", "재료 시험", "인증 시험"]
-  },
-]
-
 export default function AboutPage() {
   const [aboutData, setAboutData] = useState<AboutPage | null>(null)
 
@@ -59,6 +18,103 @@ export default function AboutPage() {
     }
     fetchData()
   }, [])
+
+  // 기본값 설정
+  const defaultData = {
+    heroSince: 'Since 2004',
+    heroTitle: '한국안전용품시험연구원',
+    heroSubtitle: '국내 유일 시험기 제작·시험·교정 통합 수행기관',
+    introTitle1: '시험기 제작부터 시험·교정까지',
+    introTitle2: '원스톱 토탈 솔루션',
+    introParagraph1: '㈜큐로는 시험기 제작 전문 기업으로 대한민국 표준 KS B 5541, KS B 5521, KS B 5533 인증과 국제 표준 ISO 9001:2015, CE를 인증 받아 금속(재료) 시험기, 가구 시험기, 안전용품 시험기, 스포츠용품 시험기, 화학 관련 시험기, 자동차 관련 시험기, 챔버 등을 앞선 기술력으로 제작하고 있습니다.',
+    introParagraph2: '시험기 제작으로 축적한 기술력과 경험을 바탕으로 교정검사 및 시험 서비스 분야로 사업 영역을 확장하여, 국내외 규격에 부합하는 정밀 교정과 종합 시험을 전문적으로 수행합니다.',
+    introParagraph3: '독립된 교정·시험으로 축적된 데이터와 노하우를 활용해 시험 장비의 정확도와 효율성을 극대화하여 고객 성공을 위한 최고의 서비스를 제공합니다.',
+    companyImage: null as any,
+    badgeYears: '20년 전통',
+    badgeText: '신뢰의 파트너',
+    valuesTitle: '핵심 가치',
+    valuesSubtitle: '고객과 함께 성장하는 기업',
+    value1Title: '신뢰성',
+    value1Description: 'KOLAS 공인 기관으로서 정확하고 신뢰할 수 있는 서비스 제공',
+    value2Title: '전문성',
+    value2Description: '20년간 축적된 기술력과 노하우로 최고의 품질 보장',
+    value3Title: '고객중심',
+    value3Description: '고객의 성공을 위한 맞춤형 솔루션 제공',
+    businessTitle: '사업 분야',
+    businessSubtitle: '시험기 제작부터 시험·교정까지 토탈 서비스',
+    business1Title: '시험기 제작',
+    business1Description: '전 분야 시험기 주문 제작',
+    business1Item1: '재료시험기',
+    business1Item2: '안전용품시험기',
+    business1Item3: '가구시험기',
+    business1Item4: '자동차시험기',
+    business2Title: '활선접근경보기',
+    business2Description: '전압 노출시 사용자를 감전으로부터 보호',
+    business2Item1: '고압 감지',
+    business2Item2: '경보 시스템',
+    business2Item3: '안전 장비',
+    business3Title: '교정검사',
+    business3Description: 'KOLAS 공인교정기관 / 교정성적서 발급',
+    business3Item1: '정밀 교정',
+    business3Item2: '성적서 발급',
+    business3Item3: '국가 공인',
+    business4Title: '시험',
+    business4Description: 'KOLAS 공인시험기관 / 시험성적서 발급',
+    business4Item1: '안전용품 시험',
+    business4Item2: '재료 시험',
+    business4Item3: '인증 시험',
+    processTitle: '시험 절차',
+    processSubtitle: '간단하고 빠른 프로세스',
+    processStep1: '접수',
+    processStep2: '시험·교정',
+    processStep3: '성적서 발급',
+    processStep4: '납품',
+  }
+
+  const data = aboutData ? { ...defaultData, ...aboutData } : defaultData
+
+  const values = [
+    {
+      icon: Shield,
+      title: data.value1Title,
+      description: data.value1Description
+    },
+    {
+      icon: Target,
+      title: data.value2Title,
+      description: data.value2Description
+    },
+    {
+      icon: Users,
+      title: data.value3Title,
+      description: data.value3Description
+    },
+  ]
+
+  const businessAreas = [
+    {
+      title: data.business1Title,
+      description: data.business1Description,
+      items: [data.business1Item1, data.business1Item2, data.business1Item3, data.business1Item4].filter(Boolean)
+    },
+    {
+      title: data.business2Title,
+      description: data.business2Description,
+      items: [data.business2Item1, data.business2Item2, data.business2Item3].filter(Boolean)
+    },
+    {
+      title: data.business3Title,
+      description: data.business3Description,
+      items: [data.business3Item1, data.business3Item2, data.business3Item3].filter(Boolean)
+    },
+    {
+      title: data.business4Title,
+      description: data.business4Description,
+      items: [data.business4Item1, data.business4Item2, data.business4Item3].filter(Boolean)
+    },
+  ]
+
+  const processSteps = [data.processStep1, data.processStep2, data.processStep3, data.processStep4]
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50">
@@ -74,13 +130,13 @@ export default function AboutPage() {
           >
             <Badge className="mb-4" variant="outline">
               <Building2 className="w-3 h-3 mr-1" />
-              Since 1994
+              {data.heroSince}
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="text-gradient">한국안전용품시험연구원</span>
+              <span className="text-gradient">{data.heroTitle}</span>
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              국내 유일 시험기 제작·시험·교정 통합 수행기관
+              {data.heroSubtitle}
             </p>
           </motion.div>
         </div>
@@ -97,23 +153,13 @@ export default function AboutPage() {
               transition={{ duration: 0.8 }}
             >
               <h2 className="text-3xl font-bold mb-6">
-                시험기 제작부터 시험·교정까지<br />
-                <span className="text-gradient">원스톱 토탈 솔루션</span>
+                {data.introTitle1}<br />
+                <span className="text-gradient">{data.introTitle2}</span>
               </h2>
               <div className="space-y-4 text-muted-foreground">
-                <p>
-                  ㈜큐로는 시험기 제작 전문 기업으로 대한민국 표준 KS B 5541, KS B 5521, KS B 5533 인증과
-                  국제 표준 ISO 9001:2015, CE를 인증 받아 금속(재료) 시험기, 가구 시험기, 안전용품 시험기,
-                  스포츠용품 시험기, 화학 관련 시험기, 자동차 관련 시험기, 챔버 등을 앞선 기술력으로 제작하고 있습니다.
-                </p>
-                <p>
-                  시험기 제작으로 축적한 기술력과 경험을 바탕으로 교정검사 및 시험 서비스 분야로 사업 영역을 확장하여,
-                  국내외 규격에 부합하는 정밀 교정과 종합 시험을 전문적으로 수행합니다.
-                </p>
-                <p>
-                  독립된 교정·시험으로 축적된 데이터와 노하우를 활용해 시험 장비의 정확도와 효율성을 극대화하여
-                  고객 성공을 위한 최고의 서비스를 제공합니다.
-                </p>
+                <p>{data.introParagraph1}</p>
+                <p>{data.introParagraph2}</p>
+                <p>{data.introParagraph3}</p>
               </div>
             </motion.div>
             
@@ -125,9 +171,9 @@ export default function AboutPage() {
               className="relative"
             >
               <div className="relative h-[400px] rounded-xl overflow-hidden bg-gradient-primary-light">
-                {aboutData?.companyImage ? (
+                {data.companyImage ? (
                   <img 
-                    src={`https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${aboutData.companyImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}`}
+                    src={`https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${data.companyImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}`}
                     alt="회사 대표 이미지"
                     className="w-full h-full object-cover"
                   />
@@ -141,8 +187,8 @@ export default function AboutPage() {
                 <div className="flex items-center gap-3">
                   <Award className="w-8 h-8 text-primary" />
                   <div>
-                    <p className="font-semibold">20년 전통</p>
-                    <p className="text-sm text-muted-foreground">신뢰의 파트너</p>
+                    <p className="font-semibold">{data.badgeYears}</p>
+                    <p className="text-sm text-muted-foreground">{data.badgeText}</p>
                   </div>
                 </div>
               </div>
@@ -161,8 +207,8 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">핵심 가치</h2>
-            <p className="text-muted-foreground">고객과 함께 성장하는 기업</p>
+            <h2 className="text-3xl font-bold mb-4">{data.valuesTitle}</h2>
+            <p className="text-muted-foreground">{data.valuesSubtitle}</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -197,8 +243,8 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">사업 분야</h2>
-            <p className="text-muted-foreground">시험기 제작부터 시험·교정까지 토탈 서비스</p>
+            <h2 className="text-3xl font-bold mb-4">{data.businessTitle}</h2>
+            <p className="text-muted-foreground">{data.businessSubtitle}</p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -238,12 +284,12 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">시험 절차</h2>
-            <p className="text-muted-foreground">간단하고 빠른 프로세스</p>
+            <h2 className="text-3xl font-bold mb-4">{data.processTitle}</h2>
+            <p className="text-muted-foreground">{data.processSubtitle}</p>
           </motion.div>
 
           <div className="flex flex-col md:flex-row items-center justify-center max-w-3xl mx-auto">
-            {["접수", "시험·교정", "성적서 발급", "납품"].map((step, index) => (
+            {processSteps.map((step, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}

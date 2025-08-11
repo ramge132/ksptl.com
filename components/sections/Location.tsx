@@ -8,27 +8,51 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import NaverMapWithGeocoding from "@/components/ui/naver-map-with-geocoding"
 
-const locations = [
-  {
-    id: "headquarters",
-    name: "본사",
-    address: "경기 양주시 은현면 화합로 941번길 83",
-    phone: "031-862-8556~7",
-    hours: "평일 09:00 - 18:00",
-    mapUrl: "https://map.naver.com/v5/search/경기%20양주시%20은현면%20화합로%20941번길%2083"
-  },
-  {
-    id: "lab",
-    name: "시험소",
-    address: "경기 양주시 은현면 화합로 701-11",
-    phone: "031-858-3012",
-    hours: "평일 09:00 - 18:00",
-    mapUrl: "https://map.naver.com/v5/search/경기%20양주시%20은현면%20화합로%20701-11"
-  }
-]
+interface LocationProps {
+  locationTitle1?: string
+  locationTitle2?: string
+  locationDescription?: string
+  mainOfficeAddress?: string
+  mainOfficeTel?: string
+  testLabAddress?: string
+  testLabTel?: string
+  operatingHours1?: string
+  operatingHours2?: string
+  operatingHours3?: string
+}
 
-export default function Location() {
+export default function Location({
+  locationTitle1 = '오시는',
+  locationTitle2 = '길',
+  locationDescription = '본사 및 시험소 위치 안내',
+  mainOfficeAddress = '경기 양주시 은현면 화합로 941번길 83',
+  mainOfficeTel = '031-862-8556~7',
+  testLabAddress = '경기 양주시 은현면 화합로 701-11',
+  testLabTel = '031-858-3012',
+  operatingHours1 = '평일 09:00 - 18:00',
+  operatingHours2 = '토요일 09:00 - 13:00',
+  operatingHours3 = '일요일 및 공휴일 휴무'
+}: LocationProps) {
   const [activeLocation, setActiveLocation] = useState("headquarters")
+
+  const locations = [
+    {
+      id: "headquarters",
+      name: "본사",
+      address: mainOfficeAddress,
+      phone: mainOfficeTel,
+      hours: operatingHours1,
+      mapUrl: `https://map.naver.com/v5/search/${encodeURIComponent(mainOfficeAddress)}`
+    },
+    {
+      id: "lab",
+      name: "시험소",
+      address: testLabAddress,
+      phone: testLabTel,
+      hours: operatingHours1,
+      mapUrl: `https://map.naver.com/v5/search/${encodeURIComponent(testLabAddress)}`
+    }
+  ]
 
   return (
     <section className="py-20 bg-gradient-to-b from-background to-gray-50/50">
@@ -41,10 +65,10 @@ export default function Location() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            오시는 <span className="text-gradient">길</span>
+            {locationTitle1} <span className="text-gradient">{locationTitle2}</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            본사와 시험소에서 여러분을 기다립니다
+            {locationDescription}
           </p>
         </motion.div>
 
@@ -101,10 +125,8 @@ export default function Location() {
                         <Clock className="h-5 w-5 text-primary mt-0.5" />
                         <div>
                           <p className="font-medium mb-1">업무시간</p>
-                          <p className="text-sm text-muted-foreground">{location.hours}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            토요일, 일요일, 공휴일 휴무
-                          </p>
+                          <p className="text-sm text-muted-foreground">{operatingHours1}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{operatingHours3}</p>
                         </div>
                       </div>
                     </div>

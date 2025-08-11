@@ -35,6 +35,7 @@ export interface Award {
       _type: 'reference'
     }
   } | null
+  imageUrl?: string // 이미지 URL 추가
   order: number
   createdAt: string
 }
@@ -47,6 +48,16 @@ export interface CompanyInfo {
   whyChooseUsContent: string
   timelineContent: string
   updatedAt: string
+}
+
+export interface Timeline {
+  _id: string
+  _type: 'timeline'
+  year: string
+  title: string
+  description: string
+  icon: string
+  order: number
 }
 
 // Sanity 쿼리 함수들
@@ -153,6 +164,65 @@ export async function deleteAward(id: string): Promise<boolean> {
     return true
   } catch (error) {
     console.error('Failed to delete award:', error)
+    return false
+  }
+}
+
+// Timeline 함수들
+export async function getTimeline(): Promise<Timeline[]> {
+  try {
+    const timeline = await client.fetch(`
+      *[_type == "timeline"] | order(order asc) {
+        _id,
+        _type,
+        year,
+        title,
+        description,
+        icon,
+        order
+      }
+    `)
+    return timeline
+  } catch (error) {
+    console.error('Failed to fetch timeline:', error)
+    return []
+  }
+}
+
+export async function createTimelineItem(item: Omit<Timeline, '_id' | '_type'>): Promise<Timeline | null> {
+  try {
+    const result = await client.create({
+      _type: 'timeline',
+      ...item,
+    })
+    
+    return result as unknown as Timeline
+  } catch (error) {
+    console.error('Failed to create timeline item:', error)
+    return null
+  }
+}
+
+export async function updateTimelineItem(id: string, data: Partial<Timeline>): Promise<Timeline | null> {
+  try {
+    const result = await client
+      .patch(id)
+      .set(data)
+      .commit()
+    
+    return result as unknown as Timeline
+  } catch (error) {
+    console.error('Failed to update timeline item:', error)
+    return null
+  }
+}
+
+export async function deleteTimelineItem(id: string): Promise<boolean> {
+  try {
+    await client.delete(id)
+    return true
+  } catch (error) {
+    console.error('Failed to delete timeline item:', error)
     return false
   }
 }

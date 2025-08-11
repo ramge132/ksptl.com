@@ -16,28 +16,65 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const contactInfo = [
-  {
-    icon: Phone,
-    title: "전화 문의",
-    content: "031-862-8556~7",
-    description: "평일 09:00 - 18:00",
-  },
-  {
-    icon: Mail,
-    title: "이메일",
-    content: "ymy@quro.co.kr",
-    description: "24시간 접수 가능",
-  },
-  {
-    icon: Clock,
-    title: "처리 시간",
-    content: "24시간 내",
-    description: "견적 및 답변 제공",
-  },
-]
+interface ContactProps {
+  contactTitle1?: string
+  contactTitle2?: string
+  contactDescription?: string
+  contactPhoneTitle?: string
+  contactPhoneNumber?: string
+  contactPhoneHours?: string
+  contactEmailTitle?: string
+  contactEmailAddress?: string
+  contactEmailDescription?: string
+  contactTimeTitle?: string
+  contactTimeValue?: string
+  contactTimeDescription?: string
+  contactFormCompanyLabel?: string
+  contactFormCompanyPlaceholder?: string
+  contactFormNameLabel?: string
+  contactFormNamePlaceholder?: string
+  contactFormPhoneLabel?: string
+  contactFormPhonePlaceholder?: string
+  contactFormEmailLabel?: string
+  contactFormEmailPlaceholder?: string
+  contactFormTypeLabel?: string
+  contactFormTypePlaceholder?: string
+  contactFormMessageLabel?: string
+  contactFormMessagePlaceholder?: string
+  contactFormNotice1?: string
+  contactFormNotice2?: string
+  contactButtonText?: string
+}
 
-export default function Contact() {
+export default function Contact({
+  contactTitle1 = '문의',
+  contactTitle2 = '하기',
+  contactDescription = '시험·교정에 대한 견적 및 기술 상담을 도와드립니다',
+  contactPhoneTitle = '전화 문의',
+  contactPhoneNumber = '031-862-8556',
+  contactPhoneHours = '평일 09:00 - 18:00',
+  contactEmailTitle = '이메일',
+  contactEmailAddress = 'ymy@quro.co.kr',
+  contactEmailDescription = '24시간 접수 가능',
+  contactTimeTitle = '처리 시간',
+  contactTimeValue = '24시간 내',
+  contactTimeDescription = '견적 및 답변 제공',
+  contactFormCompanyLabel = '업체명 *',
+  contactFormCompanyPlaceholder = '업체명을 입력하세요',
+  contactFormNameLabel = '담당자명 *',
+  contactFormNamePlaceholder = '담당자명을 입력하세요',
+  contactFormPhoneLabel = '연락처 *',
+  contactFormPhonePlaceholder = '010-0000-0000',
+  contactFormEmailLabel = '이메일 *',
+  contactFormEmailPlaceholder = 'example@company.com',
+  contactFormTypeLabel = '문의 유형 *',
+  contactFormTypePlaceholder = '문의 유형을 선택하세요',
+  contactFormMessageLabel = '문의 내용 *',
+  contactFormMessagePlaceholder = '문의하실 내용을 자세히 작성해주세요',
+  contactFormNotice1 = '• 작성하신 내용은 담당자 검토 후 24시간 내 답변드립니다.',
+  contactFormNotice2 = '• 급한 문의는 대표번호 031-862-8556로 연락주시기 바랍니다.',
+  contactButtonText = '문의 보내기'
+}: ContactProps) {
   const [formData, setFormData] = useState({
     company: "",
     name: "",
@@ -47,10 +84,59 @@ export default function Contact() {
     message: "",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: contactPhoneTitle,
+      content: contactPhoneNumber,
+      description: contactPhoneHours,
+    },
+    {
+      icon: Mail,
+      title: contactEmailTitle,
+      content: contactEmailAddress,
+      description: contactEmailDescription,
+    },
+    {
+      icon: Clock,
+      title: contactTimeTitle,
+      content: contactTimeValue,
+      description: contactTimeDescription,
+    },
+  ]
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: 실제 제출 로직 구현
-    console.log("Form submitted:", formData)
+    
+    try {
+      const response = await fetch('/api/submit-inquiry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
+          to: contactEmailAddress,
+        }),
+      })
+
+      if (response.ok) {
+        alert('문의가 성공적으로 접수되었습니다. 24시간 내에 답변 드리겠습니다.')
+        setFormData({
+          company: "",
+          name: "",
+          phone: "",
+          email: "",
+          inquiryType: "",
+          message: "",
+        })
+      } else {
+        alert('문의 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+      }
+    } catch (error) {
+      console.error('Form submission error:', error)
+      alert('문의 접수 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+    }
   }
 
   const handleChange = (field: string, value: string) => {
@@ -68,10 +154,10 @@ export default function Contact() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-gradient">문의</span>하기
+            <span className="text-gradient">{contactTitle1}</span>{contactTitle2}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            시험·교정에 대한 견적 및 기술 상담을 도와드립니다
+            {contactDescription}
           </p>
         </motion.div>
 
@@ -114,20 +200,20 @@ export default function Contact() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="company">업체명 *</Label>
+                    <Label htmlFor="company">{contactFormCompanyLabel}</Label>
                     <Input
                       id="company"
-                      placeholder="업체명을 입력하세요"
+                      placeholder={contactFormCompanyPlaceholder}
                       value={formData.company}
                       onChange={(e) => handleChange("company", e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="name">담당자명 *</Label>
+                    <Label htmlFor="name">{contactFormNameLabel}</Label>
                     <Input
                       id="name"
-                      placeholder="담당자명을 입력하세요"
+                      placeholder={contactFormNamePlaceholder}
                       value={formData.name}
                       onChange={(e) => handleChange("name", e.target.value)}
                       required
@@ -137,22 +223,22 @@ export default function Contact() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">연락처 *</Label>
+                    <Label htmlFor="phone">{contactFormPhoneLabel}</Label>
                     <Input
                       id="phone"
                       type="tel"
-                      placeholder="010-0000-0000"
+                      placeholder={contactFormPhonePlaceholder}
                       value={formData.phone}
                       onChange={(e) => handleChange("phone", e.target.value)}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">이메일 *</Label>
+                    <Label htmlFor="email">{contactFormEmailLabel}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="example@company.com"
+                      placeholder={contactFormEmailPlaceholder}
                       value={formData.email}
                       onChange={(e) => handleChange("email", e.target.value)}
                       required
@@ -161,10 +247,10 @@ export default function Contact() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="inquiryType">문의 유형 *</Label>
+                  <Label htmlFor="inquiryType">{contactFormTypeLabel}</Label>
                   <Select value={formData.inquiryType} onValueChange={(value) => handleChange("inquiryType", value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="문의 유형을 선택하세요" />
+                      <SelectValue placeholder={contactFormTypePlaceholder} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="calibration">교정 견적</SelectItem>
@@ -177,10 +263,10 @@ export default function Contact() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">문의 내용 *</Label>
+                  <Label htmlFor="message">{contactFormMessageLabel}</Label>
                   <Textarea
                     id="message"
-                    placeholder="문의하실 내용을 자세히 작성해주세요"
+                    placeholder={contactFormMessagePlaceholder}
                     className="min-h-[150px]"
                     value={formData.message}
                     onChange={(e) => handleChange("message", e.target.value)}
@@ -190,14 +276,14 @@ export default function Contact() {
 
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <p className="text-sm text-muted-foreground">
-                    • 작성하신 내용은 담당자 검토 후 24시간 내 답변드립니다.<br />
-                    • 급한 문의는 대표번호 031-862-8556~7로 연락주시기 바랍니다.
+                    {contactFormNotice1}<br />
+                    {contactFormNotice2}
                   </p>
                 </div>
 
                 <Button type="submit" size="lg" className="w-full bg-gradient-primary text-white hover:opacity-90">
                   <Send className="mr-2 h-4 w-4" />
-                  문의 보내기
+                  {contactButtonText}
                 </Button>
               </form>
             </Card>

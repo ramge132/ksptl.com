@@ -5,122 +5,299 @@ export default defineType({
   title: '기관소개',
   type: 'document',
   fields: [
-    // 페이지 헤더
+    // Hero 섹션
     defineField({
-      name: 'pageTitle',
-      title: '페이지 제목',
+      name: 'heroSince',
+      title: 'Since 연도',
       type: 'string',
+      description: '예: Since 1994',
     }),
     defineField({
-      name: 'pageSubtitle',
-      title: '페이지 부제목',
+      name: 'heroTitle',
+      title: '메인 제목',
       type: 'string',
+      description: '예: 한국안전용품시험연구원',
+    }),
+    defineField({
+      name: 'heroSubtitle',
+      title: '부제목',
+      type: 'string',
+      description: '예: 국내 유일 시험기 제작·시험·교정 통합 수행기관',
     }),
     
-    // 회사 소개
+    // 소개 섹션
     defineField({
-      name: 'companyName',
-      title: '회사명',
+      name: 'introTitle1',
+      title: '소개 제목 첫 번째 줄',
       type: 'string',
+      description: '예: 시험기 제작부터 시험·교정까지',
     }),
     defineField({
-      name: 'companyDescription',
-      title: '회사 소개',
+      name: 'introTitle2',
+      title: '소개 제목 두 번째 줄 (강조)',
+      type: 'string',
+      description: '예: 원스톱 토탈 솔루션',
+    }),
+    defineField({
+      name: 'introParagraph1',
+      title: '소개 문단 1',
       type: 'text',
+      description: '회사 소개 첫 번째 문단',
+    }),
+    defineField({
+      name: 'introParagraph2',
+      title: '소개 문단 2',
+      type: 'text',
+      description: '회사 소개 두 번째 문단',
+    }),
+    defineField({
+      name: 'introParagraph3',
+      title: '소개 문단 3',
+      type: 'text',
+      description: '회사 소개 세 번째 문단',
     }),
     defineField({
       name: 'companyImage',
-      title: '회사 대표 이미지',
+      title: '대표 사진',
       type: 'image',
       options: {
         hotspot: true,
       },
     }),
-    
-    // 비전과 미션
     defineField({
-      name: 'visionTitle',
-      title: '비전 제목',
+      name: 'badgeYears',
+      title: '연혁 연수',
       type: 'string',
+      description: '예: 20년 전통',
     }),
     defineField({
-      name: 'visionContent',
-      title: '비전 내용',
-      type: 'text',
-    }),
-    defineField({
-      name: 'missionTitle',
-      title: '미션 제목',
+      name: 'badgeText',
+      title: '연혁 텍스트',
       type: 'string',
-    }),
-    defineField({
-      name: 'missionContent',
-      title: '미션 내용',
-      type: 'text',
+      description: '예: 신뢰의 파트너',
     }),
     
-    // 사업 분야
+    // 핵심 가치 섹션
+    defineField({
+      name: 'valuesTitle',
+      title: '핵심 가치 제목',
+      type: 'string',
+      description: '예: 핵심 가치',
+    }),
+    defineField({
+      name: 'valuesSubtitle',
+      title: '핵심 가치 부제목',
+      type: 'string',
+      description: '예: 고객과 함께 성장하는 기업',
+    }),
+    defineField({
+      name: 'value1Title',
+      title: '가치 1 제목',
+      type: 'string',
+      description: '예: 신뢰성',
+    }),
+    defineField({
+      name: 'value1Description',
+      title: '가치 1 설명',
+      type: 'text',
+      description: '예: KOLAS 공인 기관으로서 정확하고 신뢰할 수 있는 서비스 제공',
+    }),
+    defineField({
+      name: 'value2Title',
+      title: '가치 2 제목',
+      type: 'string',
+      description: '예: 전문성',
+    }),
+    defineField({
+      name: 'value2Description',
+      title: '가치 2 설명',
+      type: 'text',
+      description: '예: 20년간 축적된 기술력과 노하우로 최고의 품질 보장',
+    }),
+    defineField({
+      name: 'value3Title',
+      title: '가치 3 제목',
+      type: 'string',
+      description: '예: 고객중심',
+    }),
+    defineField({
+      name: 'value3Description',
+      title: '가치 3 설명',
+      type: 'text',
+      description: '예: 고객의 성공을 위한 맞춤형 솔루션 제공',
+    }),
+    
+    // 사업 분야 섹션
     defineField({
       name: 'businessTitle',
       title: '사업 분야 제목',
       type: 'string',
+      description: '예: 사업 분야',
     }),
     defineField({
-      name: 'businessAreas',
-      title: '사업 분야 목록',
-      type: 'array',
-      of: [{
-        type: 'object',
-        fields: [
-          {name: 'title', type: 'string', title: '분야명'},
-          {name: 'description', type: 'text', title: '설명'},
-          {name: 'image', type: 'image', title: '이미지', options: {hotspot: true}}
-        ]
-      }]
+      name: 'businessSubtitle',
+      title: '사업 분야 부제목',
+      type: 'string',
+      description: '예: 시험기 제작부터 시험·교정까지 토탈 서비스',
     }),
     
-    // 인증 및 자격
+    // 사업 분야 1
     defineField({
-      name: 'certificationsTitle',
-      title: '인증 섹션 제목',
+      name: 'business1Title',
+      title: '사업 분야 1 제목',
+      type: 'string',
+      description: '예: 시험기 제작',
+    }),
+    defineField({
+      name: 'business1Description',
+      title: '사업 분야 1 설명',
+      type: 'string',
+      description: '예: 전 분야 시험기 주문 제작',
+    }),
+    defineField({
+      name: 'business1Item1',
+      title: '사업 분야 1 항목 1',
       type: 'string',
     }),
     defineField({
-      name: 'certifications',
-      title: '인증 목록',
-      type: 'array',
-      of: [{
-        type: 'object',
-        fields: [
-          {name: 'name', type: 'string', title: '인증명'},
-          {name: 'number', type: 'string', title: '인증번호'},
-          {name: 'issuer', type: 'string', title: '발급기관'},
-          {name: 'date', type: 'date', title: '취득일자'},
-          {name: 'image', type: 'image', title: '인증서 이미지'}
-        ]
-      }]
+      name: 'business1Item2',
+      title: '사업 분야 1 항목 2',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business1Item3',
+      title: '사업 분야 1 항목 3',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business1Item4',
+      title: '사업 분야 1 항목 4',
+      type: 'string',
     }),
     
-    // 주소 및 연락처
+    // 사업 분야 2
     defineField({
-      name: 'headquarters',
-      title: '본사 정보',
-      type: 'object',
-      fields: [
-        {name: 'address', type: 'string', title: '주소'},
-        {name: 'phone', type: 'string', title: '전화번호'},
-        {name: 'fax', type: 'string', title: '팩스번호'}
-      ]
+      name: 'business2Title',
+      title: '사업 분야 2 제목',
+      type: 'string',
+      description: '예: 활선접근경보기',
     }),
     defineField({
-      name: 'testLab',
-      title: '시험소 정보',
-      type: 'object',
-      fields: [
-        {name: 'address', type: 'string', title: '주소'},
-        {name: 'phone', type: 'string', title: '전화번호'},
-        {name: 'fax', type: 'string', title: '팩스번호'}
-      ]
+      name: 'business2Description',
+      title: '사업 분야 2 설명',
+      type: 'string',
+      description: '예: 전압 노출시 사용자를 감전으로부터 보호',
+    }),
+    defineField({
+      name: 'business2Item1',
+      title: '사업 분야 2 항목 1',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business2Item2',
+      title: '사업 분야 2 항목 2',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business2Item3',
+      title: '사업 분야 2 항목 3',
+      type: 'string',
+    }),
+    
+    // 사업 분야 3
+    defineField({
+      name: 'business3Title',
+      title: '사업 분야 3 제목',
+      type: 'string',
+      description: '예: 교정검사',
+    }),
+    defineField({
+      name: 'business3Description',
+      title: '사업 분야 3 설명',
+      type: 'string',
+      description: '예: KOLAS 공인교정기관 / 교정성적서 발급',
+    }),
+    defineField({
+      name: 'business3Item1',
+      title: '사업 분야 3 항목 1',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business3Item2',
+      title: '사업 분야 3 항목 2',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business3Item3',
+      title: '사업 분야 3 항목 3',
+      type: 'string',
+    }),
+    
+    // 사업 분야 4
+    defineField({
+      name: 'business4Title',
+      title: '사업 분야 4 제목',
+      type: 'string',
+      description: '예: 시험',
+    }),
+    defineField({
+      name: 'business4Description',
+      title: '사업 분야 4 설명',
+      type: 'string',
+      description: '예: KOLAS 공인시험기관 / 시험성적서 발급',
+    }),
+    defineField({
+      name: 'business4Item1',
+      title: '사업 분야 4 항목 1',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business4Item2',
+      title: '사업 분야 4 항목 2',
+      type: 'string',
+    }),
+    defineField({
+      name: 'business4Item3',
+      title: '사업 분야 4 항목 3',
+      type: 'string',
+    }),
+    
+    // 시험 절차 섹션
+    defineField({
+      name: 'processTitle',
+      title: '시험 절차 제목',
+      type: 'string',
+      description: '예: 시험 절차',
+    }),
+    defineField({
+      name: 'processSubtitle',
+      title: '시험 절차 부제목',
+      type: 'string',
+      description: '예: 간단하고 빠른 프로세스',
+    }),
+    defineField({
+      name: 'processStep1',
+      title: '절차 1',
+      type: 'string',
+      description: '예: 접수',
+    }),
+    defineField({
+      name: 'processStep2',
+      title: '절차 2',
+      type: 'string',
+      description: '예: 시험·교정',
+    }),
+    defineField({
+      name: 'processStep3',
+      title: '절차 3',
+      type: 'string',
+      description: '예: 성적서 발급',
+    }),
+    defineField({
+      name: 'processStep4',
+      title: '절차 4',
+      type: 'string',
+      description: '예: 납품',
     }),
   ],
 })

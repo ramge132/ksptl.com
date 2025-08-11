@@ -112,6 +112,60 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+    
+    if (!id) {
+      return NextResponse.json({ error: 'ID is required' }, { status: 400 })
+    }
+    
+    const data = await request.json()
+    console.log('Updating award with ID:', id, 'Data:', data)
+    
+    const updateData: any = {
+      title: data.title,
+      description: data.description,
+      order: data.order || 0
+    }
+    
+    // imageUrl이 있으면 image 객체로 변환
+    if (data.imageUrl) {
+      // Sanity CDN URL에서 asset reference 추출
+      const match = data.imageUrl.match(/\/([^\/]+)\.(jpg|png|webp)/)
+      if (match) {
+        const assetId = match[1].replace(/-/g, '')
+        updateData.image = {
+          _type: 'image',
+          asset: {
+            _type: 'reference',
+            _ref: `image-${assetId}-${match[2]}`
+          }
+        }
+      }
+    } else if (data.image) {
+      updateData.image = data.image
+    }
+    
+    console.log('Final update data:', updateData)
+    
+    const result = await serverClient
+      .patch(id)
+      .set(updateData)
+      .commit()
+    
+    console.log('Update result:', result)
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('Failed to update award - Full error:', error)
+    return NextResponse.json({ 
+      error: 'Failed to update award', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    }, { status: 500 })
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

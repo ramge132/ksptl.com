@@ -1,60 +1,101 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Calendar, Award, Rocket, Building, Target, Star } from "lucide-react"
+import { Timeline as TimelineType } from "@/lib/sanity"
 
-const timelineData = [
+// 아이콘 매핑
+const iconMap = {
+  Building: Building,
+  Award: Award,
+  Star: Star,
+  Rocket: Rocket,
+  Target: Target,
+  Calendar: Calendar,
+}
+
+// 기본 데이터 (Sanity에서 데이터를 가져올 수 없을 때 사용)
+const defaultTimelineData = [
   {
     year: "1994",
     title: "㈜큐로 설립",
     description: "시험기 제작 전문 기업으로 출발",
-    icon: Building,
+    icon: "Building",
   },
   {
     year: "2000",
     title: "KS 인증 획득",
     description: "KS B 5521, 5533, 5541 인증 취득",
-    icon: Award,
+    icon: "Award",
   },
   {
     year: "2005",
     title: "ISO 9001 인증",
     description: "국제 품질경영시스템 인증 획득",
-    icon: Star,
+    icon: "Star",
   },
   {
     year: "2010",
     title: "연구개발전담부서 인정",
     description: "기술 혁신을 위한 R&D 부서 설립",
-    icon: Rocket,
+    icon: "Rocket",
   },
   {
     year: "2015",
     title: "시험소 확장",
     description: "양주시 화합로에 독립 시험소 개소",
-    icon: Building,
+    icon: "Building",
   },
   {
     year: "2020",
     title: "KOLAS 공인기관 인정",
     description: "KC23-420 교정기관 인정 획득",
-    icon: Award,
+    icon: "Award",
   },
   {
     year: "2023",
     title: "통합 서비스 출범",
     description: "시험기 제작·시험·교정 원스톱 서비스",
-    icon: Target,
+    icon: "Target",
   },
   {
     year: "2024",
     title: "한국안전용품시험연구원",
     description: "공인 시험·교정 전문기관으로 도약",
-    icon: Star,
+    icon: "Star",
   },
 ]
 
 export default function Timeline() {
+  const [timelineData, setTimelineData] = useState(defaultTimelineData)
+  const [landingPage, setLandingPage] = useState<any>(null)
+
+  useEffect(() => {
+    // Sanity에서 연혁 데이터 가져오기
+    fetch('/api/sanity/timeline')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          setTimelineData(data)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch timeline data:', err)
+      })
+    
+    // 랜딩페이지 데이터 (제목/설명) 가져오기
+    fetch('/api/sanity/landing')
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setLandingPage(data)
+        }
+      })
+      .catch(err => {
+        console.error('Failed to fetch landing page data:', err)
+      })
+  }, [])
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -66,10 +107,10 @@ export default function Timeline() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-gradient">20년</span>의 역사
+            <span className="text-gradient">{landingPage?.timelineTitle1 || '20년'}</span>{landingPage?.timelineTitle2 || '의 역사'}
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            끊임없는 혁신과 도전으로 성장해온 발자취
+            {landingPage?.timelineDescription || '끊임없는 혁신과 도전으로 성장해온 발자취'}
           </p>
         </motion.div>
 
@@ -102,7 +143,10 @@ export default function Timeline() {
                       }`}
                     >
                       <div className="p-2 rounded-lg bg-gradient-primary-light">
-                        <item.icon className="h-5 w-5 text-primary" />
+                        {(() => {
+                          const IconComponent = iconMap[item.icon as keyof typeof iconMap] || Building
+                          return <IconComponent className="h-5 w-5 text-primary" />
+                        })()}
                       </div>
                       <div>
                         <span className="text-2xl font-bold text-gradient">{item.year}</span>

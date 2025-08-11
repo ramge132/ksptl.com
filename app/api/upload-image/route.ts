@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json({ 
-      asset: {
+      url: asset.url,
+      image: {
         _type: 'image',
         asset: {
           _type: 'reference',

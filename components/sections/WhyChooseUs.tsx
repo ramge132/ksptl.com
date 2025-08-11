@@ -10,7 +10,59 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const WhyChooseUs = () => {
+interface WhyChooseUsProps {
+  whyTitle1?: string
+  whyTitle2?: string
+  whyTitle3?: string
+  whyTitle4?: string
+  whyBottomText1?: string
+  whyBottomText2?: string
+  whyCard1Highlight?: string
+  whyCard1Title?: string
+  whyCard1Description?: string
+  whyCard2Highlight?: string
+  whyCard2Title?: string
+  whyCard2Description?: string
+  whyCard3Highlight?: string
+  whyCard3Title?: string
+  whyCard3Description?: string
+  whyCard4Highlight?: string
+  whyCard4Title?: string
+  whyCard4Description?: string
+  whyCard5Highlight?: string
+  whyCard5Title?: string
+  whyCard5Description?: string
+  whyCard6Highlight?: string
+  whyCard6Title?: string
+  whyCard6Description?: string
+}
+
+const WhyChooseUs = ({
+  whyTitle1 = "왜",
+  whyTitle2 = "한국안전용품시험연구원",
+  whyTitle3 = "을",
+  whyTitle4 = "선택해야 할까요?",
+  whyBottomText1 = "국내 유일의 시험기 제작 전문기업이자 KOLAS 공인 시험·교정 기관으로서",
+  whyBottomText2 = "고객 성공을 위한 최고의 서비스를 제공합니다",
+  whyCard1Highlight = "One-Stop Solution",
+  whyCard1Title = "국내 유일 원스톱 서비스",
+  whyCard1Description = "시험기 제작부터 교정·시험까지 모든 과정을 한 곳에서 해결할 수 있는 국내 유일의 업체입니다.",
+  whyCard2Highlight = "Government Certified",
+  whyCard2Title = "KOLAS 공인기관",
+  whyCard2Description = "KOLAS 공인교정기관(KC23-420) 및 공인시험기관으로서 국가가 인정한 신뢰할 수 있는 기관입니다.",
+  whyCard3Highlight = "Proven Expertise",
+  whyCard3Title = "축적된 기술력",
+  whyCard3Description = "시험기 제작 전문 기업으로서 수십 년간 축적한 기술력과 경험을 바탕으로 정확한 시험·교정을 제공합니다.",
+  whyCard4Highlight = "Precision Guaranteed",
+  whyCard4Title = "정밀한 교정·시험",
+  whyCard4Description = "국내외 규격에 부합하는 정밀 교정과 종합 시험으로 최고의 정확도를 보장합니다.",
+  whyCard5Highlight = "International Standards",
+  whyCard5Title = "다양한 국제 인증",
+  whyCard5Description = "KS, ISO 9001:2015, CE 등 다양한 국제 인증을 보유하여 글로벌 표준에 부합하는 서비스를 제공합니다.",
+  whyCard6Highlight = "Maximized Efficiency",
+  whyCard6Title = "효율성 극대화",
+  whyCard6Description = "독립된 교정·시험으로 축적된 데이터와 노하우를 활용해 시험 장비의 효율성을 극대화합니다.",
+}: WhyChooseUsProps) => {
   const titleRef = useRef<HTMLDivElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
@@ -164,42 +216,53 @@ const WhyChooseUs = () => {
     }
 
   }, []);
+  
+  // 아이콘 매핑
+  const icons = [
+    <Shield className="w-8 h-8 text-blue-600" />,
+    <Award className="w-8 h-8 text-blue-600" />,
+    <Cog className="w-8 h-8 text-blue-600" />,
+    <Target className="w-8 h-8 text-blue-600" />,
+    <CheckCircle className="w-8 h-8 text-blue-600" />,
+    <Zap className="w-8 h-8 text-blue-600" />
+  ];
+  
   const reasons = [
     {
-      icon: <Shield className="w-8 h-8 text-blue-600" />,
-      title: "국내 유일 원스톱 서비스",
-      description: "시험기 제작부터 교정·시험까지 모든 과정을 한 곳에서 해결할 수 있는 국내 유일의 업체입니다.",
-      highlight: "One-Stop Solution"
+      icon: icons[0],
+      title: whyCard1Title,
+      description: whyCard1Description,
+      highlight: whyCard1Highlight
     },
     {
-      icon: <Award className="w-8 h-8 text-blue-600" />,
-      title: "KOLAS 공인기관",
-      description: "KOLAS 공인교정기관(KC23-420) 및 공인시험기관으로서 국가가 인정한 신뢰할 수 있는 기관입니다.",
-      highlight: "Government Certified"
+      icon: icons[1],
+      title: whyCard2Title,
+      description: whyCard2Description,
+      highlight: whyCard2Highlight
     },
     {
-      icon: <Cog className="w-8 h-8 text-blue-600" />,
-      title: "축적된 기술력",
-      description: "시험기 제작 전문 기업으로서 수십 년간 축적한 기술력과 경험을 바탕으로 정확한 시험·교정을 제공합니다.",
-      highlight: "Proven Expertise"
+      icon: icons[2],
+      title: whyCard3Title,
+      description: whyCard3Description,
+      highlight: whyCard3Highlight
     },
     {
-      icon: <Target className="w-8 h-8 text-blue-600" />,
-      title: "정밀한 교정·시험",
-      description: "국내외 규격에 부합하는 정밀 교정과 종합 시험으로 최고의 정확도를 보장합니다.",
-      highlight: "Precision Guaranteed"
+      icon: icons[3],
+      title: whyCard4Title,
+      description: whyCard4Description,
+      highlight: whyCard4Highlight
     },
     {
-      icon: <CheckCircle className="w-8 h-8 text-blue-600" />,
-      title: "다양한 국제 인증",
-      description: "KS, ISO 9001:2015, CE 등 다양한 국제 인증을 보유하여 글로벌 표준에 부합하는 서비스를 제공합니다.",
-      highlight: "International Standards"
+      icon: icons[4],
+      title: whyCard5Title,
+      description: whyCard5Description,
+      highlight: whyCard5Highlight
     },
     {
-      icon: <Zap className="w-8 h-8 text-blue-600" />,
-      title: "효율성 극대화",
-      description: "독립된 교정·시험으로 축적된 데이터와 노하우를 활용해 시험 장비의 효율성을 극대화합니다.",
-      highlight: "Maximized Efficiency"
+      icon: icons[5],
+      title: whyCard6Title,
+      description: whyCard6Description,
+      highlight: whyCard6Highlight
     }
   ];
 
@@ -215,24 +278,24 @@ const WhyChooseUs = () => {
       <div className="container mx-auto px-4 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
-          <div ref={titleRef} className="mb-6">
-            <h2 className="text-4xl md:text-5xl font-bold font-title leading-tight">
-              <div className="title-word block mb-2 text-gray-900">왜</div>
-              <div className="title-word block mb-2">
-                <span className="inline-flex items-baseline whitespace-nowrap break-keep gap-0 align-middle" style={{ wordBreak: "keep-all" }}>
-                  <GradientTextNew
-                    colors={["#1B64DA", "#0064FF", "#33A1FF", "#0064FF", "#1B64DA"]}
-                    animationSpeed={5}
-                    showBorder={false}
-                    className="inline-block align-baseline"
-                  >
-                    한국안전용품시험연구원
-                  </GradientTextNew><span className="inline-block align-baseline text-gray-900">을</span>
-                </span>
-              </div>
-              <div className="title-word block text-gray-900">선택해야 할까요?</div>
-            </h2>
-          </div>
+        <div ref={titleRef} className="mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold font-title leading-tight">
+            <div className="title-word block mb-2 text-gray-900">{whyTitle1}</div>
+            <div className="title-word block mb-2">
+              <span className="inline-flex items-baseline whitespace-nowrap break-keep gap-0 align-middle" style={{ wordBreak: "keep-all" }}>
+                <GradientTextNew
+                  colors={["#1B64DA", "#0064FF", "#33A1FF", "#0064FF", "#1B64DA"]}
+                  animationSpeed={5}
+                  showBorder={false}
+                  className="inline-block align-baseline"
+                >
+                  {whyTitle2}
+                </GradientTextNew><span className="inline-block align-baseline text-gray-900">{whyTitle3}</span>
+              </span>
+            </div>
+            <div className="title-word block text-gray-900">{whyTitle4}</div>
+          </h2>
+        </div>
           
         </div>
 
@@ -280,9 +343,9 @@ const WhyChooseUs = () => {
         {/* Call to Action */}
         <div className="text-center mt-16">
           <p className="text-lg text-gray-600 mb-16">
-            국내 유일의 시험기 제작 전문기업이자 KOLAS 공인 시험·교정 기관으로서
+            {whyBottomText1}
             <br />
-            <span className="text-blue-600 font-semibold">고객 성공을 위한 최고의 서비스</span>를 제공합니다
+            <span className="text-blue-600 font-semibold">{whyBottomText2}</span>
           </p>
         </div>
       </div>

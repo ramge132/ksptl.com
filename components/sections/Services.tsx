@@ -12,52 +12,153 @@ import {
 } from "lucide-react"
 import { Card } from "@/components/ui/card"
 
-const services = [
-  {
-    icon: Shield,
-    title: "마스크",
-    description: "방진, 방독, 송기마스크 시험",
-    items: ["강도 신장율 및 영구변형율 시험", "투시부의 내충격성 시험", "여과재 질량 시험"],
-    additionalCount: 5
-  },
-  {
-    icon: Footprints,
-    title: "안전화",
-    description: "가죽제, 고무제, 정전기안전화, 절연화",
-    items: ["내압박성 시험", "내충격성 시험", "박리저항시험"],
-    additionalCount: 77
-  },
-  {
-    icon: Shirt,
-    title: "보호복",
-    description: "방열복, 화학물질용 보호복",
-    items: ["난연성 시험", "인장강도 시험", "내열성 시험"],
-    additionalCount: 16
-  },
-  {
-    icon: AlertTriangle,
-    title: "추락방지대",
-    description: "추락방지대 전문 시험",
-    items: ["구조검사", "죔줄 인장강도 시험", "동하중성능 시험"],
-    additionalCount: 12
-  },
-  {
-    icon: HardHat,
-    title: "안전모",
-    description: "AB형, AE형, ABE형",
-    items: ["내관통성 시험", "충격흡수성 시험", "난연성 시험"],
-    additionalCount: 4
-  },
-  {
-    icon: Wrench,
-    title: "안전대 / 안전장갑",
-    description: "벨트식, 그네식, 안전블럭, 내전압용",
-    items: ["구조검사", "인장강도 시험", "충격흡수"],
-    additionalCount: 95
-  }
-]
+interface ServicesProps {
+  servicesTitle1?: string
+  servicesTitle2?: string
+  servicesDescription1?: string
+  servicesDescription2?: string
+  servicesButtonText?: string
+  
+  service1Title?: string
+  service1Description?: string
+  service1Item1?: string
+  service1Item2?: string
+  service1Item3?: string
+  service1Count?: number
+  
+  service2Title?: string
+  service2Description?: string
+  service2Item1?: string
+  service2Item2?: string
+  service2Item3?: string
+  service2Count?: number
+  
+  service3Title?: string
+  service3Description?: string
+  service3Item1?: string
+  service3Item2?: string
+  service3Item3?: string
+  service3Count?: number
+  
+  service4Title?: string
+  service4Description?: string
+  service4Item1?: string
+  service4Item2?: string
+  service4Item3?: string
+  service4Count?: number
+  
+  service5Title?: string
+  service5Description?: string
+  service5Item1?: string
+  service5Item2?: string
+  service5Item3?: string
+  service5Count?: number
+  
+  service6Title?: string
+  service6Description?: string
+  service6Item1?: string
+  service6Item2?: string
+  service6Item3?: string
+  service6Count?: number
+}
 
-export default function Services() {
+export default function Services({
+  servicesTitle1 = "시험·교정",
+  servicesTitle2 = "서비스",
+  servicesDescription1 = "KOLAS 인증 시험 기관으로 총 227종의 안전용품 시험이 가능합니다.",
+  servicesDescription2 = "정확하고 신뢰할 수 있는 시험 서비스를 제공합니다",
+  servicesButtonText = "자세히 보기",
+  
+  service1Title = "마스크",
+  service1Description = "방진, 방독, 송기마스크 시험",
+  service1Item1 = "강도 신장율 및 영구변형율 시험",
+  service1Item2 = "투시부의 내충격성 시험",
+  service1Item3 = "여과재 질량 시험",
+  service1Count = 5,
+  
+  service2Title = "안전화",
+  service2Description = "가죽제, 고무제, 정전기안전화, 절연화",
+  service2Item1 = "내압박성 시험",
+  service2Item2 = "내충격성 시험",
+  service2Item3 = "박리저항시험",
+  service2Count = 77,
+  
+  service3Title = "보호복",
+  service3Description = "방열복, 화학물질용 보호복",
+  service3Item1 = "난연성 시험",
+  service3Item2 = "인장강도 시험",
+  service3Item3 = "내열성 시험",
+  service3Count = 16,
+  
+  service4Title = "추락방지대",
+  service4Description = "추락방지대 전문 시험",
+  service4Item1 = "구조검사",
+  service4Item2 = "죔줄 인장강도 시험",
+  service4Item3 = "동하중성능 시험",
+  service4Count = 12,
+  
+  service5Title = "안전모",
+  service5Description = "AB형, AE형, ABE형",
+  service5Item1 = "내관통성 시험",
+  service5Item2 = "충격흡수성 시험",
+  service5Item3 = "난연성 시험",
+  service5Count = 4,
+  
+  service6Title = "안전대 / 안전장갑",
+  service6Description = "벨트식, 그네식, 안전블럭, 내전압용",
+  service6Item1 = "구조검사",
+  service6Item2 = "인장강도 시험",
+  service6Item3 = "충격흡수",
+  service6Count = 95,
+}: ServicesProps) {
+  // 아이콘 매핑
+  const icons = [Shield, Footprints, Shirt, AlertTriangle, HardHat, Wrench];
+  
+  const services = [
+    {
+      icon: icons[0],
+      title: service1Title,
+      description: service1Description,
+      items: [service1Item1, service1Item2, service1Item3],
+      additionalCount: service1Count
+    },
+    {
+      icon: icons[1],
+      title: service2Title,
+      description: service2Description,
+      items: [service2Item1, service2Item2, service2Item3],
+      additionalCount: service2Count
+    },
+    {
+      icon: icons[2],
+      title: service3Title,
+      description: service3Description,
+      items: [service3Item1, service3Item2, service3Item3],
+      additionalCount: service3Count
+    },
+    {
+      icon: icons[3],
+      title: service4Title,
+      description: service4Description,
+      items: [service4Item1, service4Item2, service4Item3],
+      additionalCount: service4Count
+    },
+    {
+      icon: icons[4],
+      title: service5Title,
+      description: service5Description,
+      items: [service5Item1, service5Item2, service5Item3],
+      additionalCount: service5Count
+    },
+    {
+      icon: icons[5],
+      title: service6Title,
+      description: service6Description,
+      items: [service6Item1, service6Item2, service6Item3],
+      additionalCount: service6Count
+    }
+  ];
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -69,12 +170,12 @@ export default function Services() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-gradient">시험·교정</span> 서비스
+            <span className="text-gradient">{servicesTitle1}</span> {servicesTitle2}
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            KOLAS 인증 시험 기관으로 <span className="font-semibold text-foreground">총 227종</span>의 안전용품 시험이 가능합니다.
+            {servicesDescription1}
             <br />
-            정확하고 신뢰할 수 있는 시험 서비스를 제공합니다
+            {servicesDescription2}
           </p>
         </motion.div>
 
@@ -135,7 +236,7 @@ export default function Services() {
                             -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
               
               {/* Text */}
-              <span className="relative z-10">자세히 보기</span>
+              <span className="relative z-10">{servicesButtonText}</span>
               
               {/* Circle with arrow */}
               <div className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full flex items-center justify-center
