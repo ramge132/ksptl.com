@@ -21,6 +21,14 @@ export async function POST(request: NextRequest) {
         <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <h3 style="margin: 0 0 10px 0; color: #1e40af;">시험 항목</h3>
           <p style="margin: 0; font-size: 16px;"><strong>${data.testItem.category}</strong> - ${data.testItem.name}</p>
+          ${data.testItems && data.testItems.length > 0 ? `
+            <div style="margin-top: 10px;">
+              <p style="margin: 0 0 5px 0; font-weight: bold;">선택한 세부 시험 항목:</p>
+              <ul style="margin: 5px 0; padding-left: 20px;">
+                ${data.testItems.map((item: string) => `<li>${item}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
         </div>
         
         <h3 style="color: #374151; margin-top: 30px;">신청업체 정보</h3>
@@ -28,22 +36,6 @@ export async function POST(request: NextRequest) {
           <tr>
             <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; width: 35%;">업체명</td>
             <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.companyName}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">사업자등록번호</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.businessNumber}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">대표자</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.representative}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">업태</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.businessType || '-'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">업종</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.industry || '-'}</td>
           </tr>
           <tr>
             <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">주소</td>
@@ -61,14 +53,6 @@ export async function POST(request: NextRequest) {
             <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">휴대폰</td>
             <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.mobile || '-'}</td>
           </tr>
-        </table>
-
-        <h3 style="color: #374151; margin-top: 30px;">성적서 발급처</h3>
-        <table style="border-collapse: collapse; width: 100%; max-width: 600px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; width: 35%;">부서명</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.department || '-'}</td>
-          </tr>
           <tr>
             <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">E-mail</td>
             <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.email}</td>
@@ -76,6 +60,16 @@ export async function POST(request: NextRequest) {
           <tr>
             <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">신청인</td>
             <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.applicantName}</td>
+          </tr>
+        </table>
+
+        <h3 style="color: #374151; margin-top: 30px;">성적서 타입</h3>
+        <table style="border-collapse: collapse; width: 100%; max-width: 600px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+          <tr>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; width: 35%;">성적서 종류</td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb;">
+              ${data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'}
+            </td>
           </tr>
         </table>
 
@@ -91,8 +85,6 @@ export async function POST(request: NextRequest) {
               <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: left;">제품명</th>
               <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: left;">제조사</th>
               <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: center;">모델명</th>
-              <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: center;">수량</th>
-              <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: center;">시료번호</th>
               <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: left;">비고</th>
             </tr>
           </thead>
@@ -101,9 +93,7 @@ export async function POST(request: NextRequest) {
               <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f9fafb'};">
                 <td style="padding: 12px; border: 1px solid #e5e7eb;">${sample.name}</td>
                 <td style="padding: 12px; border: 1px solid #e5e7eb;">${sample.manufacturer}</td>
-                <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">${sample.model || '-'}</td>
-                <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">${sample.quantity}개</td>
-                <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">${sample.serialNumber || '-'}</td>
+                <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">${sample.model}</td>
                 <td style="padding: 12px; border: 1px solid #e5e7eb;">${sample.notes || '-'}</td>
               </tr>
             `).join('')}
@@ -117,8 +107,13 @@ export async function POST(request: NextRequest) {
             <td style="padding: 12px; border: 1px solid #e5e7eb;">
               ${data.receiptMethod === 'visit' ? '방문' :
                 data.receiptMethod === 'delivery' ? '택배' :
-                data.receiptMethod === 'pickup' ? '픽업' :
                 data.receiptMethod === 'other' ? data.otherMethod : data.receiptMethod}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">시료 반품 방법</td>
+            <td style="padding: 12px; border: 1px solid #e5e7eb;">
+              ${data.returnMethod === 'return' ? '반품 (착불)' : '폐기 (폐기 비용 발생)'}
             </td>
           </tr>
           <tr>
@@ -210,8 +205,12 @@ export async function POST(request: NextRequest) {
               <ul>
                 <li><strong>업체명:</strong> ${data.companyName}</li>
                 <li><strong>시험 항목:</strong> ${data.testItem.category} - ${data.testItem.name}</li>
+                ${data.testItems && data.testItems.length > 0 ? `
+                  <li><strong>선택한 세부 시험:</strong> ${data.testItems.length}개 항목</li>
+                ` : ''}
+                <li><strong>성적서 타입:</strong> ${data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'}</li>
                 <li><strong>접수일시:</strong> ${new Date().toLocaleString('ko-KR')}</li>
-                <li><strong>시료 수량:</strong> ${data.samples.reduce((total: number, sample: any) => total + sample.quantity, 0)}개</li>
+                <li><strong>시료 개수:</strong> ${data.samples.length}개</li>
               </ul>
 
               <p>빠른 시일 내에 담당자가 연락드릴 예정입니다.</p>

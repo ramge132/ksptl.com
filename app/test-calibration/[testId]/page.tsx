@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import Swal from 'sweetalert2'
@@ -22,7 +23,8 @@ import {
   Truck,
   Send,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ClipboardCheck
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -90,42 +92,335 @@ const testItemsMap: Record<string, { name: string, category: string }> = {
   'harness-block': { name: '안전블럭', category: '안전대' }
 }
 
+// 시험 항목별 세부 시험 목록
+const testDetailItems: Record<string, string[]> = {
+  'mask-dust': [
+    '강도 신장율 및 영구변형율 시험',
+    '투시부의 내충격성 시험',
+    '여과재 질량 시험'
+  ],
+  'mask-gas': [
+    '강도 신장율 및 영구변형율 시험',
+    '투시부의 내충격성 시험',
+    '정화통 질량 시험'
+  ],
+  'mask-air': [
+    '호스 및 중압호스 변형 및 구부림 시험',
+    '호스 및 중압호스 연결부 인장 시험'
+  ],
+  'shoe-leather': [
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답발성 시험',
+    '박리저항시험',
+    '결창인장강도 시험',
+    '결창신장율시험',
+    '내유부피변화율 시험',
+    '내유경도변화율 시험',
+    '온면결렬 시험',
+    '선심의 내부식성 시험',
+    '내답판 내부식성 시험',
+    '가죽인열강도 시험'
+  ],
+  'shoe-rubber': [
+    '고무 인장강도 시험',
+    '고무 내유부피변화율 시험',
+    '안감 및 포파일 시험',
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답판 내부식성 시험',
+    '선심의 내부식성 시험',
+    '내답발성 시험'
+  ],
+  'shoe-static-leather': [
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답발성 시험',
+    '박리저항시험',
+    '결창인장강도 시험',
+    '결창신장율시험',
+    '내유부피변화율 시험',
+    '내유경도변화율 시험',
+    '온면결렬 시험',
+    '선심의 내부식성 시험',
+    '내답판 내부식성 시험',
+    '가죽인열강도 시험',
+    '대전방지 성능 시험'
+  ],
+  'shoe-static-rubber': [
+    '고무 인장강도 시험',
+    '고무 내유부피변화율 시험',
+    '안감 및 포파일 시험',
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답판 내부식성 시험',
+    '선심의 내부식성 시험',
+    '내답발성 시험',
+    '대전방지 성능 시험'
+  ],
+  'shoe-instep': [
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답발성 시험',
+    '박리저항시험',
+    '결창인장강도 시험',
+    '결창신장율시험',
+    '내유부피변화율 시험',
+    '내유경도변화율 시험',
+    '온면결렬 시험',
+    '선심의 내부식성 시험',
+    '내답판 내부식성 시험',
+    '가죽인열강도 시험',
+    '방호대 내충격성 시험'
+  ],
+  'shoe-insulation-leather': [
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답발성 시험',
+    '박리저항시험',
+    '결창인장강도 시험',
+    '결창신장율시험',
+    '내유부피변화율 시험',
+    '내유경도변화율 시험',
+    '온면결렬 시험',
+    '선심의 내부식성 시험',
+    '내답판 내부식성 시험',
+    '가죽인열강도 시험',
+    '내전압 시험 (14 000 V)'
+  ],
+  'shoe-insulation-rubber': [
+    '고무 인장강도 시험',
+    '고무 내유부피변화율 시험',
+    '안감 및 포파일 시험',
+    '내압박성 시험',
+    '내충격성 시험',
+    '내답판 내부식성 시험',
+    '선심의 내부식성 시험',
+    '내답발성 시험',
+    '내전압 시험 (14 000 V)'
+  ],
+  'shoe-insulation-boots': [
+    '내전압 시험 (20 000 V)',
+    '고무 인장강도 시험',
+    '고무 신장율 시험'
+  ],
+  'suit-heat': [
+    '난연성 시험',
+    '절연저항 시험',
+    '열전도율 시험',
+    '인장강도 시험',
+    '내열성 시험',
+    '내한성 시험',
+    '열충격 시험',
+    '안면렌즈의 내충격 시험'
+  ],
+  'suit-chemical': [
+    '인장강도 시험',
+    '인열강도 시험',
+    '뚫림강도 시험',
+    '마모저항 시험',
+    '굴곡저항 시험',
+    '연소저항 시험',
+    '화염저항 시험',
+    '슬기강도 시험',
+    '접합부 연결강도 시험',
+    '안면창 강도 시험',
+    '호흡 및 환기호스 연결부 강도 시험'
+  ],
+  'fall-protection': [
+    '구조검사',
+    '죔줄 인장강도 시험',
+    '죔줄 연결부 인장강도 시험',
+    '수직구명줄 인장강도 시험',
+    '추락방지대 인장강도 시험',
+    '완성품 다리낙하 동하중성능 시험',
+    '완성품 머리낙하 동하중성능 시험',
+    '정하중성능 시험(목링)',
+    '정하중성능 시험(가랭이링)',
+    'D링 인장강도 시험',
+    '박클 인정강도 시험',
+    '훅 인정강도 시험',
+    '카라비나 인장강도 시험',
+    '훅 수직압축 시험',
+    '혹 측면압축 시험'
+  ],
+  'helmet-ab': [
+    '내관통성 시험',
+    '충격흡수성 시험',
+    '턱끈풀림시험',
+    '난연성 시험',
+    '내전압성 시험',
+    '내수성 시험',
+    '측면변형방호 시험'
+  ],
+  'helmet-ae': [
+    '내관통성 시험',
+    '충격흡수성 시험',
+    '턱끈풀림시험',
+    '난연성 시험',
+    '내전압성 시험',
+    '내수성 시험',
+    '측면변형방호 시험'
+  ],
+  'helmet-abe': [
+    '내관통성 시험',
+    '충격흡수성 시험',
+    '턱끈풀림시험',
+    '난연성 시험',
+    '내전압성 시험',
+    '내수성 시험',
+    '측면변형방호 시험'
+  ],
+  'glove-voltage': [
+    '절연내력 시험',
+    '인장강도 시험',
+    '경년변화 시험',
+    '내열성 시험',
+    '영구신장율 시험',
+    '뚫림강도 시험'
+  ],
+  'harness-belt-u': [
+    '구조검사',
+    '죔줄 인장강도 시험',
+    '죔줄 연결부 인장강도 시험',
+    'D링 인장강도시험',
+    '8자링 인장강도 시험',
+    '박클 인장강도 시험',
+    '훅 인장강도 시험',
+    '카라비나 인장강도 시험',
+    '훅수직압축 시험',
+    '훅 측면압축 시험',
+    '충격흡수장치 인장강도 시험',
+    '충격흡수장치 신장측정 시험',
+    '완성품 동하중성능 시험',
+    '충격흡수장치 동하중성능 시험',
+    '정하중성능 시험',
+    '벨트 인장강도 시험',
+    '보조죔줄 동하중성능 시험',
+    '지탱벨트 인장강도 시험',
+    '보조죔줄 인장강도 시험',
+    '각링 인장강도시험',
+    '신축조절기 인장강도 시험'
+  ],
+  'harness-belt-single': [
+    '구조검사',
+    '죔줄 인장강도 시험',
+    '죔줄 연결부 인장강도 시험',
+    'D링 인장강도시험',
+    '8자링 인장강도 시험',
+    '박클 인장강도 시험',
+    '훅 인장강도 시험',
+    '카라비나 인장강도 시험',
+    '훅수직압축 시험',
+    '훅 측면압축 시험',
+    '충격흡수장치 인장강도 시험',
+    '충격흡수장치 신장측정 시험',
+    '완성품 동하중성능 시험',
+    '충격흡수장치 동하중성능 시험',
+    '정하중성능 시험'
+  ],
+  'harness-swing-u': [
+    '구조검사',
+    '죔줄 인장강도 시험',
+    '죔줄 연결부 인장강도 시험',
+    'D링 인장강도시험',
+    '8자링 인장강도 시험',
+    '박클 인장강도 시험',
+    '훅 인장강도 시험',
+    '카라비나 인장강도 시험',
+    '훅수직압축 시험',
+    '훅 측면압축 시험',
+    '충격흡수장치 인장강도 시험',
+    '충격흡수장치 신장측정 시험',
+    '죔줄 다리낙하 동하중성능 시험',
+    '죔줄 머리낙하 동하중성능 시험',
+    '충격흡수장치 동하중성능 시험',
+    '정하중성능 시험 (목링)',
+    '정하중성능 시험 (가랭이링)',
+    '지탱벨트 인장강도 시험',
+    '보조죔줄 다리낙하 동하중성능 시험',
+    '보조죔줄 머리낙하 동하중성능 시험',
+    '벨트 인장강도 시험',
+    '보조죔줄 인장강도 시험',
+    '각링 인장강도 시험',
+    '신축조절기 인장강도 시험'
+  ],
+  'harness-swing-single': [
+    '구조검사',
+    '죔줄 인장강도 시험',
+    '죔줄 연결부 인장강도 시험',
+    'D링 인장강도시험',
+    '8자링 인장강도 시험',
+    '박클 인장강도 시험',
+    '훅 인장강도 시험',
+    '카라비나 인장강도 시험',
+    '훅수직압축 시험',
+    '훅 측면압축 시험',
+    '충격흡수장치 인장강도 시험',
+    '충격흡수장치 신장측정 시험',
+    '죔줄 다리낙하 동하중성능 시험',
+    '죔줄 머리낙하 동하중성능 시험',
+    '충격흡수장치 동하중성능 시험',
+    '정하중성능 시험 (목링)',
+    '정하중성능 시험 (가랭이링)'
+  ],
+  'harness-block': [
+    '구조검사',
+    '완성품 다리낙하 동하중성능 시험',
+    '완성품 머리낙하 동하중성능 시험',
+    '정하중성능 시험 (목링)',
+    '정하중성능 시험 (가랭이링)',
+    'D링 인장강도 시험',
+    '박클 인장강도 시험',
+    '훅 인장강도 시험',
+    '카라비나 인장강도 시험',
+    '훅 수직압축 시험',
+    '훅 측면압축 시험',
+    '안전블럭 동하중성능 시험',
+    '안전블럭 와이어 인장강도 시험',
+    '안전블럭 몸체 인장강도 시험',
+    '안전블럭 수축하중 시험'
+  ]
+}
+
 interface TestSample {
   id: string
   name: string
   manufacturer: string
   model: string
-  serialNumber: string
-  quantity: number
   notes: string
 }
 
 interface FormData {
+  // 신청인 정보
+  applicantName: string
+  email: string
+  mobile: string
+  
   // 신청업체 정보
   companyName: string
-  businessNumber: string
-  representative: string
-  businessType: string
-  industry: string
   address: string
   phone: string
   fax: string
-  mobile: string
   
-  // 성적서 발급처
-  department: string
-  email: string
-  applicantName: string
+  // 시험 항목
+  testItems: string[] // 선택된 세부 시험 항목들
   
-  // 고객 요구사항
-  requirements: string
+  // 성적서 타입
+  certificateType: string // 'official' or 'unofficial'
   
   // 시험 시료 목록
   samples: TestSample[]
   
-  // 접수방법
+  // 시료 접수 방법
   receiptMethod: string
   otherMethod: string
+  
+  // 시료 반품 방법
+  returnMethod: string // 'return' or 'dispose'
+  
+  // 고객 요구사항
+  requirements: string
   
   // 파일 첨부
   businessRegistration: File | null
@@ -134,16 +429,16 @@ interface FormData {
 
 const totalSteps = 4
 const stepTitles = [
-  '업체 정보',
+  '기본 정보',
   '시료 정보',
-  '접수 방법',
+  '시료 접수 및 특별 요청',
   '확인 및 제출'
 ]
 
 const stepIcons = [
   FileText,
   Package,
-  Truck,
+  ClipboardCheck,
   Send
 ]
 
@@ -154,33 +449,31 @@ export default function TestApplicationPage() {
   
   const [currentStep, setCurrentStep] = useState(0)
   const [formData, setFormData] = useState<FormData>({
+    applicantName: '',
+    email: '',
+    mobile: '',
     companyName: '',
-    businessNumber: '',
-    representative: '',
-    businessType: '',
-    industry: '',
     address: '',
     phone: '',
     fax: '',
-    mobile: '',
-    department: '',
-    email: '',
-    applicantName: '',
-    requirements: '',
+    testItems: [],
+    certificateType: '',
     samples: [{
       id: '1',
       name: '',
       manufacturer: '',
       model: '',
-      serialNumber: '',
-      quantity: 1,
       notes: ''
     }],
     receiptMethod: '',
     otherMethod: '',
+    returnMethod: '',
+    requirements: '',
     businessRegistration: null,
     sampleImages: []
   })
+
+  const [dragActive, setDragActive] = useState(false)
 
   if (!testItem) {
     return (
@@ -202,14 +495,21 @@ export default function TestApplicationPage() {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleTestItemToggle = (item: string) => {
+    setFormData(prev => ({
+      ...prev,
+      testItems: prev.testItems.includes(item)
+        ? prev.testItems.filter(i => i !== item)
+        : [...prev.testItems, item]
+    }))
+  }
+
   const addSample = () => {
     const newSample: TestSample = {
       id: Date.now().toString(),
       name: '',
       manufacturer: '',
       model: '',
-      serialNumber: '',
-      quantity: 1,
       notes: ''
     }
     updateFormData('samples', [...formData.samples, newSample])
@@ -225,6 +525,27 @@ export default function TestApplicationPage() {
   const removeSample = (id: string) => {
     if (formData.samples.length > 1) {
       updateFormData('samples', formData.samples.filter(sample => sample.id !== id))
+    }
+  }
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true)
+    } else if (e.type === 'dragleave') {
+      setDragActive(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0]
+      updateFormData('businessRegistration', file)
     }
   }
 
@@ -244,13 +565,14 @@ export default function TestApplicationPage() {
     switch (step) {
       case 0:
         const missingFields = []
+        if (!formData.applicantName) missingFields.push('신청인')
+        if (!formData.email) missingFields.push('이메일')
         if (!formData.companyName) missingFields.push('업체명')
-        if (!formData.businessNumber) missingFields.push('사업자 등록번호')
-        if (!formData.representative) missingFields.push('대표자')
         if (!formData.address) missingFields.push('주소')
         if (!formData.phone) missingFields.push('전화')
-        if (!formData.email) missingFields.push('이메일')
-        if (!formData.applicantName) missingFields.push('신청인')
+        if (formData.testItems.length === 0) missingFields.push('시험 항목')
+        if (!formData.certificateType) missingFields.push('성적서 타입')
+        if (!formData.businessRegistration) missingFields.push('사업자등록증')
         
         if (missingFields.length > 0) {
           return { isValid: false, message: `다음 필수 항목을 입력해주세요: ${missingFields.join(', ')}` }
@@ -260,21 +582,21 @@ export default function TestApplicationPage() {
       case 1:
         for (let i = 0; i < formData.samples.length; i++) {
           const sample = formData.samples[i]
-          if (!sample.name || !sample.manufacturer || sample.quantity < 1) {
-            return { isValid: false, message: `시료 #${i + 1}의 필수 정보를 모두 입력해주세요 (제품명, 제조사, 수량)` }
+          if (!sample.name || !sample.manufacturer || !sample.model) {
+            return { isValid: false, message: `시료 #${i + 1}의 필수 정보를 모두 입력해주세요 (제품명, 제조사, 모델명)` }
           }
         }
         return { isValid: true }
         
       case 2:
         if (!formData.receiptMethod) {
-          return { isValid: false, message: '접수 방법을 선택해주세요' }
+          return { isValid: false, message: '시료 접수 방법을 선택해주세요' }
         }
         if (formData.receiptMethod === 'other' && !formData.otherMethod) {
           return { isValid: false, message: '기타 접수 방법을 입력해주세요' }
         }
-        if (!formData.businessRegistration) {
-          return { isValid: false, message: '사업자등록증 사본을 첨부해주세요' }
+        if (!formData.returnMethod) {
+          return { isValid: false, message: '시료 반품 방법을 선택해주세요' }
         }
         return { isValid: true }
         
@@ -313,27 +635,25 @@ export default function TestApplicationPage() {
   }
 
   const submitForm = async () => {
-    // 최종 검증
-    if (!formData.businessRegistration) {
-      Swal.fire({
-        icon: 'error',
-        title: '파일 첨부 필요',
-        text: '사업자등록증을 첨부해주세요.',
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        showCloseButton: true,
-        allowOutsideClick: true
-      })
-      return
-    }
+    // 로딩 알람 표시
+    Swal.fire({
+      title: '신청서 제출 중',
+      text: '잠시만 기다려주세요...',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      allowEnterKey: false,
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading()
+      }
+    })
 
     try {
       const submitData = new FormData()
       submitData.append('formData', JSON.stringify({
         ...formData,
         testItem: testItem,
-        applicantEmail: formData.email // 신청자 이메일 추가
+        applicantEmail: formData.email
       }))
       
       if (formData.businessRegistration) {
@@ -357,7 +677,6 @@ export default function TestApplicationPage() {
           confirmButtonText: '확인',
           confirmButtonColor: '#3B82F6'
         })
-        // 메인 페이지로 이동
         window.location.href = '/test-calibration'
       } else {
         throw new Error('제출 실패')
@@ -384,148 +703,188 @@ export default function TestApplicationPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="companyName">업체명 *</Label>
-                <Input
-                  id="companyName"
-                  value={formData.companyName}
-                  onChange={(e) => updateFormData('companyName', e.target.value)}
-                  placeholder="업체명을 입력하세요"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessNumber">사업자 등록번호 *</Label>
-                <Input
-                  id="businessNumber"
-                  value={formData.businessNumber}
-                  onChange={(e) => updateFormData('businessNumber', e.target.value)}
-                  placeholder="000-00-00000"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="representative">대표자 *</Label>
-                <Input
-                  id="representative"
-                  value={formData.representative}
-                  onChange={(e) => updateFormData('representative', e.target.value)}
-                  placeholder="대표자명을 입력하세요"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="businessType">업태</Label>
-                <Input
-                  id="businessType"
-                  value={formData.businessType}
-                  onChange={(e) => updateFormData('businessType', e.target.value)}
-                  placeholder="예: 제조업"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="industry">업종</Label>
-                <Input
-                  id="industry"
-                  value={formData.industry}
-                  onChange={(e) => updateFormData('industry', e.target.value)}
-                  placeholder="예: 안전용품 제조"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">전화 *</Label>
-                <Input
-                  id="phone"
-                  value={formData.phone}
-                  onChange={(e) => updateFormData('phone', e.target.value)}
-                  placeholder="02-0000-0000"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="address">주소 *</Label>
-              <Input
-                id="address"
-                value={formData.address}
-                onChange={(e) => updateFormData('address', e.target.value)}
-                placeholder="회사 주소를 입력하세요"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="fax">팩스</Label>
-                <Input
-                  id="fax"
-                  value={formData.fax}
-                  onChange={(e) => updateFormData('fax', e.target.value)}
-                  placeholder="02-0000-0000"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="mobile">휴대폰</Label>
-                <Input
-                  id="mobile"
-                  value={formData.mobile}
-                  onChange={(e) => updateFormData('mobile', e.target.value)}
-                  placeholder="010-0000-0000"
-                />
-              </div>
-            </div>
-
-            <Card className="bg-blue-50 border-blue-200">
+            {/* 성적서 타입 선택 */}
+            <Card className="border-sky-200 bg-sky-50/30">
               <CardHeader>
-                <CardTitle className="text-lg">성적서 발급처</CardTitle>
+                <CardTitle className="text-lg text-sky-900">성적서 타입 선택 *</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup
+                  value={formData.certificateType}
+                  onValueChange={(value) => updateFormData('certificateType', value)}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="official" id="official" />
+                    <Label htmlFor="official">공인 성적서</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <RadioGroupItem value="unofficial" id="unofficial" />
+                    <Label htmlFor="unofficial">비공인 성적서</Label>
+                  </div>
+                </RadioGroup>
+              </CardContent>
+            </Card>
+
+            {/* 시험 항목 선택 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">시험 항목 선택 *</CardTitle>
+                <p className="text-sm text-gray-600">
+                  {testItem.category} - {testItem.name}의 세부 시험 항목을 선택해주세요
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {testDetailItems[testId] && testDetailItems[testId].map((item, index) => (
+                    <div key={index} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`test-${index}`}
+                        checked={formData.testItems.includes(item)}
+                        onCheckedChange={() => handleTestItemToggle(item)}
+                      />
+                      <Label htmlFor={`test-${index}`} className="text-sm cursor-pointer">
+                        {item}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 신청인 정보 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">신청인 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="department">부서명</Label>
-                    <Input
-                      id="department"
-                      value={formData.department}
-                      onChange={(e) => updateFormData('department', e.target.value)}
-                      placeholder="품질관리부"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">E-mail *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => updateFormData('email', e.target.value)}
-                      placeholder="email@company.com"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
+                <div>
                   <Label htmlFor="applicantName">신청인 *</Label>
                   <Input
                     id="applicantName"
                     value={formData.applicantName}
                     onChange={(e) => updateFormData('applicantName', e.target.value)}
-                    placeholder="신청인 성명"
+                    placeholder="신청인 이름"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email">E-mail *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => updateFormData('email', e.target.value)}
+                    placeholder="이메일 주소"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="mobile">휴대폰</Label>
+                  <Input
+                    id="mobile"
+                    value={formData.mobile}
+                    onChange={(e) => updateFormData('mobile', e.target.value)}
+                    placeholder="010-0000-0000"
                   />
                 </div>
               </CardContent>
             </Card>
 
-            <div className="space-y-2">
-              <Label htmlFor="requirements">고객 요구 사항</Label>
-              <Textarea
-                id="requirements"
-                value={formData.requirements}
-                onChange={(e) => updateFormData('requirements', e.target.value)}
-                rows={4}
-                placeholder="특별한 요구사항이 있으시면 입력해주세요"
-              />
-            </div>
+            {/* 신청업체 정보 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">신청업체 정보</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="companyName">업체명 *</Label>
+                  <Input
+                    id="companyName"
+                    value={formData.companyName}
+                    onChange={(e) => updateFormData('companyName', e.target.value)}
+                    placeholder="업체명"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="address">주소 *</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => updateFormData('address', e.target.value)}
+                    placeholder="주소"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="phone">전화 *</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => updateFormData('phone', e.target.value)}
+                    placeholder="031-000-0000"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="fax">팩스</Label>
+                  <Input
+                    id="fax"
+                    value={formData.fax}
+                    onChange={(e) => updateFormData('fax', e.target.value)}
+                    placeholder="031-000-0000"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* 사업자등록증 첨부 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">사업자등록증 사본 첨부 *</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div
+                  className={cn(
+                    "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
+                    dragActive ? "border-primary bg-primary/5" : "border-gray-300",
+                    formData.businessRegistration && "bg-green-50 border-green-300"
+                  )}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  {formData.businessRegistration ? (
+                    <div className="space-y-2">
+                      <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
+                      <p className="text-sm font-medium">{formData.businessRegistration.name}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => updateFormData('businessRegistration', null)}
+                      >
+                        파일 변경
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-600 mb-2">
+                        파일을 드래그하거나 클릭하여 업로드
+                      </p>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="businessFile"
+                      />
+                      <label htmlFor="businessFile">
+                        <Button variant="outline" asChild>
+                          <span>파일 선택</span>
+                        </Button>
+                      </label>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )
 
@@ -537,122 +896,120 @@ export default function TestApplicationPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">시험 시료 정보</h3>
-              <Button onClick={addSample} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                시료 추가
-              </Button>
-            </div>
-            
-            {formData.samples.map((sample, index) => (
-              <Card key={sample.id} className="relative">
-                <CardHeader className="pb-4">
-                  <div className="flex justify-between items-center">
-                    <Badge variant="secondary">시료 #{index + 1}</Badge>
-                    {formData.samples.length > 1 && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => removeSample(sample.id)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>제품명 *</Label>
-                      <Input
-                        value={sample.name}
-                        onChange={(e) => updateSample(sample.id, 'name', e.target.value)}
-                        placeholder="제품명을 입력하세요"
-                      />
+            {/* 시료 정보 */}
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-lg">시험 시료 정보</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addSample}
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    시료 추가
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {formData.samples.map((sample, index) => (
+                  <Card key={sample.id} className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-medium">시료 #{index + 1}</h4>
+                      {formData.samples.length > 1 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeSample(sample.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <Label>제조사 *</Label>
-                      <Input
-                        value={sample.manufacturer}
-                        onChange={(e) => updateSample(sample.id, 'manufacturer', e.target.value)}
-                        placeholder="제조사명을 입력하세요"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>제품명 *</Label>
+                        <Input
+                          value={sample.name}
+                          onChange={(e) => updateSample(sample.id, 'name', e.target.value)}
+                          placeholder="제품명"
+                        />
+                      </div>
+                      <div>
+                        <Label>제조사 *</Label>
+                        <Input
+                          value={sample.manufacturer}
+                          onChange={(e) => updateSample(sample.id, 'manufacturer', e.target.value)}
+                          placeholder="제조사"
+                        />
+                      </div>
+                      <div>
+                        <Label>모델명 *</Label>
+                        <Input
+                          value={sample.model}
+                          onChange={(e) => updateSample(sample.id, 'model', e.target.value)}
+                          placeholder="모델명"
+                        />
+                      </div>
+                      <div>
+                        <Label>비고</Label>
+                        <Input
+                          value={sample.notes}
+                          onChange={(e) => updateSample(sample.id, 'notes', e.target.value)}
+                          placeholder="비고"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label>모델명</Label>
-                      <Input
-                        value={sample.model}
-                        onChange={(e) => updateSample(sample.id, 'model', e.target.value)}
-                        placeholder="모델명 (선택사항)"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>시료 수량 *</Label>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={sample.quantity}
-                        onChange={(e) => updateSample(sample.id, 'quantity', parseInt(e.target.value) || 1)}
-                        placeholder="1"
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>시료번호/로트번호</Label>
-                    <Input
-                      value={sample.serialNumber}
-                      onChange={(e) => updateSample(sample.id, 'serialNumber', e.target.value)}
-                      placeholder="시료번호 또는 로트번호 (선택사항)"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>비고</Label>
-                    <Textarea
-                      value={sample.notes}
-                      onChange={(e) => updateSample(sample.id, 'notes', e.target.value)}
-                      rows={2}
-                      placeholder="추가 정보가 있으면 입력해주세요"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
 
-            <Card className="border-dashed bg-gray-50">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <Upload className="mx-auto h-10 w-10 text-gray-400 mb-3" />
-                  <h4 className="text-sm font-semibold mb-2">시료 사진 첨부 (선택사항)</h4>
-                  <Label htmlFor="sample-images" className="cursor-pointer">
-                    <span className="text-blue-600 hover:text-blue-500">
-                      파일을 선택하거나 드래그하세요
-                    </span>
-                  </Label>
+            {/* 시료 사진 첨부 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">시료 사진 첨부 (선택)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
                   <input
-                    id="sample-images"
                     type="file"
                     accept="image/*"
                     multiple
                     onChange={handleSampleImagesUpload}
                     className="hidden"
+                    id="sampleImages"
                   />
-                  <p className="text-xs text-gray-500 mt-2">
-                    JPG, PNG 파일만 업로드 가능 (복수 선택 가능)
-                  </p>
+                  <label htmlFor="sampleImages">
+                    <Button variant="outline" asChild>
+                      <span>
+                        <Upload className="w-4 h-4 mr-2" />
+                        사진 추가
+                      </span>
+                    </Button>
+                  </label>
+                  
                   {formData.sampleImages.length > 0 && (
-                    <div className="mt-3">
-                      <p className="text-sm text-green-600">
-                        ✓ {formData.sampleImages.length}개 파일 선택됨
-                      </p>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {formData.sampleImages.map((file, index) => (
-                          <div key={index}>{file.name}</div>
-                        ))}
-                      </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {formData.sampleImages.map((file, index) => (
+                        <div key={index} className="relative group">
+                          <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
+                            <FileText className="w-8 h-8 text-gray-400" />
+                          </div>
+                          <p className="text-xs text-center mt-1 truncate">{file.name}</p>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              const newImages = formData.sampleImages.filter((_, i) => i !== index)
+                              updateFormData('sampleImages', newImages)
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
@@ -669,86 +1026,110 @@ export default function TestApplicationPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
+            {/* 시료 접수 방법 */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">접수 방법 선택 *</CardTitle>
+                <CardTitle className="text-lg">시료 접수 방법 *</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  시료를 전달하실 방법을 선택해주세요
+                </p>
               </CardHeader>
               <CardContent>
-                <RadioGroup 
-                  value={formData.receiptMethod} 
+                <RadioGroup
+                  value={formData.receiptMethod}
                   onValueChange={(value) => updateFormData('receiptMethod', value)}
-                  className="space-y-3"
                 >
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value="visit" id="visit" />
-                    <Label htmlFor="visit" className="cursor-pointer flex-1">
-                      <span className="font-medium">방문</span>
-                      <p className="text-sm text-gray-500">직접 방문하여 접수</p>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value="delivery" id="delivery" />
-                    <Label htmlFor="delivery" className="cursor-pointer flex-1">
-                      <span className="font-medium">택배</span>
-                      <p className="text-sm text-gray-500">택배로 시료 발송</p>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value="pickup" id="pickup" />
-                    <Label htmlFor="pickup" className="cursor-pointer flex-1">
-                      <span className="font-medium">픽업</span>
-                      <p className="text-sm text-gray-500">담당자가 직접 수거</p>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                    <RadioGroupItem value="other" id="other" />
-                    <Label htmlFor="other" className="cursor-pointer flex-1">
-                      <span className="font-medium">기타</span>
-                      <p className="text-sm text-gray-500">기타 방법으로 접수</p>
-                    </Label>
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-2">
+                      <RadioGroupItem value="delivery" id="delivery" className="mt-0.5" />
+                      <div className="space-y-1">
+                        <Label htmlFor="delivery" className="font-medium">택배</Label>
+                        <p className="text-sm text-gray-600">
+                          경기 양주시 은현면 화합로 701-11 한국안전용품시험연구원 시험소
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <RadioGroupItem value="visit" id="visit" className="mt-0.5" />
+                      <div className="space-y-1">
+                        <Label htmlFor="visit" className="font-medium">방문</Label>
+                        <p className="text-sm text-gray-600">
+                          직접 방문하여 시료를 접수합니다 (방문 전 연락 필수)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <RadioGroupItem value="other" id="other" className="mt-0.5" />
+                      <div className="space-y-1">
+                        <Label htmlFor="other" className="font-medium">기타</Label>
+                        <p className="text-sm text-gray-600">
+                          다른 방법으로 시료를 접수합니다
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </RadioGroup>
                 
                 {formData.receiptMethod === 'other' && (
-                  <div className="mt-4 space-y-2">
-                    <Label htmlFor="otherMethod">기타 방법 설명</Label>
-                    <Input
-                      id="otherMethod"
-                      value={formData.otherMethod}
-                      onChange={(e) => updateFormData('otherMethod', e.target.value)}
-                      placeholder="접수 방법을 설명해주세요"
-                    />
-                  </div>
+                  <Input
+                    className="mt-3"
+                    placeholder="기타 접수 방법을 입력해주세요 *"
+                    value={formData.otherMethod}
+                    onChange={(e) => updateFormData('otherMethod', e.target.value)}
+                  />
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-dashed bg-gray-50">
-              <CardContent className="p-6">
-                <div className="text-center">
-                  <Upload className="mx-auto h-10 w-10 text-gray-400 mb-3" />
-                  <h4 className="text-sm font-semibold mb-2">사업자등록증 사본 첨부 *</h4>
-                  <Label htmlFor="file-upload" className="cursor-pointer">
-                    <span className="text-blue-600 hover:text-blue-500">
-                      파일을 선택하거나 드래그하세요
-                    </span>
-                  </Label>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <p className="text-xs text-gray-500 mt-2">
-                    JPG, PNG, PDF 파일만 업로드 가능
-                  </p>
-                  {formData.businessRegistration && (
-                    <p className="mt-3 text-sm text-green-600">
-                      ✓ {formData.businessRegistration.name}
-                    </p>
-                  )}
-                </div>
+            {/* 시료 반품 방법 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">시료 반품 방법 *</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  시험 완료 후 시료 처리 방법을 선택해주세요
+                </p>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup
+                  value={formData.returnMethod}
+                  onValueChange={(value) => updateFormData('returnMethod', value)}
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-2">
+                      <RadioGroupItem value="return" id="return" className="mt-0.5" />
+                      <div className="space-y-1">
+                        <Label htmlFor="return" className="font-medium">반품</Label>
+                        <p className="text-sm text-gray-600">
+                          시험 완료 후 시료를 반송해드립니다 (착불)
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <RadioGroupItem value="dispose" id="dispose" className="mt-0.5" />
+                      <div className="space-y-1">
+                        <Label htmlFor="dispose" className="font-medium">폐기</Label>
+                        <p className="text-sm text-gray-600">
+                          시험 완료 후 시료를 폐기합니다 (폐기 비용 발생)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </RadioGroup>
+              </CardContent>
+            </Card>
+
+            {/* 고객 요구사항 */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">고객 요구사항</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Textarea
+                  value={formData.requirements}
+                  onChange={(e) => updateFormData('requirements', e.target.value)}
+                  placeholder="특별한 요구사항이 있으시면 입력해주세요"
+                  rows={4}
+                />
               </CardContent>
             </Card>
           </motion.div>
@@ -762,99 +1143,100 @@ export default function TestApplicationPage() {
             exit={{ opacity: 0, x: -20 }}
             className="space-y-6"
           >
-            <div className="text-center mb-6">
-              <h3 className="text-xl font-bold mb-2">신청 내용을 확인해주세요</h3>
-              <p className="text-gray-600">아래 내용이 정확한지 확인 후 제출해주세요</p>
-            </div>
-            
-            <Card className="bg-blue-50 border-blue-200">
-              <CardHeader>
-                <CardTitle className="text-blue-900">시험 항목</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <Badge>{testItem.category}</Badge>
-                  <span className="font-medium">{testItem.name}</span>
-                </div>
-              </CardContent>
-            </Card>
-
+            {/* 신청 내용 확인 */}
             <Card>
               <CardHeader>
-                <CardTitle>신청업체 정보</CardTitle>
+                <CardTitle>신청 내용 확인</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
-                <div className="grid grid-cols-2 gap-2">
-                  <div><span className="text-gray-600">업체명:</span> {formData.companyName}</div>
-                  <div><span className="text-gray-600">사업자등록번호:</span> {formData.businessNumber}</div>
-                  <div><span className="text-gray-600">대표자:</span> {formData.representative}</div>
-                  <div><span className="text-gray-600">전화:</span> {formData.phone}</div>
-                </div>
-                <div><span className="text-gray-600">주소:</span> {formData.address}</div>
-                <div className="pt-2 border-t">
-                  <div><span className="text-gray-600">신청인:</span> {formData.applicantName}</div>
-                  <div><span className="text-gray-600">이메일:</span> {formData.email}</div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>시료 정보</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {formData.samples.map((sample, index) => (
-                  <div key={sample.id} className="border-b last:border-b-0 pb-2 mb-2 last:mb-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline">시료 #{index + 1}</Badge>
-                      <span className="font-medium">{sample.name}</span>
-                    </div>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <div>제조사: {sample.manufacturer}</div>
-                      {sample.model && <div>모델: {sample.model}</div>}
-                      <div>수량: {sample.quantity}개</div>
-                      {sample.serialNumber && <div>시료번호: {sample.serialNumber}</div>}
+              <CardContent className="space-y-4">
+                {/* 시험 항목 */}
+                <div className="border-b pb-4">
+                  <h3 className="font-semibold mb-2">시험 항목</h3>
+                  <p className="text-sm text-gray-600">
+                    {testItem.category} - {testItem.name}
+                  </p>
+                  <div className="mt-2">
+                    <p className="text-sm font-medium mb-1">선택한 세부 시험:</p>
+                    <div className="space-y-1">
+                      {formData.testItems.map((item, index) => (
+                        <Badge key={index} variant="secondary" className="mr-2">
+                          {item}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
-                ))}
-                {formData.sampleImages.length > 0 && (
-                  <div className="mt-3 pt-3 border-t">
-                    <span className="text-sm text-gray-600">시료 사진: {formData.sampleImages.length}개 첨부</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>접수 정보</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="text-gray-600">접수 방법:</span> {
-                      formData.receiptMethod === 'visit' ? '방문' :
+                {/* 성적서 타입 */}
+                <div className="border-b pb-4">
+                  <h3 className="font-semibold mb-2">성적서 타입</h3>
+                  <p className="text-sm">
+                    {formData.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'}
+                  </p>
+                </div>
+
+                {/* 신청인 정보 */}
+                <div className="border-b pb-4">
+                  <h3 className="font-semibold mb-2">신청인 정보</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">신청인:</span> {formData.applicantName}</p>
+                    <p><span className="font-medium">이메일:</span> {formData.email}</p>
+                    {formData.mobile && <p><span className="font-medium">휴대폰:</span> {formData.mobile}</p>}
+                  </div>
+                </div>
+
+                {/* 신청업체 정보 */}
+                <div className="border-b pb-4">
+                  <h3 className="font-semibold mb-2">신청업체 정보</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">업체명:</span> {formData.companyName}</p>
+                    <p><span className="font-medium">주소:</span> {formData.address}</p>
+                    <p><span className="font-medium">전화:</span> {formData.phone}</p>
+                    {formData.fax && <p><span className="font-medium">팩스:</span> {formData.fax}</p>}
+                  </div>
+                </div>
+
+                {/* 시료 정보 */}
+                <div className="border-b pb-4">
+                  <h3 className="font-semibold mb-2">시료 정보</h3>
+                  {formData.samples.map((sample, index) => (
+                    <div key={sample.id} className="mb-2 p-2 bg-gray-50 rounded">
+                      <p className="text-sm font-medium">시료 #{index + 1}</p>
+                      <div className="text-sm text-gray-600">
+                        <p>제품명: {sample.name}</p>
+                        <p>제조사: {sample.manufacturer}</p>
+                        <p>모델명: {sample.model}</p>
+                        {sample.notes && <p>비고: {sample.notes}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 접수 정보 */}
+                <div>
+                  <h3 className="font-semibold mb-2">접수 정보</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">시료 접수 방법:</span> {
                       formData.receiptMethod === 'delivery' ? '택배' :
-                      formData.receiptMethod === 'pickup' ? '픽업' :
+                      formData.receiptMethod === 'visit' ? '방문' :
                       formData.receiptMethod === 'other' ? formData.otherMethod : ''
-                    }
+                    }</p>
+                    <p><span className="font-medium">시료 반품 방법:</span> {
+                      formData.returnMethod === 'return' ? '반품 (착불)' : '폐기 (폐기 비용 발생)'
+                    }</p>
                   </div>
-                  <div>
-                    <span className="text-gray-600">사업자등록증:</span> {formData.businessRegistration?.name || '미첨부'}
+                </div>
+
+                {/* 첨부 파일 */}
+                <div>
+                  <h3 className="font-semibold mb-2">첨부 파일</h3>
+                  <div className="space-y-1 text-sm">
+                    <p><span className="font-medium">사업자등록증:</span> {formData.businessRegistration?.name || '미첨부'}</p>
+                    <p><span className="font-medium">시료 사진:</span> {formData.sampleImages.length}개 첨부</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <h4 className="font-semibold mb-2 text-yellow-900">안내사항</h4>
-              <ul className="text-sm space-y-1 text-yellow-800">
-                <li>• 본 시험신청서는 다른 용도로 사용할 수 없습니다.</li>
-                <li>• 시험 시료는 신청서에 기재된 수량으로만 접수됩니다.</li>
-                <li>• 시험 완료 시 성적서를 이메일로 발송해드립니다.</li>
-                <li>• 시료 반송이 필요한 경우 별도로 연락 바랍니다.</li>
-              </ul>
-            </div>
           </motion.div>
         )
 
@@ -864,112 +1246,51 @@ export default function TestApplicationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50 py-20">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-4xl mx-auto"
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <Badge className="mb-4" variant="outline">
-              <FileText className="w-3 h-3 mr-1" />
-              온라인 신청
-            </Badge>
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              <span className="text-gradient">{testItem.category} - {testItem.name}</span> 시험 신청
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              아래 양식을 작성하여 시험을 신청해주세요
-            </p>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50 py-12">
+      <div className="container mx-auto px-4 max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2">시험 신청서</h1>
+          <p className="text-gray-600">
+            {testItem.category} - {testItem.name}
+          </p>
+        </div>
 
-          {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-            >
-              <Card className="text-center">
-                <CardContent className="p-4">
-                  <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">24시간 내 견적</h3>
-                  <p className="text-sm text-muted-foreground">신속한 견적 제공</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Card className="text-center">
-                <CardContent className="p-4">
-                  <Package className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">KOLAS 공인</h3>
-                  <p className="text-sm text-muted-foreground">신뢰할 수 있는 성적서</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-            >
-              <Card className="text-center">
-                <CardContent className="p-4">
-                  <Truck className="w-8 h-8 text-primary mx-auto mb-2" />
-                  <h3 className="font-semibold mb-1">편리한 접수</h3>
-                  <p className="text-sm text-muted-foreground">다양한 접수 방법</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </div>
+        {/* Step Indicator */}
+        <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-          {/* Main Form Card */}
-          <Card className="max-w-4xl mx-auto">
-            <CardHeader className="text-center pb-4">
-              <h2 className="text-2xl font-bold">{stepTitles[currentStep]}</h2>
-            </CardHeader>
-            <CardContent className="p-6">
-              <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
-              
-              <form onSubmit={(e) => { e.preventDefault(); }}>
-                {renderStepContent()}
-              </form>
+        {/* Step Title */}
+        <div className="flex items-center justify-center mb-6">
+          {React.createElement(stepIcons[currentStep], { className: "w-5 h-5 mr-2 text-primary" })}
+          <h2 className="text-xl font-semibold">{stepTitles[currentStep]}</h2>
+        </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex justify-between mt-8">
-                <Button 
-                  variant="outline" 
-                  onClick={handlePrevious}
-                  disabled={currentStep === 0}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-2" />
-                  이전
-                </Button>
-                
-                {currentStep < totalSteps - 1 ? (
-                  <Button onClick={handleNext}>
-                    다음
-                    <ChevronRight className="h-4 w-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button 
-                    onClick={submitForm} 
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    신청서 제출
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+        {/* Step Content */}
+        {renderStepContent()}
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-8">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentStep === 0}
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            이전
+          </Button>
+          
+          {currentStep === totalSteps - 1 ? (
+            <Button onClick={submitForm}>
+              <Send className="w-4 h-4 mr-1" />
+              제출하기
+            </Button>
+          ) : (
+            <Button onClick={handleNext}>
+              다음
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   )

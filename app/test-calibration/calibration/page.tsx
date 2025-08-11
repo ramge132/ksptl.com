@@ -118,8 +118,14 @@ export default function CalibrationFormPage() {
             icon: 'warning',
             title: '필수 항목 입력',
             text: '업체명, 사업자 등록번호, 대표자, 전화, 주소, 휴대폰은 필수 입력 항목입니다.',
-            confirmButtonColor: '#0066ff',
-            confirmButtonText: '확인'
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            showCloseButton: true,
+            position: 'center',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            allowEnterKey: true
           })
           return false
         }
@@ -130,8 +136,14 @@ export default function CalibrationFormPage() {
             icon: 'warning',
             title: '필수 항목 입력',
             text: 'E-mail과 신청인은 필수 입력 항목입니다.',
-            confirmButtonColor: '#0066ff',
-            confirmButtonText: '확인'
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            showCloseButton: true,
+            position: 'center',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            allowEnterKey: true
           })
           return false
         }
@@ -143,8 +155,64 @@ export default function CalibrationFormPage() {
             icon: 'warning',
             title: '필수 항목 입력',
             text: '모든 기기의 기기명은 필수 입력 항목입니다.',
-            confirmButtonColor: '#0066ff',
-            confirmButtonText: '확인'
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            showCloseButton: true,
+            position: 'center',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            allowEnterKey: true
+          })
+          return false
+        }
+        break
+      case 3: // 접수 방법
+        if (!formData.receptionMethod) {
+          Swal.fire({
+            icon: 'warning',
+            title: '필수 항목 입력',
+            text: '접수 방법을 선택해주세요.',
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            showCloseButton: true,
+            position: 'center',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            allowEnterKey: true
+          })
+          return false
+        }
+        if (formData.receptionMethod === 'other' && !formData.receptionMethodOther) {
+          Swal.fire({
+            icon: 'warning',
+            title: '필수 항목 입력',
+            text: '기타 접수 방법을 입력해주세요.',
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            showCloseButton: true,
+            position: 'center',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            allowEnterKey: true
+          })
+          return false
+        }
+        if (!formData.businessLicense) {
+          Swal.fire({
+            icon: 'warning',
+            title: '필수 항목 입력',
+            text: '사업자등록증 사본을 첨부해주세요.',
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            showCloseButton: true,
+            position: 'center',
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            allowEnterKey: true
           })
           return false
         }
@@ -202,8 +270,14 @@ export default function CalibrationFormPage() {
         icon: 'warning',
         title: '필수 항목 입력',
         text: '사업자등록증 사본을 첨부해주세요.',
-        confirmButtonColor: '#0066ff',
-        confirmButtonText: '확인'
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        showCloseButton: true,
+        position: 'center',
+        allowOutsideClick: true,
+        allowEscapeKey: true,
+        allowEnterKey: true
       })
       return
     }
@@ -221,51 +295,55 @@ export default function CalibrationFormPage() {
     })
 
     try {
-      const formDataToSend = new FormData()
+      const submitData = new FormData()
       
-      // 기본 정보 추가
-      formDataToSend.append('type', 'calibration')
-      formDataToSend.append('companyName', formData.companyName)
-      formDataToSend.append('businessNumber', formData.businessNumber)
-      formDataToSend.append('representative', formData.representative)
-      formDataToSend.append('businessType', formData.businessType)
-      formDataToSend.append('businessCategory', formData.businessCategory)
-      formDataToSend.append('address', formData.address)
-      formDataToSend.append('phone', formData.phone)
-      formDataToSend.append('fax', formData.fax)
-      formDataToSend.append('mobile', formData.mobile)
-      formDataToSend.append('department', formData.department)
-      formDataToSend.append('email', formData.email)
-      formDataToSend.append('applicantName', formData.applicantName)
-      formDataToSend.append('calibrationPeriod', formData.calibrationPeriod)
-      formDataToSend.append('requirements', formData.requirements)
-      formDataToSend.append('equipments', JSON.stringify(formData.equipments))
-      formDataToSend.append('receptionMethod', formData.receptionMethod)
-      formDataToSend.append('receptionMethodOther', formData.receptionMethodOther)
+      // formData를 JSON으로 변환하여 추가 (파일 제외)
+      const dataToSend = {
+        type: 'calibration',
+        companyName: formData.companyName,
+        businessNumber: formData.businessNumber,
+        representative: formData.representative,
+        businessType: formData.businessType,
+        businessCategory: formData.businessCategory,
+        address: formData.address,
+        phone: formData.phone,
+        fax: formData.fax,
+        mobile: formData.mobile,
+        department: formData.department,
+        email: formData.email,
+        applicantName: formData.applicantName,
+        applicantEmail: formData.email, // 신청자 이메일 추가
+        calibrationPeriod: formData.calibrationPeriod,
+        requirements: formData.requirements,
+        equipments: formData.equipments,
+        receptionMethod: formData.receptionMethod,
+        receptionMethodOther: formData.receptionMethodOther
+      }
+      
+      submitData.append('formData', JSON.stringify(dataToSend))
       
       // 파일 추가
       if (formData.businessLicense) {
-        formDataToSend.append('businessLicense', formData.businessLicense)
+        submitData.append('businessLicense', formData.businessLicense)
       }
 
       const response = await fetch('/api/submit-calibration', {
         method: 'POST',
-        body: formDataToSend,
+        body: submitData,
       })
 
       const result = await response.json()
 
       if (response.ok) {
-        Swal.fire({
+        await Swal.fire({
           icon: 'success',
           title: '신청 완료',
           text: '교정 신청이 성공적으로 접수되었습니다. 24시간 내에 견적을 보내드리겠습니다.',
           confirmButtonColor: '#0066ff',
           confirmButtonText: '확인'
-        }).then(() => {
-          // 폼 초기화
-          window.location.href = '/'
         })
+        // 홈페이지로 이동
+        window.location.href = '/'
       } else {
         throw new Error(result.error || '신청 처리 중 오류가 발생했습니다.')
       }

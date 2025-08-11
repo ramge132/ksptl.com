@@ -3,12 +3,13 @@
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { CheckCircle2 } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion, LayoutGroup } from "framer-motion"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import GradientTextNew from "@/components/ui/gradient-text-new"
 import CountUpNew from "@/components/ui/count-up-new"
 import InteractiveStunningBackground from "@/components/ui/interactive-stunning-background"
+import RotatingText from "@/components/ui/rotating-text"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -170,15 +171,81 @@ export default function Hero({
             </GradientTextNew>
           </motion.div>
 
-          {/* Subtitle */}
-          <motion.p
+          {/* Subtitle with Rotating Text */}
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="text-xl md:text-2xl font-bold mb-4 text-gray-800"
           >
-            {subtitle}
-          </motion.p>
+            <LayoutGroup>
+              <motion.div 
+                className="inline-flex items-center justify-center gap-2"
+                layout
+                transition={{ 
+                  layout: { 
+                    type: "spring", 
+                    damping: 25, 
+                    stiffness: 300,
+                    mass: 0.5
+                  }
+                }}
+              >
+                <motion.span 
+                  layout 
+                  transition={{ 
+                    layout: {
+                      type: "spring", 
+                      damping: 25, 
+                      stiffness: 300,
+                      mass: 0.5
+                    }
+                  }}
+                >
+                  국내 유일
+                </motion.span>
+                <motion.div
+                  layout
+                  transition={{ 
+                    layout: {
+                      type: "spring", 
+                      damping: 25, 
+                      stiffness: 300,
+                      mass: 0.5
+                    }
+                  }}
+                >
+                  <RotatingText
+                    texts={['시험기 제작', '공인 시험', '공인 교정']}
+                    mainClassName="px-2 sm:px-2.5 md:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-[#0066FF] to-[#0080FF] text-white rounded-md shadow-md shadow-blue-500/20"
+                    staggerFrom="last"
+                    initial={{ y: "100%" }}
+                    animate={{ y: 0 }}
+                    exit={{ y: "-120%" }}
+                    staggerDuration={0.025}
+                    splitLevelClassName="overflow-hidden"
+                    splitBy="words"
+                    transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                    rotationInterval={2500}
+                    elementLevelClassName="inline-block"
+                  />
+                </motion.div>
+                <motion.span 
+                  layout 
+                  transition={{ 
+                    layout: {
+                      type: "spring", 
+                      damping: 25, 
+                      stiffness: 300,
+                      mass: 0.5
+                    }
+                  }}
+                >
+                  전문기관
+                </motion.span>
+              </motion.div>
+            </LayoutGroup>
+          </motion.div>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -209,7 +276,7 @@ export default function Hero({
             transition={{ delay: 0.7 }}
             className="flex justify-center"
           >
-            <Link href="/apply">
+            <Link href="/tests?category=mask">
               <button className="relative group px-8 py-3 pl-10 pr-16 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0080FF] 
                                text-white font-semibold text-lg overflow-hidden transition-all duration-300 
                                hover:scale-105 hover:shadow-[0_0_30px_rgba(0,102,255,0.5)]

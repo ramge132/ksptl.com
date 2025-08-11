@@ -75,18 +75,10 @@ export default function Header() {
       }}
     >
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center">
-          {/* Logo - Fixed width */}
-          <div className="flex-1">
-            <Link href="/" className="flex items-center space-x-2 w-fit">
-              <Image
-                src="/quro_logo.png"
-                alt="QURO"
-                width={120}
-                height={40}
-                className="h-8 w-auto"
-                priority
-              />
+        <div className="flex h-16 items-center justify-between">
+          {/* 한국안전용품시험연구원 - 좌측 */}
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center">
               <span className="font-title text-lg font-bold">한국안전용품시험연구원</span>
             </Link>
           </div>
@@ -135,42 +127,32 @@ export default function Header() {
             </NavigationMenuList>
           </NavigationMenu>
 
-          {/* CTA Buttons - Fixed width */}
-          <div className="flex-1 flex justify-end">
-            <div className="hidden items-center space-x-4 lg:flex">
-              <Link href="/apply">
-                <button className="relative group px-6 py-2.5 pl-8 pr-14 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0080FF] 
-                                 text-white font-semibold overflow-hidden transition-all duration-300 
-                                 hover:scale-105 hover:shadow-[0_0_30px_rgba(0,102,255,0.5)]
-                                 shadow-[0_0_20px_rgba(0,102,255,0.3)]">
-                  {/* Shiny effect on hover */}
-                  <div className="absolute inset-0 -top-1 -bottom-1 bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                                -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-                  
-                  {/* Text */}
-                  <span className="relative z-10">무료 견적 진행</span>
-                  
-                  {/* Circle with arrow */}
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full flex items-center justify-center
-                                group-hover:bg-white/90 transition-all duration-300">
-                    <svg className="w-4 h-4 text-[#0066FF] transition-transform duration-300 group-hover:translate-x-0.5" 
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </button>
-              </Link>
-            </div>
-          </div>
+          {/* 큐로 로고 - 우측 */}
+          <div className="flex items-center gap-4">
+            <a 
+              href="https://www.quro.co.kr/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hidden lg:block hover:opacity-80 transition-opacity"
+            >
+              <Image
+                src="/quro_logo.png"
+                alt="QURO"
+                width={120}
+                height={40}
+                className="h-8 w-auto"
+                priority
+              />
+            </a>
 
-          {/* Mobile Menu Toggle */}
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetTrigger asChild className="lg:hidden">
-              <Button variant="ghost" size="icon">
-                <Menu className="h-5 w-5" />
-                <span className="sr-only">메뉴 열기</span>
-              </Button>
-            </SheetTrigger>
+            {/* Mobile Menu Toggle */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-5 w-5" />
+                  <span className="sr-only">메뉴 열기</span>
+                </Button>
+              </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col space-y-4 mt-8">
                 {navItems.map((item) => (
@@ -192,32 +174,26 @@ export default function Header() {
                   </div>
                 ))}
                 <div className="pt-4 border-t">
-                  <Link href="/apply" onClick={() => setMobileMenuOpen(false)}>
-                    <button className="w-full relative group px-6 py-2.5 pl-8 pr-14 rounded-full bg-gradient-to-r from-[#0066FF] to-[#0080FF] 
-                                     text-white font-semibold overflow-hidden transition-all duration-300 
-                                     hover:scale-105 hover:shadow-[0_0_30px_rgba(0,102,255,0.5)]
-                                     shadow-[0_0_20px_rgba(0,102,255,0.3)]">
-                      {/* Shiny effect on hover */}
-                      <div className="absolute inset-0 -top-1 -bottom-1 bg-gradient-to-r from-transparent via-white/20 to-transparent 
-                                    -skew-x-12 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-                      
-                      {/* Text */}
-                      <span className="relative z-10">무료 견적 진행</span>
-                      
-                      {/* Circle with arrow */}
-                      <div className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full flex items-center justify-center
-                                    group-hover:bg-white/90 transition-all duration-300">
-                        <svg className="w-4 h-4 text-[#0066FF] transition-transform duration-300 group-hover:translate-x-0.5" 
-                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
-                    </button>
-                  </Link>
+                  <a 
+                    href="https://www.quro.co.kr/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center hover:opacity-80 transition-opacity"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Image
+                      src="/quro_logo.png"
+                      alt="QURO"
+                      width={120}
+                      height={40}
+                      className="h-8 w-auto"
+                    />
+                  </a>
                 </div>
               </nav>
             </SheetContent>
-          </Sheet>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

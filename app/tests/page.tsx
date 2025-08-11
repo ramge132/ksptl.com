@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2 } from "lucide-react"
+import { gsap } from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import {
   Shield,
   HardHat,
@@ -24,7 +26,10 @@ import {
   Hand,
   Search,
   X,
+  Settings,
 } from "lucide-react"
+
+gsap.registerPlugin(ScrollTrigger)
 
 // 아이콘 매핑
 const iconMap: Record<string, any> = {
@@ -201,7 +206,7 @@ export default function TestsPage() {
               KOLAS 공인시험
             </Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-3">
-              <span className="text-gradient">시험·교정</span> 서비스
+              <span className="text-gradient">시험</span> 항목
             </h1>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-6">
               국가 공인 시험기관으로서 정확하고 신뢰할 수 있는 시험 서비스를 제공합니다
@@ -357,6 +362,42 @@ export default function TestsPage() {
                         <p className="text-muted-foreground">등록된 중분류가 없습니다.</p>
                       </div>
                     )}
+                  </motion.div>
+
+                  {/* CTA Buttons Section - 시험 신청 및 교정 신청 */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.4 }}
+                    className="py-16 mt-8"
+                  >
+                    <div className="flex gap-6 justify-center items-center">
+                      {/* 시험 신청 버튼 */}
+                      <Link href="/test-calibration">
+                        <button className="group flex flex-col items-center py-8 px-24 rounded-xl border-2 bg-gray-50 hover:bg-gradient-primary hover:text-white hover:border-transparent hover:shadow-xl transition-all duration-300 min-w-[280px]">
+                          <ClipboardCheck className="h-10 w-10 mb-3" />
+                          <span className="text-lg font-bold">시험 신청하기</span>
+                        </button>
+                      </Link>
+
+                      {/* 교정 신청 버튼 */}
+                      <Link href="/calibration">
+                        <button className="group flex flex-col items-center py-8 px-24 rounded-xl border-2 bg-gray-50 hover:bg-gradient-primary hover:text-white hover:border-transparent hover:shadow-xl transition-all duration-300 min-w-[280px]">
+                          <Settings className="h-10 w-10 mb-3" />
+                          <span className="text-lg font-bold">교정 신청하기</span>
+                        </button>
+                      </Link>
+                    </div>
+
+                    {/* Floating Text Below Buttons */}
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 1, delay: 0.8 }}
+                      className="text-center mt-8 text-gray-600 text-sm"
+                    >
+                      KOLAS 공인 시험·교정 기관 | 빠르고 정확한 서비스
+                    </motion.p>
                   </motion.div>
                 </TabsContent>
               )
