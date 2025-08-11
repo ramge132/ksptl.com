@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { CheckCircle2, Award, Shield, Zap } from "lucide-react"
+import { CheckCircle2 } from "lucide-react"
 import { motion } from "framer-motion"
 import { gsap } from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
@@ -12,27 +12,55 @@ import InteractiveStunningBackground from "@/components/ui/interactive-stunning-
 
 gsap.registerPlugin(ScrollTrigger)
 
-const features = [
-  "KOLAS 공인 시험·교정 기관",
-  "국내 유일 통합 수행 기관",
-  "신속한 견적 및 처리",
-]
-
 interface HeroProps {
-  title?: string
+  titleLine1?: string
+  titleLine2?: string
   subtitle?: string
+  description?: string
+  feature1?: string
+  feature2?: string
+  feature3?: string
   buttonText?: string
+  stat1Value?: string
+  stat1Label?: string
+  stat2Value?: string
+  stat2Label?: string
+  stat3Value?: string
+  stat3Label?: string
+  stat4Value?: string
+  stat4Label?: string
 }
 
 export default function Hero({ 
-  title = "한국 안전용품\n시험연구원",
-  subtitle = "국내 유일 시험기 제작·시험·교정 통합 수행기관",
-  buttonText = "무료 견적 진행"
+  titleLine1 = "한국 안전용품",
+  titleLine2 = "시험연구원",
+  subtitle = "국내 유일의 시험기 제작과 시험 & 교정을 하는 전문기관",
+  description = "KOLAS 공인 신뢰성과 자체 제작 노하우로, 정확한 결과와 빠른 대응을 약속합니다",
+  feature1 = "KOLAS 공인 시험·교정 기관",
+  feature2 = "국내 유일 통합 수행 기관",
+  feature3 = "신속한 견적 및 처리",
+  buttonText = "무료 견적 진행",
+  stat1Value = "20+",
+  stat1Label = "년 경력",
+  stat2Value = "1,000+",
+  stat2Label = "고객사",
+  stat3Value = "5,000+",
+  stat3Label = "작업 건수",
+  stat4Value = "24H",
+  stat4Label = "빠른 대응"
 }: HeroProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const titleRef = useRef<HTMLDivElement>(null)
   const featuresRef = useRef<HTMLDivElement>(null)
   const statsRef = useRef<HTMLDivElement>(null)
+
+  const features = [feature1, feature2, feature3]
+
+  // 통계 숫자 추출 (애니메이션용)
+  const extractNumber = (value: string) => {
+    const match = value.match(/(\d+(?:,\d+)*)/);
+    return match ? parseInt(match[1].replace(/,/g, '')) : 0;
+  }
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -137,8 +165,8 @@ export default function Hero({
               animationSpeed={5}
               showBorder={false}
             >
-              한국 안전용품<br />
-              시험연구원
+              {titleLine1}<br />
+              {titleLine2}
             </GradientTextNew>
           </motion.div>
 
@@ -158,7 +186,7 @@ export default function Hero({
             transition={{ delay: 0.5 }}
             className="text-lg text-gray-600 mb-8 max-w-3xl mx-auto"
           >
-            KOLAS 공인 신뢰성과 자체 제작 노하우로, 정확한 결과와 빠른 대응을 약속합니다
+            {description}
           </motion.p>
 
           {/* Features */}
@@ -219,10 +247,17 @@ export default function Hero({
                     showBorder={false}
                     className="inline-block"
                   >
-                    <CountUpNew to={20} from={0} duration={2} separator="" />+
+                    {stat1Value.includes('+') || stat1Value.includes('H') ? (
+                      <>
+                        <CountUpNew to={extractNumber(stat1Value)} from={0} duration={2} separator={stat1Value.includes(',') ? ',' : ''} />
+                        {stat1Value.replace(/[\d,]+/, '')}
+                      </>
+                    ) : (
+                      stat1Value
+                    )}
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600 font-bold">년 경력</div>
+                <div className="text-sm text-gray-600 font-bold">{stat1Label}</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">
@@ -232,10 +267,17 @@ export default function Hero({
                     showBorder={false}
                     className="inline-block"
                   >
-                    <CountUpNew to={1000} from={0} duration={2} separator="," />+
+                    {stat2Value.includes('+') || stat2Value.includes('H') ? (
+                      <>
+                        <CountUpNew to={extractNumber(stat2Value)} from={0} duration={2} separator={stat2Value.includes(',') ? ',' : ''} />
+                        {stat2Value.replace(/[\d,]+/, '')}
+                      </>
+                    ) : (
+                      stat2Value
+                    )}
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600 font-bold">고객사</div>
+                <div className="text-sm text-gray-600 font-bold">{stat2Label}</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">
@@ -245,10 +287,17 @@ export default function Hero({
                     showBorder={false}
                     className="inline-block"
                   >
-                    <CountUpNew to={5000} from={0} duration={2} separator="," />+
+                    {stat3Value.includes('+') || stat3Value.includes('H') ? (
+                      <>
+                        <CountUpNew to={extractNumber(stat3Value)} from={0} duration={2} separator={stat3Value.includes(',') ? ',' : ''} />
+                        {stat3Value.replace(/[\d,]+/, '')}
+                      </>
+                    ) : (
+                      stat3Value
+                    )}
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600 font-bold">작업 건수</div>
+                <div className="text-sm text-gray-600 font-bold">{stat3Label}</div>
               </div>
               <div className="stat-item text-center">
                 <div className="text-3xl font-bold mb-1">
@@ -258,10 +307,17 @@ export default function Hero({
                     showBorder={false}
                     className="inline-block"
                   >
-                    <CountUpNew to={24} from={0} duration={2} separator="" />H
+                    {stat4Value.includes('+') || stat4Value.includes('H') ? (
+                      <>
+                        <CountUpNew to={extractNumber(stat4Value)} from={0} duration={2} separator={stat4Value.includes(',') ? ',' : ''} />
+                        {stat4Value.replace(/[\d,]+/, '')}
+                      </>
+                    ) : (
+                      stat4Value
+                    )}
                   </GradientTextNew>
                 </div>
-                <div className="text-sm text-gray-600 font-bold">빠른 대응</div>
+                <div className="text-sm text-gray-600 font-bold">{stat4Label}</div>
               </div>
             </div>
           </div>

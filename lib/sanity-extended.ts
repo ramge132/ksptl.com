@@ -4,27 +4,44 @@ import { client } from './sanity'
 export interface LandingPage {
   _id: string
   _type: 'landingPage'
-  heroTitle: string
-  heroSubtitle: string
-  heroButtonText: string
-  introTitle: string
-  introDescription: string
-  whyChooseTitle: string
-  whyChooseItems: Array<{
+  
+  // Hero 섹션 - 메인 화면
+  heroTitleLine1: string  // "한국 안전용품"
+  heroTitleLine2: string  // "시험연구원"
+  heroSubtitle: string    // "국내 유일의 시험기 제작과 시험 & 교정을 하는 전문기관"
+  heroDescription: string // "KOLAS 공인 신뢰성과 자체 제작 노하우로..."
+  heroFeature1: string    // "KOLAS 공인 시험·교정 기관"
+  heroFeature2: string    // "국내 유일 통합 수행 기관"
+  heroFeature3: string    // "신속한 견적 및 처리"
+  heroButtonText: string  // "무료 견적 진행"
+  heroStat1Value: string  // "20+"
+  heroStat1Label: string  // "년 경력"
+  heroStat2Value: string  // "1,000+"
+  heroStat2Label: string  // "고객사"
+  heroStat3Value: string  // "5,000+"
+  heroStat3Label: string  // "작업 건수"
+  heroStat4Value: string  // "24H"
+  heroStat4Label: string  // "빠른 대응"
+  
+  // 기타 섹션들 (나중에 추가)
+  introTitle?: string
+  introDescription?: string
+  whyChooseTitle?: string
+  whyChooseItems?: Array<{
     title: string
     description: string
     icon: string
   }>
-  timelineTitle: string
-  timelineItems: Array<{
+  timelineTitle?: string
+  timelineItems?: Array<{
     year: string
     title: string
     description: string
   }>
-  contactTitle: string
-  contactDescription: string
-  contactPhone: string
-  contactEmail: string
+  contactTitle?: string
+  contactDescription?: string
+  contactPhone?: string
+  contactEmail?: string
 }
 
 export async function getLandingPage(): Promise<LandingPage | null> {
