@@ -704,9 +704,9 @@ export default function TestApplicationPage() {
             className="space-y-6"
           >
             {/* 성적서 타입 선택 */}
-            <Card className="border-sky-200 bg-sky-50/30">
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg text-sky-900">성적서 타입 선택 *</CardTitle>
+                <CardTitle className="text-lg">성적서 타입 선택 *</CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup
@@ -812,75 +812,78 @@ export default function TestApplicationPage() {
                     placeholder="주소"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="phone">전화 *</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => updateFormData('phone', e.target.value)}
-                    placeholder="031-000-0000"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="fax">팩스</Label>
-                  <Input
-                    id="fax"
-                    value={formData.fax}
-                    onChange={(e) => updateFormData('fax', e.target.value)}
-                    placeholder="031-000-0000"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="phone">전화 *</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => updateFormData('phone', e.target.value)}
+                      placeholder="031-000-0000"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="fax">팩스</Label>
+                    <Input
+                      id="fax"
+                      value={formData.fax}
+                      onChange={(e) => updateFormData('fax', e.target.value)}
+                      placeholder="031-000-0000"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* 사업자등록증 첨부 */}
+            {/* 사업자등록증 사본 첨부 */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">사업자등록증 사본 첨부 *</CardTitle>
               </CardHeader>
               <CardContent>
-                <div
-                  className={cn(
-                    "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-                    dragActive ? "border-primary bg-primary/5" : "border-gray-300",
-                    formData.businessRegistration && "bg-green-50 border-green-300"
-                  )}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
+                <div 
+                  className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.classList.add('border-primary', 'bg-primary/5')
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.classList.remove('border-primary', 'bg-primary/5')
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.classList.remove('border-primary', 'bg-primary/5')
+                    const file = e.dataTransfer.files[0]
+                    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+                      updateFormData('businessRegistration', file)
+                    }
+                  }}
+                  onClick={() => document.getElementById('businessFile')?.click()}
                 >
-                  {formData.businessRegistration ? (
-                    <div className="space-y-2">
-                      <CheckCircle className="w-12 h-12 text-green-500 mx-auto" />
-                      <p className="text-sm font-medium">{formData.businessRegistration.name}</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => updateFormData('businessRegistration', null)}
-                      >
-                        파일 변경
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 mb-2">
-                        파일을 드래그하거나 클릭하여 업로드
+                  <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    파일을 선택하거나 드래그하여 업로드하세요
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    이미지(JPG, PNG) 또는 PDF 파일만 가능합니다
+                  </p>
+                  <Input
+                    id="businessFile"
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  {formData.businessRegistration && (
+                    <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                      <p className="text-sm text-primary font-medium">
+                        ✓ {formData.businessRegistration.name}
                       </p>
-                      <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        id="businessFile"
-                      />
-                      <label htmlFor="businessFile">
-                        <Button variant="outline" asChild>
-                          <span>파일 선택</span>
-                        </Button>
-                      </label>
-                    </>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {(formData.businessRegistration.size / 1024).toFixed(2)} KB
+                      </p>
+                    </div>
                   )}
                 </div>
               </CardContent>
@@ -971,48 +974,67 @@ export default function TestApplicationPage() {
                 <CardTitle className="text-lg">시료 사진 첨부 (선택)</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <input
+                <div 
+                  className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onDragOver={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.classList.add('border-primary', 'bg-primary/5')
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.classList.remove('border-primary', 'bg-primary/5')
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    e.currentTarget.classList.remove('border-primary', 'bg-primary/5')
+                    const files = Array.from(e.dataTransfer.files)
+                    const imageFiles = files.filter(file => file.type.startsWith('image/'))
+                    updateFormData('sampleImages', [...formData.sampleImages, ...imageFiles])
+                  }}
+                  onClick={() => document.getElementById('sampleImages')?.click()}
+                >
+                  <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground mb-2">
+                    사진 파일을 선택하거나 드래그하여 업로드하세요
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    여러 장의 사진을 한 번에 추가할 수 있습니다
+                  </p>
+                  <Input
+                    id="sampleImages"
                     type="file"
                     accept="image/*"
                     multiple
                     onChange={handleSampleImagesUpload}
                     className="hidden"
-                    id="sampleImages"
                   />
-                  <label htmlFor="sampleImages">
-                    <Button variant="outline" asChild>
-                      <span>
-                        <Upload className="w-4 h-4 mr-2" />
-                        사진 추가
-                      </span>
-                    </Button>
-                  </label>
-                  
-                  {formData.sampleImages.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                      {formData.sampleImages.map((file, index) => (
-                        <div key={index} className="relative group">
-                          <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center">
-                            <FileText className="w-8 h-8 text-gray-400" />
-                          </div>
-                          <p className="text-xs text-center mt-1 truncate">{file.name}</p>
+                </div>
+                {formData.sampleImages.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {formData.sampleImages.map((file, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`시료 이미지 ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-md"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                           <Button
                             variant="destructive"
-                            size="sm"
-                            className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            size="icon"
                             onClick={() => {
                               const newImages = formData.sampleImages.filter((_, i) => i !== index)
                               updateFormData('sampleImages', newImages)
                             }}
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        <p className="text-xs text-center mt-1 truncate">{file.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -1246,51 +1268,58 @@ export default function TestApplicationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50 py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">시험 신청서</h1>
-          <p className="text-gray-600">
-            {testItem.category} - {testItem.name}
+    <div className="min-h-screen bg-gradient-to-b from-background to-gray-50/50 py-20">
+      <div className="container mx-auto px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-12"
+        >
+          <Badge className="mb-4" variant="outline">
+            <FileText className="w-3 h-3 mr-1" />
+            온라인 신청
+          </Badge>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="text-gradient">시험</span> 신청서
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            KOLAS 공인 시험기관에서 전문적인 시험 서비스를 받아보세요
           </p>
-        </div>
+        </motion.div>
 
-        {/* Step Indicator */}
-        <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
+        {/* Application Form */}
+        <Card className="max-w-4xl mx-auto p-8">
+          <h2 className="text-2xl font-bold text-center mb-2">{stepTitles[currentStep]}</h2>
+          <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-        {/* Step Title */}
-        <div className="flex items-center justify-center mb-6">
-          {React.createElement(stepIcons[currentStep], { className: "w-5 h-5 mr-2 text-primary" })}
-          <h2 className="text-xl font-semibold">{stepTitles[currentStep]}</h2>
-        </div>
+          {/* Step Content */}
+          {renderStepContent()}
 
-        {/* Step Content */}
-        {renderStepContent()}
-
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentStep === 0}
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            이전
-          </Button>
-          
-          {currentStep === totalSteps - 1 ? (
-            <Button onClick={submitForm}>
-              <Send className="w-4 h-4 mr-1" />
-              제출하기
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-8">
+            <Button
+              variant="outline"
+              onClick={handlePrevious}
+              disabled={currentStep === 0}
+            >
+              <ChevronLeft className="w-4 h-4 mr-1" />
+              이전
             </Button>
-          ) : (
-            <Button onClick={handleNext}>
-              다음
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          )}
-        </div>
+            
+            {currentStep === totalSteps - 1 ? (
+              <Button onClick={submitForm} className="bg-gradient-primary text-white hover:opacity-90">
+                <Send className="w-4 h-4 mr-1" />
+                제출하기
+              </Button>
+            ) : (
+              <Button onClick={handleNext} className="bg-gradient-primary text-white hover:opacity-90">
+                다음
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            )}
+          </div>
+        </Card>
       </div>
     </div>
   )

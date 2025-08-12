@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { generateEmailTemplate, formatTableRow, formatSection, formatSampleCard, formatAlert, formatButton } from '@/lib/email-template'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,125 +13,6 @@ export async function POST(request: NextRequest) {
     }
 
     const data = JSON.parse(formDataString)
-
-    // 이메일 내용 생성
-    const emailContent = `
-      <div style="max-width: 800px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-        <h2 style="color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">시험 신청서</h2>
-        
-        <div style="background-color: #eff6ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
-          <h3 style="margin: 0 0 10px 0; color: #1e40af;">시험 항목</h3>
-          <p style="margin: 0; font-size: 16px;"><strong>${data.testItem.category}</strong> - ${data.testItem.name}</p>
-          ${data.testItems && data.testItems.length > 0 ? `
-            <div style="margin-top: 10px;">
-              <p style="margin: 0 0 5px 0; font-weight: bold;">선택한 세부 시험 항목:</p>
-              <ul style="margin: 5px 0; padding-left: 20px;">
-                ${data.testItems.map((item: string) => `<li>${item}</li>`).join('')}
-              </ul>
-            </div>
-          ` : ''}
-        </div>
-        
-        <h3 style="color: #374151; margin-top: 30px;">신청업체 정보</h3>
-        <table style="border-collapse: collapse; width: 100%; max-width: 600px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; width: 35%;">업체명</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.companyName}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">주소</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.address}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">전화</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.phone}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">팩스</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.fax || '-'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">휴대폰</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.mobile || '-'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">E-mail</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.email}</td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">신청인</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${data.applicantName}</td>
-          </tr>
-        </table>
-
-        <h3 style="color: #374151; margin-top: 30px;">성적서 타입</h3>
-        <table style="border-collapse: collapse; width: 100%; max-width: 600px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; width: 35%;">성적서 종류</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">
-              ${data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'}
-            </td>
-          </tr>
-        </table>
-
-        <h3 style="color: #374151; margin-top: 30px;">고객 요구 사항</h3>
-        <div style="padding: 15px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px;">
-          <p style="margin: 0;">${data.requirements || '없음'}</p>
-        </div>
-
-        <h3 style="color: #374151; margin-top: 30px;">시험 시료 정보</h3>
-        <table style="border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <thead>
-            <tr style="background-color: #1e40af;">
-              <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: left;">제품명</th>
-              <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: left;">제조사</th>
-              <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: center;">모델명</th>
-              <th style="padding: 12px; border: 1px solid #e5e7eb; color: white; font-weight: bold; text-align: left;">비고</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${data.samples.map((sample: any, index: number) => `
-              <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f9fafb'};">
-                <td style="padding: 12px; border: 1px solid #e5e7eb;">${sample.name}</td>
-                <td style="padding: 12px; border: 1px solid #e5e7eb;">${sample.manufacturer}</td>
-                <td style="padding: 12px; border: 1px solid #e5e7eb; text-align: center;">${sample.model}</td>
-                <td style="padding: 12px; border: 1px solid #e5e7eb;">${sample.notes || '-'}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-
-        <h3 style="color: #374151; margin-top: 30px;">접수 정보</h3>
-        <table style="border-collapse: collapse; width: 100%; max-width: 600px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold; width: 35%;">접수 방법</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">
-              ${data.receiptMethod === 'visit' ? '방문' :
-                data.receiptMethod === 'delivery' ? '택배' :
-                data.receiptMethod === 'other' ? data.otherMethod : data.receiptMethod}
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">시료 반품 방법</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">
-              ${data.returnMethod === 'return' ? '반품 (착불)' : '폐기 (폐기 비용 발생)'}
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 12px; border: 1px solid #e5e7eb; background-color: #f9fafb; font-weight: bold;">신청일시</td>
-            <td style="padding: 12px; border: 1px solid #e5e7eb;">${new Date().toLocaleString('ko-KR')}</td>
-          </tr>
-        </table>
-
-        <div style="margin-top: 40px; padding: 20px; background-color: #f3f4f6; border-radius: 8px; text-align: center;">
-          <p style="margin: 0; color: #6b7280; font-size: 14px;">
-            한국안전용품시험연구원<br>
-            본사: 031-862-8556~7 | 시험소: 031-858-3012<br>
-            경기 양주시 은현면 화합로 701-11
-          </p>
-        </div>
-      </div>
-    `
 
     // 파일 첨부를 위한 처리
     const attachments = []
@@ -168,12 +50,81 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const adminContent = `
+      ${formatSection('📝', '신청 정보', `
+        <table style="width: 100%; border-collapse: collapse;">
+          ${formatTableRow('시험 종류', `${data.testItem.category} - ${data.testItem.name}`, true)}
+          ${formatTableRow('성적서 타입', data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서')}
+          ${formatTableRow('신청일시', new Date().toLocaleString('ko-KR'))}
+        </table>
+      `)}
+
+      ${formatSection('🏢', '신청업체 정보', `
+        <table style="width: 100%; border-collapse: collapse;">
+          ${formatTableRow('업체명', data.companyName)}
+          ${formatTableRow('신청인', data.applicantName)}
+          ${formatTableRow('이메일', data.email)}
+          ${formatTableRow('연락처', data.phone)}
+          ${formatTableRow('휴대폰', data.mobile)}
+          ${formatTableRow('팩스', data.fax)}
+          ${formatTableRow('주소', data.address)}
+        </table>
+      `)}
+
+      ${formatSection('🔬', '세부 시험 항목', `
+        <ul style="margin: 0; padding-left: 20px; list-style-type: '✓ '; color: #374151;">
+          ${data.testItems.map((item: string) => `<li style="padding-left: 8px;">${item}</li>`).join('')}
+        </ul>
+      `)}
+
+      ${formatSection('📦', `시험 시료 정보 (${data.samples.length}개)`, `
+        ${data.samples.map((sample: any, index: number) => formatSampleCard(sample, index + 1)).join('')}
+      `)}
+
+      ${formatSection('🚚', '접수 및 반품 정보', `
+        <table style="width: 100%; border-collapse: collapse;">
+          ${formatTableRow('시료 접수 방법', data.receiptMethod === 'delivery' ? '택배' : data.receiptMethod === 'visit' ? '방문' : data.receiptMethod === 'other' ? data.otherMethod : data.receiptMethod)}
+          ${formatTableRow('시료 반품 방법', data.returnMethod === 'return' ? '반품 (착불)' : '폐기 (비용 발생)')}
+        </table>
+      `)}
+
+      ${data.requirements ? formatSection('💬', '고객 요구사항', `
+        <p style="margin: 0; padding: 12px; background-color: #f9fafb; border-radius: 8px;">
+          ${data.requirements}
+        </p>
+      `) : ''}
+    `
+
+    const customerContent = `
+      <p style="font-size: 16px; color: #374151; margin-bottom: 24px;">
+        안녕하세요, <strong>${data.applicantName}</strong>님.<br>
+        한국안전용품시험연구원에 시험 신청서가 정상적으로 접수되었습니다.
+      </p>
+      
+      ${formatAlert('success', '접수 완료', '빠른 시일 내에 담당자가 견적을 보내드릴 예정입니다.')}
+
+      ${formatSection('📄', '신청 내역 요약', `
+        <table style="width: 100%; border-collapse: collapse;">
+          ${formatTableRow('시험 종류', `${data.testItem.category} - ${data.testItem.name}`, true)}
+          ${formatTableRow('성적서 타입', data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서')}
+          ${formatTableRow('시료 개수', `${data.samples.length}개`)}
+          ${formatTableRow('접수일시', new Date().toLocaleString('ko-KR'))}
+        </table>
+      `)}
+
+      <p style="margin-top: 24px; font-size: 14px; color: #6b7280;">
+        문의사항이 있으시면 언제든지 시험소(031-858-3012)로 연락주시기 바랍니다.
+      </p>
+      
+      ${formatButton('홈페이지 바로가기', 'https://ksptl.com')}
+    `
+
     // 관리자에게 이메일 발송
     const adminMailOptions = {
       from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
       to: process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr',
-      subject: `[시험 신청서] ${data.testItem.category} - ${data.companyName} - ${data.applicantName}`,
-      html: emailContent,
+      subject: `[시험 신청] ${data.testItem.category} - ${data.companyName}`,
+      html: generateEmailTemplate('새로운 시험 신청', adminContent, true),
       attachments: attachments
     }
 
@@ -190,41 +141,16 @@ export async function POST(request: NextRequest) {
         await transporter.sendMail(adminMailOptions)
         console.log('Admin email sent successfully to:', adminMailOptions.to)
         
-        // 고객 확인 이메일 전송 (이메일이 있는 경우에만)
+        // 고객 확인 이메일 전송
         if (data.email && data.email.trim() !== '') {
           const customerMailOptions = {
             from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
             to: data.email,
-            subject: '[한국안전용품시험연구원] 시험 신청서 접수 확인',
-            html: `
-              <h2>시험 신청서 접수 확인</h2>
-              <p>안녕하세요, ${data.applicantName}님.</p>
-              <p>${data.testItem.category} - ${data.testItem.name} 시험 신청서가 정상적으로 접수되었습니다.</p>
-              
-              <h3>접수 정보</h3>
-              <ul>
-                <li><strong>업체명:</strong> ${data.companyName}</li>
-                <li><strong>시험 항목:</strong> ${data.testItem.category} - ${data.testItem.name}</li>
-                ${data.testItems && data.testItems.length > 0 ? `
-                  <li><strong>선택한 세부 시험:</strong> ${data.testItems.length}개 항목</li>
-                ` : ''}
-                <li><strong>성적서 타입:</strong> ${data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'}</li>
-                <li><strong>접수일시:</strong> ${new Date().toLocaleString('ko-KR')}</li>
-                <li><strong>시료 개수:</strong> ${data.samples.length}개</li>
-              </ul>
-
-              <p>빠른 시일 내에 담당자가 연락드릴 예정입니다.</p>
-              <p>문의사항이 있으시면 031-858-3012(시험소)로 연락주시기 바랍니다.</p>
-              
-              <p>감사합니다.</p>
-              <p><strong>한국안전용품시험연구원</strong></p>
-            `
+            subject: '[한국안전용품시험연구원] 시험 신청서가 접수되었습니다.',
+            html: generateEmailTemplate('시험 신청 접수 완료', customerContent, false)
           }
-          
           await transporter.sendMail(customerMailOptions)
           console.log('Customer confirmation email sent successfully to:', customerMailOptions.to)
-        } else {
-          console.log('Customer email not provided or invalid, skipping customer notification')
         }
       } catch (emailError) {
         console.error('Email sending error:', emailError)

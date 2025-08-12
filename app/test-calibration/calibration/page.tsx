@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -51,7 +51,7 @@ interface Equipment {
   manufacturer: string
   model: string
   serialNumber: string
-  isNonOfficial: boolean
+  standard: string
   note: string
 }
 
@@ -76,6 +76,7 @@ export default function CalibrationFormPage() {
     
     // 교정 주기
     calibrationPeriod: "national",
+    calibrationPeriodCustom: "",
     
     // 고객 요구사항
     requirements: "",
@@ -87,7 +88,7 @@ export default function CalibrationFormPage() {
         manufacturer: "",
         model: "",
         serialNumber: "",
-        isNonOfficial: false,
+        standard: "",
         note: "",
       }
     ] as Equipment[],
@@ -102,22 +103,29 @@ export default function CalibrationFormPage() {
 
   const totalSteps = 4
   const stepTitles = [
-    "업체 정보",
+    "기본 정보",
     "교정 정보",
     "기기 정보",
-    "접수 방법"
+    "기기 접수"
   ]
 
   // 각 스텝별 필수 항목 체크
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 0: // 업체 정보
-        if (!formData.companyName || !formData.businessNumber || !formData.representative || 
-            !formData.phone || !formData.address || !formData.mobile) {
+        const missingFields: string[] = []
+        if (!formData.applicantName) missingFields.push('신청인')
+        if (!formData.email) missingFields.push('E-mail')
+        if (!formData.companyName) missingFields.push('업체명')
+        if (!formData.address) missingFields.push('주소')
+        if (!formData.phone) missingFields.push('전화')
+        if (!formData.businessLicense) missingFields.push('사업자등록증 사본')
+        
+        if (missingFields.length > 0) {
           Swal.fire({
             icon: 'warning',
             title: '필수 항목 입력',
-            text: '업체명, 사업자 등록번호, 대표자, 전화, 주소, 휴대폰은 필수 입력 항목입니다.',
+            text: `다음 항목을 입력해주세요: ${missingFields.join(', ')}`,
             timer: 3000,
             timerProgressBar: true,
             showConfirmButton: false,
@@ -131,11 +139,11 @@ export default function CalibrationFormPage() {
         }
         break
       case 1: // 교정 정보
-        if (!formData.email || !formData.applicantName) {
+        if (formData.calibrationPeriod === 'custom' && !formData.calibrationPeriodCustom) {
           Swal.fire({
             icon: 'warning',
             title: '필수 항목 입력',
-            text: 'E-mail과 신청인은 필수 입력 항목입니다.',
+            text: '자체설정주기를 입력해주세요.',
             timer: 3000,
             timerProgressBar: true,
             showConfirmButton: false,
@@ -149,13 +157,26 @@ export default function CalibrationFormPage() {
         }
         break
       case 2: // 기기 정보
-        const hasEmptyEquipment = formData.equipments.some(eq => !eq.name)
-        if (hasEmptyEquipment) {
+        const missingEquipmentFields: string[] = []
+        formData.equipments.forEach((eq, index) => {
+          const equipmentMissing: string[] = []
+          if (!eq.name) equipmentMissing.push('기기명')
+          if (!eq.manufacturer) equipmentMissing.push('제조사')
+          if (!eq.model) equipmentMissing.push('모델명')
+          if (!eq.serialNumber) equipmentMissing.push('기기번호')
+          if (!eq.standard) equipmentMissing.push('규격')
+          
+          if (equipmentMissing.length > 0) {
+            missingEquipmentFields.push(`기기 #${index + 1}: ${equipmentMissing.join(', ')}`)
+          }
+        })
+        
+        if (missingEquipmentFields.length > 0) {
           Swal.fire({
             icon: 'warning',
             title: '필수 항목 입력',
-            text: '모든 기기의 기기명은 필수 입력 항목입니다.',
-            timer: 3000,
+            html: `다음 항목을 입력해주세요:<br/>${missingEquipmentFields.join('<br/>')}`,
+            timer: 5000,
             timerProgressBar: true,
             showConfirmButton: false,
             showCloseButton: true,
@@ -200,22 +221,6 @@ export default function CalibrationFormPage() {
           })
           return false
         }
-        if (!formData.businessLicense) {
-          Swal.fire({
-            icon: 'warning',
-            title: '필수 항목 입력',
-            text: '사업자등록증 사본을 첨부해주세요.',
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-            showCloseButton: true,
-            position: 'center',
-            allowOutsideClick: true,
-            allowEscapeKey: true,
-            allowEnterKey: true
-          })
-          return false
-        }
         break
     }
     return true
@@ -243,7 +248,7 @@ export default function CalibrationFormPage() {
           manufacturer: "",
           model: "",
           serialNumber: "",
-          isNonOfficial: false,
+          standard: "",
           note: "",
         }
       ]
@@ -264,21 +269,13 @@ export default function CalibrationFormPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // 최종 필수 항목 체크
-    if (!formData.businessLicense) {
-      Swal.fire({
-        icon: 'warning',
-        title: '필수 항목 입력',
-        text: '사업자등록증 사본을 첨부해주세요.',
-        timer: 3000,
-        timerProgressBar: true,
-        showConfirmButton: false,
-        showCloseButton: true,
-        position: 'center',
-        allowOutsideClick: true,
-        allowEscapeKey: true,
-        allowEnterKey: true
-      })
+    // 마지막 스텝에서만 제출 로직 실행
+    if (currentStep !== totalSteps - 1) {
+      return
+    }
+
+    // 마지막 스텝 validation
+    if (!validateStep(currentStep)) {
       return
     }
 
@@ -379,50 +376,13 @@ export default function CalibrationFormPage() {
           </p>
         </motion.div>
 
-        {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Card className="p-4 text-center">
-              <Clock className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h3 className="font-semibold mb-1">24시간 내 견적</h3>
-              <p className="text-sm text-muted-foreground">신속한 견적 제공</p>
-            </Card>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card className="p-4 text-center">
-              <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h3 className="font-semibold mb-1">KOLAS 공인</h3>
-              <p className="text-sm text-muted-foreground">신뢰할 수 있는 성적서</p>
-            </Card>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Card className="p-4 text-center">
-              <AlertCircle className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h3 className="font-semibold mb-1">전문 상담</h3>
-              <p className="text-sm text-muted-foreground">기술 지원 제공</p>
-            </Card>
-          </motion.div>
-        </div>
-
         {/* Application Form */}
         <Card className="max-w-4xl mx-auto p-8">
           <h2 className="text-2xl font-bold text-center mb-2">{stepTitles[currentStep]}</h2>
           <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 
-          <form onSubmit={handleSubmit}>
-            {/* Step 1: 업체 정보 */}
+          <form>
+            {/* Step 1: 기본 정보 */}
             {currentStep === 0 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -430,107 +390,148 @@ export default function CalibrationFormPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName">업체명 *</Label>
-                    <Input
-                      id="companyName"
-                      value={formData.companyName}
-                      onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                      required
-                      placeholder="업체명을 입력하세요"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="businessNumber">사업자 등록번호 *</Label>
-                    <Input
-                      id="businessNumber"
-                      value={formData.businessNumber}
-                      onChange={(e) => setFormData({ ...formData, businessNumber: e.target.value })}
-                      required
-                      placeholder="000-00-00000"
-                    />
-                  </div>
-                </div>
+                {/* 신청인 정보 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">신청인 정보</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="applicantName">신청인 *</Label>
+                      <Input
+                        id="applicantName"
+                        value={formData.applicantName}
+                        onChange={(e) => setFormData({ ...formData, applicantName: e.target.value })}
+                        placeholder="신청인 이름"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="email">E-mail *</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="이메일 주소"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="mobile">휴대폰</Label>
+                      <Input
+                        id="mobile"
+                        type="tel"
+                        value={formData.mobile}
+                        onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                        placeholder="010-0000-0000"
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="representative">대표자 *</Label>
-                    <Input
-                      id="representative"
-                      value={formData.representative}
-                      onChange={(e) => setFormData({ ...formData, representative: e.target.value })}
-                      required
-                      placeholder="대표자명"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">전화 *</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      required
-                      placeholder="02-0000-0000"
-                    />
-                  </div>
-                </div>
+                {/* 신청업체 정보 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">신청업체 정보</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="companyName">업체명 *</Label>
+                      <Input
+                        id="companyName"
+                        value={formData.companyName}
+                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                        placeholder="업체명을 입력하세요"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="address">주소 *</Label>
+                      <Input
+                        id="address"
+                        value={formData.address}
+                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                        placeholder="주소를 입력하세요"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="phone">전화 *</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="031-000-0000"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="fax">팩스</Label>
+                        <Input
+                          id="fax"
+                          value={formData.fax}
+                          onChange={(e) => setFormData({ ...formData, fax: e.target.value })}
+                          placeholder="031-000-0000"
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="businessType">업태</Label>
-                    <Input
-                      id="businessType"
-                      value={formData.businessType}
-                      onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                      placeholder="제조업"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="businessCategory">업종</Label>
-                    <Input
-                      id="businessCategory"
-                      value={formData.businessCategory}
-                      onChange={(e) => setFormData({ ...formData, businessCategory: e.target.value })}
-                      placeholder="안전용품"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="address">주소 *</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    required
-                    placeholder="전체 주소를 입력하세요"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fax">팩스</Label>
-                    <Input
-                      id="fax"
-                      value={formData.fax}
-                      onChange={(e) => setFormData({ ...formData, fax: e.target.value })}
-                      placeholder="02-0000-0000"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="mobile">휴대폰 *</Label>
-                    <Input
-                      id="mobile"
-                      type="tel"
-                      value={formData.mobile}
-                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                      required
-                      placeholder="010-0000-0000"
-                    />
-                  </div>
-                </div>
+                {/* 사업자등록증 사본 첨부 */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">사업자등록증 사본 첨부 *</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div 
+                      className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                      onDragOver={(e) => {
+                        e.preventDefault()
+                        e.currentTarget.classList.add('border-primary', 'bg-primary/5')
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault()
+                        e.currentTarget.classList.remove('border-primary', 'bg-primary/5')
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault()
+                        e.currentTarget.classList.remove('border-primary', 'bg-primary/5')
+                        const file = e.dataTransfer.files[0]
+                        if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+                          setFormData({ ...formData, businessLicense: file })
+                        }
+                      }}
+                      onClick={() => document.getElementById('businessLicense')?.click()}
+                    >
+                      <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-2">
+                        파일을 선택하거나 드래그하여 업로드하세요
+                      </p>
+                      <p className="text-xs text-muted-foreground mb-4">
+                        이미지(JPG, PNG) 또는 PDF 파일만 가능합니다
+                      </p>
+                      <Input
+                        id="businessLicense"
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null
+                          setFormData({ ...formData, businessLicense: file })
+                        }}
+                        className="hidden"
+                      />
+                      {formData.businessLicense && (
+                        <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                          <p className="text-sm text-primary font-medium">
+                            ✓ {formData.businessLicense.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {(formData.businessLicense.size / 1024).toFixed(2)} KB
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
 
@@ -542,67 +543,65 @@ export default function CalibrationFormPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="department">부서명</Label>
-                    <Input
-                      id="department"
-                      value={formData.department}
-                      onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      placeholder="품질관리팀"
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">교정 주기 선택 *</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RadioGroup
+                      value={formData.calibrationPeriod}
+                      onValueChange={(value) => setFormData({ ...formData, calibrationPeriod: value })}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-2">
+                          <RadioGroupItem value="national" id="national" className="mt-0.5" />
+                          <div className="space-y-1">
+                            <Label htmlFor="national" className="font-medium">국가에서 정한 교정주기</Label>
+                            <p className="text-sm text-gray-600">
+                              국가교정기관 지정 주기에 따라 교정을 진행합니다
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <RadioGroupItem value="custom" id="custom" className="mt-0.5" />
+                          <div className="space-y-1 w-full">
+                            <Label htmlFor="custom" className="font-medium">자체설정주기</Label>
+                            <p className="text-sm text-gray-600">
+                              귀사의 품질관리 규정에 따른 주기로 교정을 진행합니다
+                            </p>
+                            {formData.calibrationPeriod === 'custom' && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                                animate={{ opacity: 1, height: 'auto', marginTop: '0.75rem' }}
+                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                              >
+                                <Input
+                                  value={formData.calibrationPeriodCustom}
+                                  onChange={(e) => setFormData({ ...formData, calibrationPeriodCustom: e.target.value })}
+                                  placeholder="예: 6개월, 1년 *" 
+                                />
+                              </motion.div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">고객 요구사항</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Textarea
+                      value={formData.requirements}
+                      onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                      placeholder="특별한 요구사항이 있으시면 입력해주세요"
+                      className="min-h-[120px]"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">E-mail *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                      placeholder="example@company.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="applicantName">신청인 *</Label>
-                  <Input
-                    id="applicantName"
-                    value={formData.applicantName}
-                    onChange={(e) => setFormData({ ...formData, applicantName: e.target.value })}
-                    required
-                    placeholder="신청인 성명"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>교정 주기 선택 *</Label>
-                  <RadioGroup
-                    value={formData.calibrationPeriod}
-                    onValueChange={(value) => setFormData({ ...formData, calibrationPeriod: value })}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="national" id="national" />
-                      <Label htmlFor="national">국가에서 정한 교정주기</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="custom" id="custom" />
-                      <Label htmlFor="custom">자체설정주기</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="requirements">고객 요구사항</Label>
-                  <Textarea
-                    id="requirements"
-                    value={formData.requirements}
-                    onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
-                    placeholder="특별한 요구사항이 있으시면 입력해주세요"
-                    className="min-h-[120px]"
-                  />
-                </div>
+                  </CardContent>
+                </Card>
               </motion.div>
             )}
 
@@ -649,49 +648,46 @@ export default function CalibrationFormPage() {
                         <Input
                           value={equipment.name}
                           onChange={(e) => handleEquipmentChange(index, "name", e.target.value)}
-                          required
-                          placeholder="기기명"
+                          placeholder="기기명을 입력하세요"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>제작회사</Label>
+                        <Label>제조사 *</Label>
                         <Input
                           value={equipment.manufacturer}
                           onChange={(e) => handleEquipmentChange(index, "manufacturer", e.target.value)}
-                          placeholder="제작회사"
+                          placeholder="제조사를 입력하세요"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="space-y-2">
-                        <Label>모델/규격</Label>
+                        <Label>모델명 *</Label>
                         <Input
                           value={equipment.model}
                           onChange={(e) => handleEquipmentChange(index, "model", e.target.value)}
-                          placeholder="모델명 또는 규격"
+                          placeholder="모델명을 입력하세요"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>기기번호</Label>
+                        <Label>기기번호 *</Label>
                         <Input
                           value={equipment.serialNumber}
                           onChange={(e) => handleEquipmentChange(index, "serialNumber", e.target.value)}
-                          placeholder="시리얼 번호"
+                          placeholder="시리얼 번호를 입력하세요"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`nonOfficial-${index}`}
-                          checked={equipment.isNonOfficial}
-                          onCheckedChange={(checked) => 
-                            handleEquipmentChange(index, "isNonOfficial", checked as boolean)
-                          }
+                      <div className="space-y-2">
+                        <Label>규격 *</Label>
+                        <Input
+                          value={equipment.standard}
+                          onChange={(e) => handleEquipmentChange(index, "standard", e.target.value)}
+                          placeholder="규격을 입력하세요"
                         />
-                        <Label htmlFor={`nonOfficial-${index}`}>비공인</Label>
                       </div>
                       <div className="space-y-2">
                         <Label>비고</Label>
@@ -707,7 +703,7 @@ export default function CalibrationFormPage() {
               </motion.div>
             )}
 
-            {/* Step 4: 접수 방법 */}
+            {/* Step 4: 기기 접수 */}
             {currentStep === 3 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -715,68 +711,65 @@ export default function CalibrationFormPage() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="space-y-2">
-                  <Label>접수방법 *</Label>
-                  <RadioGroup
-                    value={formData.receptionMethod}
-                    onValueChange={(value) => setFormData({ ...formData, receptionMethod: value })}
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="visit" id="visit" />
-                      <Label htmlFor="visit">방문</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="delivery" id="delivery" />
-                      <Label htmlFor="delivery">택배</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="pickup" id="pickup" />
-                      <Label htmlFor="pickup">픽업</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="onsite" id="onsite" />
-                      <Label htmlFor="onsite">출장</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="other" id="other" />
-                      <Label htmlFor="other">기타</Label>
-                    </div>
-                  </RadioGroup>
-                  
-                  {formData.receptionMethod === "other" && (
-                    <Input
-                      value={formData.receptionMethodOther}
-                      onChange={(e) => setFormData({ ...formData, receptionMethodOther: e.target.value })}
-                      placeholder="기타 접수방법을 입력하세요"
-                      className="mt-2"
-                    />
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="businessLicense">사업자등록증 사본 *</Label>
-                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                    <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      파일을 선택하거나 드래그하여 업로드하세요
-                    </p>
-                    <Input
-                      id="businessLicense"
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0] || null
-                        setFormData({ ...formData, businessLicense: file })
-                      }}
-                      className="max-w-xs mx-auto"
-                    />
-                    {formData.businessLicense && (
-                      <p className="text-sm text-primary mt-2">
-                        선택된 파일: {formData.businessLicense.name}
-                      </p>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">기기 접수 *</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <RadioGroup
+                      value={formData.receptionMethod}
+                      onValueChange={(value) => setFormData({ ...formData, receptionMethod: value })}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-2">
+                          <RadioGroupItem value="visit" id="visit" className="mt-0.5" />
+                          <div className="space-y-1">
+                            <Label htmlFor="visit" className="font-medium">방문</Label>
+                            <p className="text-sm text-gray-600">
+                              직접 방문하여 기기를 접수합니다
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <RadioGroupItem value="delivery" id="delivery" className="mt-0.5" />
+                          <div className="space-y-1">
+                            <Label htmlFor="delivery" className="font-medium">택배</Label>
+                            <p className="text-sm text-gray-600">
+                              택배를 통해 기기를 발송합니다
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <RadioGroupItem value="onsite" id="onsite" className="mt-0.5" />
+                          <div className="space-y-1">
+                            <Label htmlFor="onsite" className="font-medium">출장</Label>
+                            <p className="text-sm text-gray-600">
+                              기술자가 직접 방문하여 교정을 진행합니다
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start space-x-2">
+                          <RadioGroupItem value="other" id="other" className="mt-0.5" />
+                          <div className="space-y-1">
+                            <Label htmlFor="other" className="font-medium">기타</Label>
+                            <p className="text-sm text-gray-600">
+                              기타 방법으로 접수합니다 *
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </RadioGroup>
+                    
+                    {formData.receptionMethod === "other" && (
+                      <Input
+                        value={formData.receptionMethodOther}
+                        onChange={(e) => setFormData({ ...formData, receptionMethodOther: e.target.value })}
+                        placeholder="기타 접수방법을 입력하세요"
+                        className="mt-3"
+                      />
                     )}
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
 
                 <Card className="p-4 bg-blue-50">
                   <h4 className="font-semibold mb-2">안내사항</h4>
@@ -786,7 +779,7 @@ export default function CalibrationFormPage() {
                     <li>• 거래명세서/계산서 확인 후 입금 부탁드리겠습니다. (입금확인 후 출고가능)</li>
                     <li>• 당사 방문 출고를 원하는 경우, 방문 1시간 전에 연락 후 방문 바랍니다.</li>
                     <li>• 의뢰한 교정품목이 완료되어 찾으실 때에는 교정수수료를 아래 은행에 입금하여 주시기 바랍니다.</li>
-                    <li className="font-medium">[ 국민은행 : 526501-01-284980 / 예금주 : 한국안전용품시험연구원 ]</li>
+                    <li className="font-medium">[ 기업은행 : 439-043204-01-014 / 예금주 : (주) 큐로 ]</li>
                   </ul>
                 </Card>
               </motion.div>
@@ -805,7 +798,11 @@ export default function CalibrationFormPage() {
               </Button>
 
               {currentStep === totalSteps - 1 ? (
-                <Button type="submit" className="bg-gradient-primary text-white hover:opacity-90">
+                <Button 
+                  type="button" 
+                  onClick={handleSubmit}
+                  className="bg-gradient-primary text-white hover:opacity-90"
+                >
                   <Send className="h-4 w-4 mr-2" />
                   신청서 제출
                 </Button>

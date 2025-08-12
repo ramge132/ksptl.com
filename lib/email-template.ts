@@ -166,10 +166,12 @@ export const formatSampleCard = (sample: any, index: number) => {
           <td style="color: #374151; padding: 2px 0;">${sample.model}</td>
         </tr>
         ` : ''}
+        ${sample.notes ? `
         <tr>
-          <td style="color: #6b7280; padding: 2px 0;">수량:</td>
-          <td style="color: #374151; padding: 2px 0;">${sample.quantity}개</td>
+          <td style="color: #6b7280; padding: 2px 0;">비고:</td>
+          <td style="color: #374151; padding: 2px 0;">${sample.notes}</td>
         </tr>
+        ` : ''}
         ${sample.serialNumber ? `
         <tr>
           <td style="color: #6b7280; padding: 2px 0;">시료번호:</td>
