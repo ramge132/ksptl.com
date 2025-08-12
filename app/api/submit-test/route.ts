@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { generateEmailTemplate, formatTableRow, formatSection, formatSampleCard, formatAlert, formatButton } from '@/lib/email-template'
+import { generateTestPDF } from '@/lib/pdf-generator'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,6 +38,18 @@ export async function POST(request: NextRequest) {
           content: Buffer.from(buffer)
         })
       }
+    }
+
+    // PDF 생성 및 첨부 (관리자용)
+    try {
+      const pdfBuffer = await generateTestPDF(data)
+      attachments.push({
+        filename: `시험신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
+        content: pdfBuffer
+      })
+    } catch (pdfError) {
+      console.error('PDF generation error:', pdfError)
+      // PDF 생성 실패해도 계속 진행
     }
 
     // 이메일 전송 설정

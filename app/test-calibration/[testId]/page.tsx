@@ -634,6 +634,7 @@ export default function TestApplicationPage() {
     }
   }
 
+
   const submitForm = async () => {
     // 로딩 알람 표시
     Swal.fire({
@@ -1289,7 +1290,7 @@ export default function TestApplicationPage() {
         </motion.div>
 
         {/* Application Form */}
-        <Card className="max-w-4xl mx-auto p-8">
+        <Card className="max-w-4xl mx-auto p-8" id="application-form-content">
           <h2 className="text-2xl font-bold text-center mb-2">{stepTitles[currentStep]}</h2>
           <StepIndicator currentStep={currentStep} totalSteps={totalSteps} />
 

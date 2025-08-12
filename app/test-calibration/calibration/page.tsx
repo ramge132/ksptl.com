@@ -70,13 +70,11 @@ export default function CalibrationFormPage() {
     mobile: "",
     
     // 성적서 발급처
-    department: "",
     email: "",
     applicantName: "",
     
     // 교정 주기
     calibrationPeriod: "national",
-    calibrationPeriodCustom: "",
     
     // 고객 요구사항
     requirements: "",
@@ -139,22 +137,7 @@ export default function CalibrationFormPage() {
         }
         break
       case 1: // 교정 정보
-        if (formData.calibrationPeriod === 'custom' && !formData.calibrationPeriodCustom) {
-          Swal.fire({
-            icon: 'warning',
-            title: '필수 항목 입력',
-            text: '자체설정주기를 입력해주세요.',
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-            showCloseButton: true,
-            position: 'center',
-            allowOutsideClick: true,
-            allowEscapeKey: true,
-            allowEnterKey: true
-          })
-          return false
-        }
+        // '자체설정주기'는 이제 단순 선택이므로 별도 유효성 검사 필요 없음
         break
       case 2: // 기기 정보
         const missingEquipmentFields: string[] = []
@@ -266,6 +249,7 @@ export default function CalibrationFormPage() {
     setFormData({ ...formData, equipments: newEquipments })
   }
 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -306,7 +290,6 @@ export default function CalibrationFormPage() {
         phone: formData.phone,
         fax: formData.fax,
         mobile: formData.mobile,
-        department: formData.department,
         email: formData.email,
         applicantName: formData.applicantName,
         applicantEmail: formData.email, // 신청자 이메일 추가
@@ -569,19 +552,6 @@ export default function CalibrationFormPage() {
                             <p className="text-sm text-gray-600">
                               귀사의 품질관리 규정에 따른 주기로 교정을 진행합니다
                             </p>
-                            {formData.calibrationPeriod === 'custom' && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                                animate={{ opacity: 1, height: 'auto', marginTop: '0.75rem' }}
-                                exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                              >
-                                <Input
-                                  value={formData.calibrationPeriodCustom}
-                                  onChange={(e) => setFormData({ ...formData, calibrationPeriodCustom: e.target.value })}
-                                  placeholder="예: 6개월, 1년 *" 
-                                />
-                              </motion.div>
-                            )}
                           </div>
                         </div>
                       </div>
