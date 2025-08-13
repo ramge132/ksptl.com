@@ -6,12 +6,6 @@ scripts/
 *.md
 *.txt
 
-# Large files that aren't needed in production
-public/fonts/
-public/images/*.jpg
-public/images/*.png
-public/images/*.svg
-
 # Development files
 .env.example
 env-example.txt
