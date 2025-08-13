@@ -1,4 +1,5 @@
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
 
 const commonStyles = `
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -461,20 +462,27 @@ async function generatePDFFromHTML(html: string): Promise<Buffer> {
   let browser;
   
   try {
-    // Puppeteer 브라우저 실행
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    if (process.env.VERCEL_ENV) {
+      // Production environment on Vercel
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+    } else {
+      // Local development environment
+      const puppeteer_dev = require('puppeteer');
+      browser = await puppeteer_dev.launch({
+        headless: true,
+      });
+    }
     
     const page = await browser.newPage();
     
-    // HTML 콘텐츠 설정
     await page.setContent(html, {
       waitUntil: 'networkidle0'
     });
     
-    // PDF 생성
     const pdfBuffer = await page.pdf({
       format: 'A4',
       printBackground: true,

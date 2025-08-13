@@ -723,7 +723,7 @@ export default function CalibrationFormPage() {
                           <div className="space-y-1">
                             <Label htmlFor="other" className="font-medium">기타</Label>
                             <p className="text-sm text-gray-600">
-                              기타 방법으로 접수합니다 *
+                              기타 방법으로 접수합니다
                             </p>
                           </div>
                         </div>
@@ -734,7 +734,7 @@ export default function CalibrationFormPage() {
                       <Input
                         value={formData.receptionMethodOther}
                         onChange={(e) => setFormData({ ...formData, receptionMethodOther: e.target.value })}
-                        placeholder="기타 접수방법을 입력하세요"
+                        placeholder="기타 접수방법을 입력하세요 *"
                         className="mt-3"
                       />
                     )}
