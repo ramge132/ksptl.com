@@ -45,7 +45,7 @@
     "@react-three/fiber": "^9.3.0",
     "@sanity/client": "^7.8.2",
     "@sanity/image-url": "^1.1.0",
-    "@sparticuz/chromium": "^138.0.2",
+    "@sparticuz/chromium-min": "^138.0.2",
     "@tsparticles/engine": "^3.9.1",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.9.1",

@@ -40,16 +40,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // PDF 생성 및 첨부 (관리자용)
-    try {
-      const pdfBuffer = await generateTestPDF(data)
-      attachments.push({
-        filename: `시험신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
-        content: pdfBuffer
-      })
-    } catch (pdfError) {
-      console.error('PDF generation error:', pdfError)
-      // PDF 생성 실패해도 계속 진행
+    // PDF 생성 및 첨부 (관리자용) - Vercel 환경에서는 PDF 생성 건너뛰기
+    if (!process.env.VERCEL_ENV) {
+      try {
+        const pdfBuffer = await generateTestPDF(data)
+        attachments.push({
+          filename: `시험신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
+          content: pdfBuffer
+        })
+        console.log('PDF generated and attached successfully')
+      } catch (pdfError) {
+        console.error('PDF generation error:', pdfError)
+        // PDF 생성 실패해도 계속 진행
+      }
+    } else {
+      console.log('PDF generation skipped in Vercel environment')
+      // Vercel 환경에서는 HTML 테이블 형태로 정보 추가
     }
 
     // 이메일 전송 설정

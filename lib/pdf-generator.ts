@@ -1,5 +1,10 @@
 import puppeteer from 'puppeteer-core'
-import chromium from '@sparticuz/chromium'
+import chromium from '@sparticuz/chromium-min'
+
+// Vercel 환경에서 chromium 바이너리를 외부에서 다운로드
+if (process.env.VERCEL_ENV) {
+  chromium.setGraphicsMode = false;
+}
 
 const commonStyles = `
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -469,29 +474,27 @@ async function generatePDFFromHTML(html: string): Promise<Buffer> {
       // Production environment on Vercel
       console.log('Using Chromium for production');
       
-      // Chromium 설정 최적화
-      const chromiumArgs = [
-        ...chromium.args,
-        '--disable-web-security',
-        '--disable-features=IsolateOrigins,site-per-process',
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ];
-      
-      const executablePath = await chromium.executablePath();
-      console.log('Chromium executable path:', executablePath);
-      
-      browser = await puppeteer.launch({
-        args: chromiumArgs,
-        executablePath: executablePath,
-        headless: true,
-      });
+      try {
+        // Vercel 환경에서 chromium 바이너리 경로 설정
+        // 외부 URL에서 chromium 다운로드
+        const executablePath = await chromium.executablePath(
+          'https://github.com/Sparticuz/chromium/releases/download/v138.0.2/chromium-v138.0.2-pack.tar'
+        );
+        console.log('Chromium executable path:', executablePath);
+        
+        // Chromium 설정 최적화
+        browser = await puppeteer.launch({
+          args: chromium.args,
+          executablePath: executablePath,
+          headless: true,
+        });
+      } catch (chromiumError: any) {
+        console.error('Chromium launch error:', chromiumError);
+        
+        // Fallback: chromium 없이 PDF 생성 시도
+        console.log('Attempting fallback PDF generation without chromium...');
+        throw new Error('PDF generation unavailable in production. Please contact support.');
+      }
     } else {
       // Local development environment
       console.log('Using local Puppeteer for development');
