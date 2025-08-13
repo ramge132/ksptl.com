@@ -164,19 +164,21 @@ export async function POST(request: NextRequest) {
 
     // 관리자에게 이메일 발송
     const adminMailOptions = {
-      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
       to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[교정 신청서] ${data.companyName} - ${data.applicantName}`,
       html: generateEmailTemplate('[교정 신청서] 새로운 신청이 접수되었습니다', adminEmailContent, true),
-      attachments: attachments
+      attachments: attachments,
+      replyTo: 'yukwho@hanmail.net' // 답장 받을 실제 이메일
     }
 
     // 신청자에게 확인 이메일 발송
     const customerMailOptions = {
-      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
       to: data.email,
       subject: '[한국안전용품시험연구원] 교정 신청서 접수 확인',
-      html: generateEmailTemplate('교정 신청서 접수 확인', customerEmailContent, false)
+      html: generateEmailTemplate('교정 신청서 접수 확인', customerEmailContent, false),
+      replyTo: 'yukwho@hanmail.net' // 답장 받을 실제 이메일
     }
 
     // 이메일 전송

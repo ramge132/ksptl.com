@@ -30,9 +30,10 @@ export async function POST(request: NextRequest) {
 
     // 관리자에게 보낼 이메일
     const adminMailOptions = {
-      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
       to: to || process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[문의] ${inquiryTypeKorean} - ${company} ${name}`,
+      replyTo: email, // 문의자 이메일로 직접 답장 가능
       html: `
         <div style="font-family: 'Pretendard', sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 10px;">
@@ -84,9 +85,10 @@ export async function POST(request: NextRequest) {
 
     // 문의자에게 보낼 확인 이메일
     const customerMailOptions = {
-      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: `[한국안전용품시험연구원] 문의가 정상적으로 접수되었습니다`,
+      replyTo: 'yukwho@hanmail.net', // 답장 받을 실제 이메일
       html: `
         <div style="font-family: 'Pretendard', sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="text-align: center; padding: 30px 0; background-color: #1e40af;">

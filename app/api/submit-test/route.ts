@@ -140,11 +140,12 @@ export async function POST(request: NextRequest) {
 
     // 관리자에게 이메일 발송
     const adminMailOptions = {
-      from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
       to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[시험 신청] ${data.testItem.category} - ${data.companyName}`,
       html: generateEmailTemplate('새로운 시험 신청', adminContent, true),
-      attachments: attachments
+      attachments: attachments,
+      replyTo: 'yukwho@hanmail.net' // 답장 받을 실제 이메일
     }
 
     // 이메일 전송
@@ -163,10 +164,11 @@ export async function POST(request: NextRequest) {
         // 고객 확인 이메일 전송
         if (data.email && data.email.trim() !== '') {
           const customerMailOptions = {
-            from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
+            from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
             to: data.email,
             subject: '[한국안전용품시험연구원] 시험 신청서가 접수되었습니다.',
-            html: generateEmailTemplate('시험 신청 접수 완료', customerContent, false)
+            html: generateEmailTemplate('시험 신청 접수 완료', customerContent, false),
+            replyTo: 'yukwho@hanmail.net' // 답장 받을 실제 이메일
           }
           await transporter.sendMail(customerMailOptions)
           console.log('Customer confirmation email sent successfully to:', customerMailOptions.to)
