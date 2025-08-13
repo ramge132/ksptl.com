@@ -41,7 +41,7 @@ export default function PrivacyPage() {
                 transition={{ duration: 0.5 }}
               >
                 <p className="text-muted-foreground mb-6">
-                  시행일: 2024년 1월 1일
+                  시행일: 2025년 1월 1일
                 </p>
 
                 <h2 className="text-2xl font-bold mt-8 mb-4">제1조 (개인정보의 처리 목적)</h2>
@@ -116,7 +116,7 @@ export default function PrivacyPage() {
                   <ul className="text-sm">
                     <li>담당부서: 경영지원팀</li>
                     <li>연락처: 031-862-8556</li>
-                    <li>이메일: ymy@quro.co.kr</li>
+                    <li>이메일: yukwho@hanmail.net</li>
                     <li>주소: 경기도 양주시 은현면 화합로 941번길 83</li>
                   </ul>
                 </div>
@@ -134,7 +134,7 @@ export default function PrivacyPage() {
 
                 <h2 className="text-2xl font-bold mt-8 mb-4">제10조 (개인정보 처리방침 변경)</h2>
                 <p className="mb-4">
-                  이 개인정보처리방침은 2024년 1월 1일부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.
+                  이 개인정보처리방침은 2025년 1월 1일부터 적용되며, 법령 및 방침에 따른 변경내용의 추가, 삭제 및 정정이 있는 경우에는 변경사항의 시행 7일 전부터 공지사항을 통하여 고지할 것입니다.
                 </p>
               </motion.div>
             </div>

@@ -25,7 +25,7 @@
 
 ```env
 # 이메일 설정
-EMAIL_USER=ymy@quro.co.kr와 연동된 Gmail 계정
+EMAIL_USER=yukwho@hanmail.net와 연동된 Gmail 계정
 EMAIL_PASS=위에서 생성한 16자리 앱 비밀번호
 ```
 
@@ -47,7 +47,7 @@ EMAIL_PASS=abcd efgh ijkl mnop  # 공백 제거하여 입력
 3. 문의 폼 작성 후 제출
 
 4. 다음 이메일이 자동 발송됩니다:
-   - **관리자 이메일**: ymy@quro.co.kr로 문의 내용 전송
+   - **관리자 이메일**: yukwho@hanmail.net로 문의 내용 전송
    - **고객 확인 이메일**: 입력한 이메일로 접수 확인 메일 전송
 
 ### 4. 이메일 템플릿
@@ -111,7 +111,7 @@ RESEND_API_KEY=your_resend_api_key
 4. 저장
 
 또는 직접 API에서 기본값 변경:
-`/app/api/submit-inquiry/route.ts` 파일의 'ymy@quro.co.kr' 수정
+`/app/api/submit-inquiry/route.ts` 파일의 'yukwho@hanmail.net' 수정
 
 ---
 

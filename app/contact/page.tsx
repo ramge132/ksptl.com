@@ -66,7 +66,7 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: supportData?.emailTitle || "이메일 문의",
-      content: supportData?.emailAddress || "ymy@quro.co.kr",
+      content: supportData?.emailAddress || "yukwho@hanmail.net",
       description: supportData?.emailHours || "24시간 접수 가능",
     },
     {
@@ -125,7 +125,7 @@ export default function ContactPage() {
 ${formData.message}
       `
       
-      const mailtoLink = `mailto:${supportData?.emailAddress || 'ymy@quro.co.kr'}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+      const mailtoLink = `mailto:${supportData?.emailAddress || 'yukwho@hanmail.net'}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
       window.location.href = mailtoLink
     }
   }

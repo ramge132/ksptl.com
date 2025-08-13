@@ -62,7 +62,7 @@ export const generateEmailTemplate = (title: string, content: string, isAdmin: b
                       TEL: 031-862-8556~7 | FAX: 031-862-8558
                     </p>
                     <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                      © 2024 한국안전용품시험연구원. All rights reserved.
+                      © 2025 한국안전용품시험연구원. All rights reserved.
                     </p>
                   </td>
                 </tr>

@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // 관리자에게 보낼 이메일
     const adminMailOptions = {
       from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
-      to: to || process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr',
+      to: to || process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[문의] ${inquiryTypeKorean} - ${company} ${name}`,
       html: `
         <div style="font-family: 'Pretendard', sans-serif; max-width: 600px; margin: 0 auto;">
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
               <h3 style="color: #1e40af; margin-top: 0;">빠른 상담이 필요하신가요?</h3>
               <p style="line-height: 1.6; color: #374151; margin: 10px 0;">
                 <strong>전화:</strong> 031-862-8556~7 (평일 09:00-18:00)<br>
-                <strong>이메일:</strong> ${process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr'}
+                <strong>이메일:</strong> ${process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net'}
               </p>
             </div>
             
@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
           </div>
           
           <div style="text-align: center; padding: 20px; background-color: #374151; color: white;">
-            <p style="margin: 5px 0;">© 2024 한국안전용품시험연구원. All rights reserved.</p>
+            <p style="margin: 5px 0;">© 2025 한국안전용품시험연구원. All rights reserved.</p>
             <p style="margin: 5px 0; font-size: 12px;">
               경기 양주시 은현면 화합로 941번길 83
             </p>

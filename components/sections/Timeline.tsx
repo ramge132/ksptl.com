@@ -16,31 +16,31 @@ const iconMap = {
 // 기본 데이터 (Sanity 비활성화)
 const timelineData = [
   {
-    year: "1994",
+    year: "2004",
     title: "㈜큐로 설립",
     description: "시험기 제작 전문 기업으로 출발",
     icon: "Building",
   },
   {
-    year: "2000",
-    title: "KS 인증 획득",
-    description: "KS B 5521, 5533, 5541 인증 취득",
-    icon: "Award",
-  },
-  {
-    year: "2005",
+    year: "2009",
     title: "ISO 9001 인증",
     description: "국제 품질경영시스템 인증 획득",
     icon: "Star",
   },
   {
-    year: "2010",
+    year: "2013",
+    title: "KS 인증 획득",
+    description: "KS B 5521, 5533, 5541 인증 취득",
+    icon: "Award",
+  },
+  {
+    year: "2015",
     title: "연구개발전담부서 인정",
     description: "기술 혁신을 위한 R&D 부서 설립",
     icon: "Rocket",
   },
   {
-    year: "2015",
+    year: "2019",
     title: "시험소 확장",
     description: "양주시 화합로에 독립 시험소 개소",
     icon: "Building",
@@ -58,7 +58,7 @@ const timelineData = [
     icon: "Target",
   },
   {
-    year: "2024",
+    year: "2025",
     title: "한국안전용품시험연구원",
     description: "공인 시험·교정 전문기관으로 도약",
     icon: "Star",

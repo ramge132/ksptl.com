@@ -60,10 +60,10 @@ export default function InquiryPage() {
     {
       icon: Mail,
       title: supportData?.emailTitle || "이메일 문의",
-      content: supportData?.emailAddress || "ymy@quro.co.kr",
+      content: supportData?.emailAddress || "yukwho@hanmail.net",
       description: supportData?.emailHours || "24시간 접수 가능",
       action: "메일 보내기",
-      href: `mailto:${supportData?.emailAddress || 'ymy@quro.co.kr'}`
+      href: `mailto:${supportData?.emailAddress || 'yukwho@hanmail.net'}`
     },
     {
       icon: MessageSquare,
@@ -92,12 +92,12 @@ export default function InquiryPage() {
           answer: "네, 출장 교정 서비스를 제공하고 있습니다. 장비의 특성상 이동이 어렵거나 생산 라인 중단이 어려운 경우 출장 교정을 신청하실 수 있습니다."
         },
         {
-          question: "KOLAS 공인 성적서와 일반 성적서의 차이는 무엇인가요?",
-          answer: "KOLAS 공인 성적서는 국제적으로 인정받는 공신력 있는 성적서로, 수출입이나 공공기관 제출 시 필수적입니다. 일반 성적서는 내부 품질관리 목적으로 사용됩니다."
+          question: "공인 성적서와 비공인 성적서의 차이는 무엇인가요?",
+          answer: "KOLAS 공인 성적서는 국제적으로 인정받는 공신력 있는 성적서로, 수출입이나 공공기관 제출 시 필수적입니다. 비공인 성적서(일반 성적서)는 내부 품질관리 목적으로 사용됩니다."
         },
         {
           question: "견적은 어떻게 받을 수 있나요?",
-          answer: "온라인 신청서를 작성하시거나 전화(031-862-8556~7) 또는 이메일(ymy@quro.co.kr)로 문의하시면 24시간 내에 견적을 제공해드립니다."
+          answer: "온라인 신청서를 작성하시거나 전화(031-862-8556~7) 또는 이메일(yukwho@hanmail.net)로 문의하시면 24시간 내에 견적을 제공해드립니다."
         },
         {
           question: "시험 장비를 직접 방문해서 맡길 수 있나요?",

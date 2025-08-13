@@ -52,7 +52,7 @@ export default function HomePage() {
     contactPhoneNumber: '031-862-8556',
     contactPhoneHours: '평일 09:00 - 18:00',
     contactEmailTitle: '이메일',
-    contactEmailAddress: 'ymy@quro.co.kr',
+    contactEmailAddress: 'yukwho@hanmail.net',
     contactEmailDescription: '24시간 접수 가능',
     contactTimeTitle: '처리 시간',
     contactTimeValue: '24시간 내',

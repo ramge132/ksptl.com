@@ -41,7 +41,7 @@ export default function TermsPage() {
                 transition={{ duration: 0.5 }}
               >
                 <p className="text-muted-foreground mb-6">
-                  시행일: 2024년 1월 1일
+                  시행일: 2025년 1월 1일
                 </p>
 
                 <h2 className="text-2xl font-bold mt-8 mb-4">제1장 총칙</h2>
@@ -168,7 +168,7 @@ export default function TermsPage() {
 
                 <div className="mt-12 p-6 bg-gray-50 rounded-lg">
                   <p className="font-semibold mb-2">부칙</p>
-                  <p className="text-sm">이 약관은 2024년 1월 1일부터 시행합니다.</p>
+                  <p className="text-sm">이 약관은 2025년 1월 1일부터 시행합니다.</p>
                 </div>
               </motion.div>
             </div>

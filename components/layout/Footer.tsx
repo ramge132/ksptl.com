@@ -126,7 +126,7 @@ export default function Footer() {
             ))}
           </div>
           <div className="text-sm text-muted-foreground text-center">
-            <p>© 2024 한국안전용품시험연구원. All rights reserved.</p>
+            <p>© 2025 한국안전용품시험연구원. All rights reserved.</p>
             <p className="text-xs mt-1">Operated by QURO Co., Ltd.</p>
           </div>
         </div>

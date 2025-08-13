@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     // 관리자에게 이메일 발송
     const adminMailOptions = {
       from: `"한국안전용품시험연구원" <${process.env.EMAIL_USER}>`,
-      to: process.env.RECIPIENT_EMAIL || 'ymy@quro.co.kr',
+      to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[시험 신청] ${data.testItem.category} - ${data.companyName}`,
       html: generateEmailTemplate('새로운 시험 신청', adminContent, true),
       attachments: attachments

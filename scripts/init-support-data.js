@@ -23,7 +23,7 @@ async function initSupportInfo() {
       phoneNumber: '031-862-8556~7',
       phoneHours: '평일 09:00 - 18:00',
       emailTitle: '이메일 문의',
-      emailAddress: 'ymy@quro.co.kr',
+      emailAddress: 'yukwho@hanmail.net',
       emailHours: '24시간 접수 가능',
       onlineTitle: '온라인 문의',
       onlineDescription: '견적 및 기술 상담',

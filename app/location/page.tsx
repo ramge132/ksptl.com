@@ -14,7 +14,7 @@ const locations = [
     name: "본사",
     address: "경기 양주시 은현면 화합로 941번길 83",
     phone: "031-862-8556~7",
-    email: "ymy@quro.co.kr",
+    email: "yukwho@hanmail.net",
     hours: "평일 09:00 - 18:00",
     mapUrl: "https://map.naver.com/v5/search/경기%20양주시%20은현면%20화합로%20941번길%2083"
   },
@@ -23,7 +23,7 @@ const locations = [
     name: "시험소",
     address: "경기 양주시 은현면 화합로 701-11",
     phone: "031-858-3012",
-    email: "ymy@quro.co.kr",
+    email: "yukwho@hanmail.net",
     hours: "평일 09:00 - 18:00",
     mapUrl: "https://map.naver.com/v5/search/경기%20양주시%20은현면%20화합로%20701-11"
   }

@@ -533,7 +533,7 @@ export default function ApplicationForm() {
                 <li>• 거래명세서/계산서 확인 후 입금 부탁드리겠습니다. (입금확인 후 출고가능)</li>
                 <li>• 당사 방문 출고를 원하는 경우, 방문 1시간 전에 연락 후 방문 바랍니다.</li>
                 <li>• 의뢰한 교정품목이 완료되어 찾으실 때에는 교정수수료를 아래 은행에 입금하여 주시기 바랍니다.</li>
-                <li className="font-medium">[ 국민은행 : 526501-01-284980 / 예금주 : 한국안전용품시험연구원 ]</li>
+                <li className="font-medium">[ 기업은행 : 439-043204-01-014 / 예금주 : (주) 큐로 ]</li>
               </ul>
             </Card>
           </motion.div>

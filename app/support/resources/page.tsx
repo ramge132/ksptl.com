@@ -297,7 +297,7 @@ export default function ResourcesPage() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>• 모든 자료는 무료로 다운로드 가능합니다.</li>
               <li>• 신청서는 최신 양식을 사용해주시기 바랍니다.</li>
-              <li>• 자료 관련 문의는 031-862-8556~7 또는 ymy@quro.co.kr로 연락주시기 바랍니다.</li>
+              <li>• 자료 관련 문의는 031-862-8556~7 또는 yukwho@hanmail.net로 연락주시기 바랍니다.</li>
             </ul>
           </Card>
         </div>

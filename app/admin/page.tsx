@@ -195,7 +195,7 @@ const DEFAULT_LANDING_PAGE: LandingPage = {
   contactPhoneNumber: '031-862-8556',
   contactPhoneHours: '평일 09:00 - 18:00',
   contactEmailTitle: '이메일',
-  contactEmailAddress: 'ymy@quro.co.kr',
+  contactEmailAddress: 'yukwho@hanmail.net',
   contactEmailDescription: '24시간 접수 가능',
   contactTimeTitle: '처리 시간',
   contactTimeValue: '24시간 내',
@@ -1239,7 +1239,7 @@ export default function AdminPage() {
                         <div>
                           <Label>이메일 주소</Label>
                           <Input 
-                            value={landingPage?.contactEmailAddress || 'ymy@quro.co.kr'}
+                            value={landingPage?.contactEmailAddress || 'yukwho@hanmail.net'}
                             onChange={(e) => setLandingPage(prev => prev ? {...prev, contactEmailAddress: e.target.value} : prev)}
                           />
                         </div>
@@ -1525,11 +1525,11 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <Label>은행 정보</Label>
-                  <Input defaultValue="국민은행 526501-01-284980 (예금주: 한국안전용품시험연구원)" />
+                  <Input defaultValue="기업은행 : 439-043204-01-014 (예금주: (주)큐로)" />
                 </div>
                 <div>
                   <Label>Copyright</Label>
-                  <Input defaultValue="© 2024 한국안전용품시험연구원. All rights reserved." />
+                  <Input defaultValue="© 2025 한국안전용품시험연구원. All rights reserved." />
                 </div>
                 <Button className="w-full">저장</Button>
               </CardContent>

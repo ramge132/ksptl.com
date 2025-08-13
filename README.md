@@ -183,7 +183,7 @@ vercel
 
 ## 📄 라이선스
 
-Copyright © 2024 (주)큐로. All rights reserved.
+Copyright © 2025 (주)큐로. All rights reserved.
 
 이 프로젝트는 (주)큐로의 소유이며, 무단 복제 및 배포를 금지합니다.
 
