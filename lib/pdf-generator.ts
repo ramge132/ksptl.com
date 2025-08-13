@@ -462,26 +462,56 @@ async function generatePDFFromHTML(html: string): Promise<Buffer> {
   let browser;
   
   try {
-    if (process.env.VERCEL_ENV) {
+    console.log('Starting PDF generation...');
+    console.log('Environment:', process.env.VERCEL_ENV ? 'Vercel' : 'Local');
+    
+    if (process.env.VERCEL_ENV || process.env.NODE_ENV === 'production') {
       // Production environment on Vercel
+      console.log('Using Chromium for production');
+      
+      // Chromium 설정 최적화
+      const chromiumArgs = [
+        ...chromium.args,
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ];
+      
+      const executablePath = await chromium.executablePath();
+      console.log('Chromium executable path:', executablePath);
+      
       browser = await puppeteer.launch({
-        args: chromium.args,
-        executablePath: await chromium.executablePath(),
+        args: chromiumArgs,
+        executablePath: executablePath,
         headless: true,
       });
     } else {
       // Local development environment
+      console.log('Using local Puppeteer for development');
       const puppeteer_dev = require('puppeteer');
       browser = await puppeteer_dev.launch({
         headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
     }
     
+    console.log('Browser launched successfully');
     const page = await browser.newPage();
     
+    // 타임아웃 설정
     await page.setContent(html, {
-      waitUntil: 'networkidle0'
+      waitUntil: 'domcontentloaded',
+      timeout: 10000
     });
+    
+    console.log('HTML content set');
     
     const pdfBuffer = await page.pdf({
       format: 'A4',
@@ -494,13 +524,25 @@ async function generatePDFFromHTML(html: string): Promise<Buffer> {
       }
     });
     
+    console.log('PDF generated, size:', pdfBuffer.length);
+    
     await browser.close();
+    console.log('Browser closed');
     
     return Buffer.from(pdfBuffer);
-  } catch (error) {
-    console.error('PDF generation error:', error);
+  } catch (error: any) {
+    console.error('PDF generation error - Details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    
     if (browser) {
-      await browser.close();
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.error('Error closing browser:', closeError);
+      }
     }
     throw error;
   }
