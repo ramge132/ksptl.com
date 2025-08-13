@@ -173,7 +173,7 @@ export default function Services({
             <span className="text-gradient">{servicesTitle1}</span> {servicesTitle2}
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            {servicesDescription1}
+            KOLAS 인증 시험 기관으로 <span className="font-bold">총 227종</span>의 안전용품 시험이 가능합니다.
             <br />
             {servicesDescription2}
           </p>

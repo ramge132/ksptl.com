@@ -1,9 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Calendar, Award, Rocket, Building, Target, Star } from "lucide-react"
-import { Timeline as TimelineType } from "@/lib/sanity"
 
 // 아이콘 매핑
 const iconMap = {
@@ -15,8 +13,8 @@ const iconMap = {
   Calendar: Calendar,
 }
 
-// 기본 데이터 (Sanity에서 데이터를 가져올 수 없을 때 사용)
-const defaultTimelineData = [
+// 기본 데이터 (Sanity 비활성화)
+const timelineData = [
   {
     year: "1994",
     title: "㈜큐로 설립",
@@ -68,34 +66,6 @@ const defaultTimelineData = [
 ]
 
 export default function Timeline() {
-  const [timelineData, setTimelineData] = useState(defaultTimelineData)
-  const [landingPage, setLandingPage] = useState<any>(null)
-
-  useEffect(() => {
-    // Sanity에서 연혁 데이터 가져오기
-    fetch('/api/sanity/timeline')
-      .then(res => res.json())
-      .then(data => {
-        if (data && data.length > 0) {
-          setTimelineData(data)
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch timeline data:', err)
-      })
-    
-    // 랜딩페이지 데이터 (제목/설명) 가져오기
-    fetch('/api/sanity/landing')
-      .then(res => res.json())
-      .then(data => {
-        if (data) {
-          setLandingPage(data)
-        }
-      })
-      .catch(err => {
-        console.error('Failed to fetch landing page data:', err)
-      })
-  }, [])
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -107,10 +77,10 @@ export default function Timeline() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-gradient">{landingPage?.timelineTitle1 || '20년'}</span>{landingPage?.timelineTitle2 || '의 역사'}
+            <span className="text-gradient">20년</span>의 역사
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {landingPage?.timelineDescription || '끊임없는 혁신과 도전으로 성장해온 발자취'}
+            끊임없는 혁신과 도전으로 성장해온 발자취
           </p>
         </motion.div>
 

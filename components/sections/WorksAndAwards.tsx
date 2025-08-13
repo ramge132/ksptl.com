@@ -1,112 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Award, Trophy, ScrollText, FileCheck } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { InfiniteScroll } from "@/components/ui/infinite-scroll"
-import { type Award as AwardType } from "@/lib/sanity"
 
 export default function WorksAndAwards() {
-  const [awards, setAwards] = useState<AwardType[]>([])
-
-  useEffect(() => {
-    const fetchAwards = async () => {
-      try {
-        // 캐시를 무시하고 최신 데이터를 가져오기
-        const response = await fetch('/api/sanity/awards', {
-          cache: 'no-store',
-          headers: {
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          }
-        })
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Fetched awards:', data)
-          setAwards(data)
-        }
-      } catch (error) {
-        console.error('Failed to fetch awards:', error)
-      }
-    }
-    fetchAwards()
-  }, [])
-
-  // 인증서와 특허를 구분 - 더 넓은 범위의 키워드로 필터링
-  const certifications = awards.filter(award => 
-    award.title.includes('인증') || 
-    award.title.includes('KOLAS') || 
-    award.title.includes('ISO') || 
-    award.title.includes('KC') ||
-    award.title.includes('KS') ||
-    award.title.includes('품질') ||
-    award.title.includes('방송통신') ||
-    award.title.includes('적합') ||
-    award.title.includes('CE') ||
-    // 특허 관련이 아닌 모든 것을 인증서로 분류
-    (!award.title.includes('특허') && !award.title.includes('디자인') && !award.title.includes('등록증'))
-  )
-  
-  const patents = awards.filter(award => 
-    award.title.includes('특허') || 
-    award.title.includes('디자인등록') ||
-    award.title.includes('등록증')
-  )
-
-  const certificationItems = certifications.map((cert: any, index) => (
-    <Card key={cert._id} className="p-6 text-center hover-lift bg-white w-64">
-      {cert.imageUrl || cert.image ? (
-        <div className="w-32 h-32 mx-auto mb-4 overflow-hidden rounded-lg">
-          <img 
-            src={cert.imageUrl || (cert.image && cert.image.asset && `https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${cert.image.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}`)}
-            alt={cert.title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              console.error('Image load error for:', cert.title)
-              e.currentTarget.style.display = 'none'
-            }}
-          />
-        </div>
-      ) : (
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-primary-light flex items-center justify-center">
-          <ScrollText className="h-8 w-8 text-primary" />
-        </div>
-      )}
-      <h3 className="font-semibold text-sm mb-2">{cert.title}</h3>
-      <p className="text-xs text-muted-foreground">{cert.description}</p>
-    </Card>
-  ))
-
-  const patentItems = patents.map((patent: any, index) => (
-    <Card key={patent._id} className="p-4 hover-lift bg-white w-80">
-      <div className="flex items-start gap-4">
-        {patent.imageUrl || patent.image ? (
-          <div className="w-20 h-20 shrink-0 overflow-hidden rounded-lg">
-            <img 
-              src={patent.imageUrl || (patent.image && patent.image.asset && `https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${patent.image.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}`)}
-              alt={patent.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                console.error('Image load error for:', patent.title)
-                e.currentTarget.style.display = 'none'
-              }}
-            />
-          </div>
-        ) : (
-          <div className="p-2 rounded-lg bg-gradient-primary-light shrink-0">
-            <Trophy className="h-5 w-5 text-primary" />
-          </div>
-        )}
-        <div className="flex-1">
-          <h3 className="font-semibold text-sm mb-1">{patent.title}</h3>
-          <p className="text-xs text-muted-foreground">{patent.description}</p>
-        </div>
-      </div>
-    </Card>
-  ))
-
-  // 하드코딩된 기본 데이터 (awards가 비어있을 때 사용)
+  // 기본 데이터 (Sanity 비활성화)
   const defaultCertifications = [
     {
       title: "KOLAS 공인교정기관 인정서",
@@ -248,9 +148,8 @@ export default function WorksAndAwards() {
           <h3 className="text-2xl font-bold text-center mb-8">
             <span className="text-gradient">인증서</span>
           </h3>
-          {/* awards 데이터가 있으면 실제 데이터 사용, 없으면 기본 데이터 사용 */}
           <InfiniteScroll 
-            items={awards.length > 0 ? certificationItems : defaultCertificationItems} 
+            items={defaultCertificationItems} 
             speed={40} 
           />
         </div>
@@ -260,25 +159,11 @@ export default function WorksAndAwards() {
           <h3 className="text-2xl font-bold text-center mb-8">
             <span className="text-gradient">특허 및 디자인 등록</span>
           </h3>
-          {/* awards 데이터가 있으면 실제 데이터 사용, 없으면 기본 데이터 사용 */}
           <InfiniteScroll 
-            items={awards.length > 0 ? patentItems : defaultPatentItems} 
+            items={defaultPatentItems} 
             speed={40} 
           />
         </div>
-
-        {/* 디버깅용: 실제 데이터 확인 */}
-        {process.env.NODE_ENV === 'development' && (
-          <div className="mt-8 p-4 bg-gray-100 rounded text-xs">
-            <p>총 Awards 데이터: {awards.length}개</p>
-            <p>인증서: {certificationItems.length}개</p>
-            <p>특허: {patentItems.length}개</p>
-            <details>
-              <summary>상세 데이터 보기</summary>
-              <pre className="mt-2 overflow-auto">{JSON.stringify(awards, null, 2)}</pre>
-            </details>
-          </div>
-        )}
       </div>
     </section>
   )

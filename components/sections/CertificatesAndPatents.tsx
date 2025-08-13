@@ -8,84 +8,100 @@ import { Award, Shield, FileCheck } from "lucide-react"
 // 하드코딩된 기본 데이터 (Sanity 데이터가 없을 때 사용)
 const defaultCertificates = [
   {
-    image: "/placeholder.jpg",
+    _id: "1",
+    image: "/images/certs/방송통신기자재등의_적합등록필증(KC인증).png",
     title: "방송통신기자재등의 적합등록 필증",
     description: "KC인증 (5031-FC65-40CE-227C)"
   },
   {
-    image: "/placeholder.jpg",
+    _id: "2",
+    image: "/images/certs/공인교정기관_인정서(국문).bmp",
     title: "KOLAS 공인교정기관 인정서",
     description: "KC23-420"
   },
   {
-    image: "/placeholder.jpg",
-    title: "KS 제품인증서",
-    description: "인장시험기 (KS B 5521)"
+    _id: "3",
+    image: "/images/certs/KS인증서-인장시험기.bmp",
+    title: "KS 제품인증서 - 인장시험기",
+    description: "KS B 5521"
   },
   {
-    image: "/placeholder.jpg",
-    title: "KS 제품인증서",
-    description: "압축시험기 (KS B 5533)"
+    _id: "4",
+    image: "/images/certs/KS인증서-압축시험기.bmp",
+    title: "KS 제품인증서 - 압축시험기",
+    description: "KS B 5533"
   },
   {
-    image: "/placeholder.jpg",
-    title: "KS 제품인증서",
-    description: "만능재료시험기 (KS B 5541)"
+    _id: "5",
+    image: "/images/certs/KS인증서-만능재료시험기.bmp",
+    title: "KS 제품인증서 - 만능재료시험기",
+    description: "KS B 5541"
   },
   {
-    image: "/placeholder.jpg",
+    _id: "6",
+    image: "/images/certs/ISO인증서_국문.bmp",
     title: "품질경영시스템인증서",
     description: "ISO 9001:2015"
   },
   {
-    image: "/placeholder.jpg",
-    title: "안전모 충격 시험기 특허",
+    _id: "7",
+    image: "/images/certs/특허-안전모충격시험기.jpg",
+    title: "특허증 - 안전모 충격 시험기",
     description: "특허 제 10-0986289호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "아스콘 연소 시험기 특허",
+    _id: "8",
+    image: "/images/certs/특허-아스콘시험기.jpg",
+    title: "특허증 - 아스콘 연소 시험기",
     description: "특허 제10-1238775호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "신발 미끄럼 측정장치 특허",
+    _id: "9",
+    image: "/images/certs/특허-신발미끄럼측정장치.jpg",
+    title: "특허증 - 신발 미끄럼 측정장치",
     description: "특허 제10-1251452호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "커피콩 혼합장치 특허",
+    _id: "10",
+    image: "/images/certs/특허-커피콩_혼합장치.jpg",
+    title: "특허증 - 커피콩 혼합장치",
     description: "특허 제10-1256549호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "안전화 충격 시험장치 특허",
+    _id: "11",
+    image: "/images/certs/특허-안전화충격시험기.jpg",
+    title: "특허증 - 안전화 충격 시험장치",
     description: "특허 제 10-1510675호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "안전모 충격 시험기 (중국)",
+    _id: "12",
+    image: "/images/certs/특허-중국_안전모충격시험기.jpg",
+    title: "특허증 - 안전모 충격 시험기(중국)",
     description: "중국 특허제 141001호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "검전기 특허",
-    description: "활선 접근 경보기 제 10-2002491호"
+    _id: "13",
+    image: "/images/certs/특허-검전기.jpg",
+    title: "특허증 - 검전기(활선 접근 경보기)",
+    description: "등록번호: 제 10-2002491호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "만능재료시험기 디자인등록",
-    description: "등록번호 제 30-0775782호"
+    _id: "14",
+    image: "/images/certs/디자인-만능재료시험기.jpg",
+    title: "디자인등록증 - 만능재료시험기",
+    description: "등록번호: 제 30-0775782호"
   },
   {
-    image: "/placeholder.jpg",
-    title: "검전기 디자인등록",
-    description: "등록번호 제 30-0969154호"
+    _id: "15",
+    image: "/images/certs/디자인-검전기.jpg",
+    title: "디자인등록증 - 검전기",
+    description: "등록번호: 제 30-0969154호"
   },
   {
-    image: "/placeholder.jpg",
+    _id: "16",
+    image: "/images/certs/연구개발전담부서인정서.jpg",
     title: "연구개발전담부서 인정서",
-    description: "기업부설연구소 인정"
+    description: "연구개발전담부서 인정"
   }
 ]
 
@@ -100,50 +116,8 @@ export default function CertificatesAndPatents({
   certificatesTitle1 = "인증서 및",
   certificatesTitle2 = "특허",
   certificatesDescription = "국내외 공인 인증과 특허로 검증된 기술력",
-  certificates: propsCertificates
 }: CertificatesAndPatentsProps) {
-  const [certificates, setCertificates] = useState<any[]>(propsCertificates || defaultCertificates)
-  const [loading, setLoading] = useState(!propsCertificates)
-
-  useEffect(() => {
-    if (!propsCertificates) {
-      const fetchAwards = async () => {
-        try {
-          // 캐시를 무시하고 최신 데이터를 가져오기
-          const response = await fetch('/api/sanity/awards', {
-            cache: 'no-store',
-            headers: {
-              'Cache-Control': 'no-cache',
-              'Pragma': 'no-cache'
-            }
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            console.log('Fetched awards data:', data)
-            
-            // Sanity 데이터가 있으면 사용, 없으면 기본 데이터 사용
-            if (data && data.length > 0) {
-              const transformedData = data.map((item: any) => ({
-                image: item.imageUrl || "/placeholder.jpg",
-                title: item.title,
-                description: item.description,
-                _id: item._id,
-                order: item.order || 0
-              }))
-              setCertificates(transformedData)
-            }
-          }
-        } catch (error) {
-          console.error('Failed to fetch awards:', error)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-      fetchAwards()
-    }
-  }, [propsCertificates])
+  const certificates = defaultCertificates;
   return (
     <section className="py-20 bg-gradient-to-b from-gray-50/50 to-background">
       <div className="container mx-auto px-4">

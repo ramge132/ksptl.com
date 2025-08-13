@@ -13,12 +13,53 @@ import TestCategoryManager from '@/components/admin/TestCategoryManager'
 import CertificatesManager from '@/components/admin/CertificatesManager'
 import AboutPageManager from '@/components/admin/AboutPageManager'
 import SupportInfoManager from '@/components/admin/SupportInfoManager'
-import { getAwards, type Award, getTimeline, type Timeline } from '@/lib/sanity'
-import {
-  getLandingPage,
-  updateLandingPage,
-  type LandingPage
-} from '@/lib/sanity-extended'
+// Sanity 연동 비활성화
+// import { getAwards, type Award, getTimeline, type Timeline } from '@/lib/sanity'
+// import {
+//   getLandingPage,
+//   updateLandingPage,
+//   type LandingPage
+// } from '@/lib/sanity-extended'
+
+type Award = {
+  _id: string
+  title: string
+  description: string
+  order?: number
+}
+
+type Timeline = {
+  _id: string
+  year: string
+  title: string
+  description: string
+  icon: string
+  order: number
+}
+
+type LandingPage = {
+  _id: string
+  _type: string
+  // Hero 섹션
+  heroTitleLine1?: string
+  heroTitleLine2?: string
+  heroSubtitle?: string
+  heroDescription?: string
+  heroFeature1?: string
+  heroFeature2?: string
+  heroFeature3?: string
+  heroButtonText?: string
+  heroStat1Value?: string
+  heroStat1Label?: string
+  heroStat2Value?: string
+  heroStat2Label?: string
+  heroStat3Value?: string
+  heroStat3Label?: string
+  heroStat4Value?: string
+  heroStat4Label?: string
+  // 기타 모든 속성을 허용
+  [key: string]: any
+}
 
 // 기본 데이터
 const DEFAULT_LANDING_PAGE: LandingPage = {
@@ -209,22 +250,11 @@ export default function AdminPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      // 랜딩페이지 데이터 로드
-      const landingResponse = await fetch('/api/sanity/landing')
-      const landingData = await landingResponse.json()
-      // 데이터가 없거나 불완전한 경우 DEFAULT_LANDING_PAGE로 채우기
-      const mergedData = landingData ? { ...DEFAULT_LANDING_PAGE, ...landingData } : DEFAULT_LANDING_PAGE
-      setLandingPage(mergedData)
-
-      // 수상/인증 데이터 로드
-      const awardsResponse = await fetch('/api/sanity/awards')
-      const awardsData = await awardsResponse.json()
-      setAwards(awardsData || [])
-
-      // 연혁 데이터 로드
-      const timelineResponse = await fetch('/api/sanity/timeline')
-      const timelineData = await timelineResponse.json()
-      setTimeline(timelineData || [])
+      // Sanity 비활성화 - 기본 데이터만 사용
+      setLandingPage(DEFAULT_LANDING_PAGE)
+      setAwards([])
+      setTimeline([])
+      toast.success('기본 데이터 로드 완료')
     } catch (error) {
       console.error('데이터 로드 실패:', error)
       toast.error('데이터 로드에 실패했습니다')
@@ -235,16 +265,9 @@ export default function AdminPage() {
   }
 
   const saveLandingPage = async (data: Partial<LandingPage>) => {
-    const response = await fetch('/api/sanity/landing', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    if (!response.ok) {
-      throw new Error('Failed to save')
-    }
-    // 저장 후 데이터 새로고침
-    loadData()
+    // Sanity 비활성화 - 로컬에만 저장
+    setLandingPage(prev => prev ? { ...prev, ...data } : DEFAULT_LANDING_PAGE)
+    toast.success('로컬에 저장되었습니다 (Sanity 비활성화)')
   }
 
   useEffect(() => {
@@ -464,14 +487,18 @@ export default function AdminPage() {
 
             {/* 메인 콘텐츠 영역 */}
             <div className="space-y-6 mr-0 xl:mr-64">
-              {landingPage && (
-                <div id="hero-section">
-                  <HeroSectionManager
-                    landingPage={landingPage}
-                    onSave={saveLandingPage}
-                  />
-                </div>
-              )}
+              <Card id="hero-section">
+                <CardHeader>
+                  <CardTitle>Hero 섹션 (Sanity 비활성화)</CardTitle>
+                  <CardDescription>현재 Sanity 연동이 비활성화되어 Hero 섹션 관리를 사용할 수 없습니다.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8 text-gray-500">
+                    <p>Hero 섹션 관리 기능은 Sanity 비활성화로 인해 사용할 수 없습니다.</p>
+                    <p className="text-sm mt-2">메인 페이지에서는 기본 데이터가 표시됩니다.</p>
+                  </div>
+                </CardContent>
+              </Card>
               
               {/* 왜 선택해야 하는가 섹션 */}
               <Card id="why-section">
@@ -741,8 +768,19 @@ export default function AdminPage() {
                   </CardContent>
                 </Card>
 
-                {/* 인증서 관리 컴포넌트 */}
-                <CertificatesManager awards={awards} loadData={loadData} />
+                {/* 인증서 관리 컴포넌트 (Sanity 비활성화) */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>인증서 및 특허 관리 (Sanity 비활성화)</CardTitle>
+                    <CardDescription>현재 Sanity 연동이 비활성화되어 인증서 관리를 사용할 수 없습니다.</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-gray-500">
+                      <p>인증서 및 특허 관리 기능은 Sanity 비활성화로 인해 사용할 수 없습니다.</p>
+                      <p className="text-sm mt-2">메인 페이지에서는 기본 데이터가 표시됩니다.</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* 연혁 섹션 */}

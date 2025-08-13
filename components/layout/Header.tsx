@@ -79,7 +79,14 @@ export default function Header() {
           {/* 한국안전용품시험연구원 - 좌측 */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <span className="font-title text-lg font-bold">한국안전용품시험연구원</span>
+              <Image
+                src="/한국안전용품시험연구원_logo2.png"
+                alt="한국안전용품시험연구원"
+                width={240}
+                height={40}
+                className="h-5 w-auto"
+                priority
+              />
             </Link>
           </div>
 

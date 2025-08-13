@@ -6,19 +6,7 @@ import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Building2, Award, Target, Users, CheckCircle, Shield } from "lucide-react"
 import Image from "next/image"
-import { getAboutPage, type AboutPage } from "@/lib/sanity-extended"
-
 export default function AboutPage() {
-  const [aboutData, setAboutData] = useState<AboutPage | null>(null)
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getAboutPage()
-      setAboutData(data)
-    }
-    fetchData()
-  }, [])
-
   // 기본값 설정
   const defaultData = {
     heroSince: 'Since 2004',
@@ -29,7 +17,7 @@ export default function AboutPage() {
     introParagraph1: '㈜큐로는 시험기 제작 전문 기업으로 대한민국 표준 KS B 5541, KS B 5521, KS B 5533 인증과 국제 표준 ISO 9001:2015, CE를 인증 받아 금속(재료) 시험기, 가구 시험기, 안전용품 시험기, 스포츠용품 시험기, 화학 관련 시험기, 자동차 관련 시험기, 챔버 등을 앞선 기술력으로 제작하고 있습니다.',
     introParagraph2: '시험기 제작으로 축적한 기술력과 경험을 바탕으로 교정검사 및 시험 서비스 분야로 사업 영역을 확장하여, 국내외 규격에 부합하는 정밀 교정과 종합 시험을 전문적으로 수행합니다.',
     introParagraph3: '독립된 교정·시험으로 축적된 데이터와 노하우를 활용해 시험 장비의 정확도와 효율성을 극대화하여 고객 성공을 위한 최고의 서비스를 제공합니다.',
-    companyImage: null as any,
+    companyImage: "/images/유광호_사장님.png",
     badgeYears: '20년 전통',
     badgeText: '신뢰의 파트너',
     valuesTitle: '핵심 가치',
@@ -71,7 +59,7 @@ export default function AboutPage() {
     processStep4: '납품',
   }
 
-  const data = aboutData ? { ...defaultData, ...aboutData } : defaultData
+  const data = defaultData
 
   const values = [
     {
@@ -172,9 +160,11 @@ export default function AboutPage() {
             >
               <div className="relative h-[400px] rounded-xl overflow-hidden bg-gradient-primary-light">
                 {data.companyImage ? (
-                  <img 
-                    src={`https://cdn.sanity.io/images/${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}/production/${data.companyImage.asset._ref.replace('image-', '').replace('-jpg', '.jpg').replace('-png', '.png').replace('-webp', '.webp')}`}
+                  <Image
+                    src={data.companyImage}
                     alt="회사 대표 이미지"
+                    width={500}
+                    height={400}
                     className="w-full h-full object-cover"
                   />
                 ) : (
