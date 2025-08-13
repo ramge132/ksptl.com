@@ -68,10 +68,26 @@ const WhyChooseUs = ({
   const cardsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // 애니메이션 라이브러리가 로드되지 않았을 경우를 대비한 fallback
+    const fallbackTimeout = setTimeout(() => {
+      if (cardsRef.current) {
+        const cards = cardsRef.current.querySelectorAll<HTMLElement>(".reason-card");
+        cards.forEach((card) => {
+          card.style.opacity = "1";
+          card.style.transform = "none";
+        });
+      }
+    }, 1000);
+
     // Title animation
     if (titleRef.current) {
       const words = titleRef.current.querySelectorAll('.title-word');
       
+      // 초기 상태를 설정하되, 애니메이션이 실패할 경우를 대비
+      words.forEach((word) => {
+        (word as HTMLElement).style.opacity = "0";
+      });
+
       gsap.set(words, {
         opacity: 0,
         y: 50,
@@ -89,132 +105,59 @@ const WhyChooseUs = ({
           trigger: titleRef.current,
           start: "top 80%",
           end: "bottom 60%",
-          toggleActions: "play none none reverse"
+          toggleActions: "play none none reverse",
+          onEnter: () => {
+            // 애니메이션이 실행되면 fallback 타이머 취소
+            clearTimeout(fallbackTimeout);
+          }
         }
       });
     }
 
-    // Subtitle animation
-    if (subtitleRef.current) {
-      gsap.fromTo(subtitleRef.current,
-        {
-          opacity: 0,
-          y: 30
-        },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: 0.6,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: subtitleRef.current,
-            start: "top 85%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      );
-    }
-
-    // Cards animation - Chromatic split + soft-glitch (reveal + subtle RGB split + gentle hover)
+    // Cards animation - 더 간단하고 안정적인 접근
     if (cardsRef.current) {
       const container = cardsRef.current;
       const cards = Array.from(container.querySelectorAll<HTMLElement>(".reason-card"));
 
-      gsap.set(container, { perspective: 1000 });
-
-      // initial: slightly down and invisible; prepare inner elements
+      // 초기 상태 설정을 CSS 클래스로 처리
       cards.forEach((card) => {
-        gsap.set(card, {
-          opacity: 0,
-          y: 28,
-          scale: 0.985,
-          transformStyle: "preserve-3d",
-          willChange: "transform, opacity",
-        });
+        card.classList.add("gsap-card-initial");
+      });
 
-        const innerEls = card.querySelectorAll<HTMLElement>(".p-4, h3, p, .bg-blue-100");
-        gsap.set(innerEls, { y: 10, opacity: 0, scale: 0.997 });
-
-        // create lightweight chromatic layers (R/B) for soft-split effect
-        if (!card.querySelector(".glitch-r")) {
-          const r = document.createElement("div");
-          const b = document.createElement("div");
-          [r, b].forEach((el) => {
-            el.className = "pointer-events-none absolute inset-0 glitch-layer";
-            el.style.mixBlendMode = "screen";
-            el.style.opacity = "0";
-            el.style.zIndex = "2";
-            el.style.borderRadius = "inherit";
-            el.style.transform = "translateZ(0)";
+      // ScrollTrigger를 사용한 애니메이션
+      ScrollTrigger.create({
+        trigger: container,
+        start: "top 88%",
+        once: true, // 한 번만 실행
+        onEnter: () => {
+          // 애니메이션 실행
+          cards.forEach((card, index) => {
+            gsap.to(card, {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.6,
+              delay: index * 0.1,
+              ease: "power2.out",
+              onStart: () => {
+                card.classList.remove("gsap-card-initial");
+              }
+            });
           });
-          // subtle color gradients
-          r.style.background = "linear-gradient(90deg, rgba(255,80,80,0.06), rgba(255,80,80,0.02))";
-          r.classList.add("glitch-r");
-          b.style.background = "linear-gradient(90deg, rgba(80,150,255,0.06), rgba(80,150,255,0.02))";
-          b.classList.add("glitch-b");
-
-          // ensure card is positioned
-          card.style.position = card.style.position || "relative";
-          card.appendChild(r);
-          card.appendChild(b);
+          clearTimeout(fallbackTimeout);
         }
       });
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: container,
-          start: "top 88%",
-          end: "bottom 60%",
-          toggleActions: "play none none reverse",
-        },
-      });
-
-      // reveal with upward motion and slight softness — reveal all simultaneously for group presence
-      tl.to(cards, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.8,
-        ease: "power3.out",
-        stagger: 0,
-      });
-
-      // inner elements soft pop (simultaneous) for cleaner group reveal
-      cards.forEach((card) => {
-        const innerEls = Array.from(card.querySelectorAll<HTMLElement>(".p-4, h3, p, .bg-blue-100"));
-        tl.to(
-          innerEls,
-          { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "power2.out", stagger: 0 },
-          "-=0.5"
-        );
-      });
-
-      // soft chromatic split pulse for a modern digital feel (animate all glitch layers together to avoid per-card sequencing)
-      const allR = Array.from(container.querySelectorAll<HTMLElement>(".glitch-r"));
-      const allB = Array.from(container.querySelectorAll<HTMLElement>(".glitch-b"));
-      if (allR.length || allB.length) {
-        tl.to(allR, { x: 6, opacity: 0.7, duration: 0.18, ease: "power2.out" }, "-=0.45");
-        tl.to(allB, { x: -6, opacity: 0.7, duration: 0.18, ease: "power2.out" }, "-=0.45");
-        tl.to([...allR, ...allB], { x: 0, opacity: 0, duration: 0.45, ease: "power2.inOut" }, "+=0.05");
-      }
-
-      // Micro-interaction removed to prevent any card movement that can cause text blurring.
-      // We keep the reveal and chromatic pulse, but do not attach per-card mouse listeners or transforms.
-
-      // Cleanup: remove glitch overlays and kill timeline on HMR/route changes
-      ScrollTrigger.addEventListener("refreshInit", () => {
-        cards.forEach((card) => {
-          const r = card.querySelector(".glitch-r");
-          const b = card.querySelector(".glitch-b");
-          if (r) r.remove();
-          if (b) b.remove();
-          gsap.set(card, { clearProps: "all" });
-        });
-        tl.kill();
-      });
+      // 페이지가 이미 스크롤된 상태에서 로드되는 경우를 처리
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 100);
     }
 
+    return () => {
+      clearTimeout(fallbackTimeout);
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
   }, []);
   
   // 아이콘 매핑
@@ -304,7 +247,7 @@ const WhyChooseUs = ({
           {reasons.map((reason, index) => (
               <SpotlightCard
                 key={index}
-                className="reason-card group transition-shadow duration-300"
+                className="reason-card group transition-all duration-300"
                 spotlightColor="rgba(120, 170, 255, 0.12)"
               >
                 <div className="card-inner relative overflow-hidden">
