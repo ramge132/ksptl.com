@@ -1,627 +1,511 @@
-const PDFDocument = require('pdfkit')
+import puppeteer from 'puppeteer'
 
-// v1.47 디자인 기반 PDF 생성
-export async function generateTestPDF(data: any): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log('[PDF Generation] Starting test PDF generation...')
-      const doc = new PDFDocument({
-        size: 'A4',
-        margin: 40,
-        info: {
-          Title: '시험 신청서',
-          Author: '한국안전용품시험연구원'
-        }
-      })
+const commonStyles = `
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    padding: 30px;
+    background: white;
+    color: #1a1a1a;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  
+  .header {
+    text-align: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #2563eb;
+  }
+  
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 5px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+    color: #64748b;
+  }
+  
+  .receipt-info {
+    display: flex;
+    justify-content: space-between;
+    background: #f0f9ff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    border: 1px solid #bfdbfe;
+  }
+  
+  .receipt-info div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .receipt-info label {
+    font-weight: 600;
+    color: #1e40af;
+  }
+  
+  .section {
+    margin-bottom: 20px;
+  }
+  
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    background: linear-gradient(90deg, #eff6ff, transparent);
+    border-left: 3px solid #2563eb;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e5e7eb;
+  }
+  
+  th {
+    background: #2563eb;
+    color: white;
+    padding: 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  
+  td {
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    font-size: 10px;
+  }
+  
+  .label-cell {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #475569;
+    width: 25%;
+  }
+  
+  .checkbox-group {
+    display: flex;
+    gap: 20px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+  }
+  
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 2px solid #e5e7eb;
+    font-size: 9px;
+    color: #64748b;
+  }
+  
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
+  
+  .footer-section h3 {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 8px;
+  }
+  
+  .footer-section p {
+    margin-bottom: 4px;
+  }
+`;
+
+const generateHeader = (title: string) => `
+  <div class="header">
+    <h1>한국안전용품시험연구원</h1>
+    <div class="subtitle">${title}</div>
+  </div>
+`;
+
+const generateFooter = () => `
+  <div class="footer">
+    <div class="footer-grid">
+      <div class="footer-section">
+        <h3>본사</h3>
+        <p><strong>주소:</strong> 경기 양주시 은현면 화합로 941번길 83</p>
+        <p><strong>연락처:</strong> 031-862-8556~7</p>
+      </div>
+      <div class="footer-section">
+        <h3>시험소</h3>
+        <p><strong>주소:</strong> 경기 양주시 은현면 화합로 701-11</p>
+        <p><strong>연락처:</strong> 031-858-3012</p>
+      </div>
+    </div>
+  </div>
+`;
+
+// 교정 신청서 HTML 생성
+function generateCalibrationHTML(data: any): string {
+  const currentDate = new Date().toLocaleDateString('ko-KR')
+  const receiptNo = `C-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
+  
+  const html = `
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8">
+      <style>${commonStyles}</style>
+    </head>
+    <body>
+      ${generateHeader('교정 신청서')}
       
-      const chunks: Buffer[] = []
-      doc.on('data', (chunk: Buffer) => chunks.push(chunk))
-      doc.on('end', () => {
-        console.log('[PDF Generation] Test PDF generated successfully')
-        resolve(Buffer.concat(chunks))
-      })
-      doc.on('error', (error: any) => {
-        console.error('[PDF Generation] Error:', error)
-        reject(error)
-      })
+      <div class="receipt-info">
+        <div>
+          <label>접수번호:</label>
+          <span>${receiptNo}</span>
+        </div>
+        <div>
+          <label>접수일자:</label>
+          <span>${currentDate}</span>
+        </div>
+      </div>
       
-      // 색상 정의
-      const primaryColor = '#1e40af'  // 파란색
-      const borderColor = '#d1d5db'   // 회색 테두리
-      const bgColor = '#f3f4f6'       // 배경 회색
+      <div class="section">
+        <div class="section-title">신청인 정보</div>
+        <table>
+          <tr>
+            <td class="label-cell">신청인</td>
+            <td>${data.applicantName || ''}</td>
+            <td class="label-cell">이메일</td>
+            <td>${data.email || ''}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">휴대폰</td>
+            <td colspan="3">${data.mobile || ''}</td>
+          </tr>
+        </table>
+      </div>
       
-      // 헤더 - 회사명과 제목
-      doc.rect(40, 40, doc.page.width - 80, 80)
-         .fill(bgColor)
+      <div class="section">
+        <div class="section-title">신청업체 정보</div>
+        <table>
+          <tr>
+            <td class="label-cell">업체명</td>
+            <td colspan="3">${data.companyName || ''}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">주소</td>
+            <td colspan="3">${data.address || ''}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">전화</td>
+            <td>${data.phone || ''}</td>
+            <td class="label-cell">팩스</td>
+            <td>${data.fax || ''}</td>
+          </tr>
+        </table>
+      </div>
       
-      doc.fillColor('#000000')
-         .fontSize(22)
-         .font('Helvetica-Bold')
-         .text('한국안전용품시험연구원', 0, 55, { align: 'center' })
-      doc.fontSize(16)
-         .font('Helvetica')
-         .text('시 험 신 청 서', 0, 85, { align: 'center' })
+      <div class="section">
+        <div class="section-title">교정 주기</div>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <span>${data.calibrationPeriod === 'national' ? '☑' : '☐'}</span>
+            <span>국가에서 정한 교정주기</span>
+          </div>
+          <div class="checkbox-item">
+            <span>${data.calibrationPeriod === 'custom' ? '☑' : '☐'}</span>
+            <span>자체설정주기</span>
+          </div>
+        </div>
+      </div>
       
-      // 접수 정보 박스
-      const receiptNo = `2024-TEST-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
-      const currentDate = new Date().toLocaleDateString('ko-KR')
+      ${data.requirements ? `
+      <div class="section">
+        <div class="section-title">고객 요구사항</div>
+        <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 10px;">
+          ${data.requirements}
+        </div>
+      </div>
+      ` : ''}
       
-      doc.fontSize(10)
-         .fillColor('#000000')
+      <div class="section">
+        <div class="section-title">교정 대상 기기</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">번호</th>
+              <th>기기명</th>
+              <th>제작회사</th>
+              <th>모델명</th>
+              <th>기기번호</th>
+              <th>규격</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.equipments?.map((eq: any, index: number) => `
+              <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td>${eq.name || ''}</td>
+                <td>${eq.manufacturer || ''}</td>
+                <td>${eq.model || ''}</td>
+                <td>${eq.serialNumber || ''}</td>
+                <td>${eq.standard || ''}</td>
+                <td>${eq.note || ''}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="7" style="text-align: center;">등록된 기기가 없습니다.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
       
-      // 접수번호와 접수일
-      const startY = 140
-      doc.rect(40, startY, doc.page.width - 80, 30)
-         .stroke(borderColor)
-      doc.text(`접수번호: ${receiptNo}`, 50, startY + 10)
-      doc.text(`접수일: ${currentDate}`, 400, startY + 10)
+      <div class="section">
+        <div class="section-title">접수 방법</div>
+        <div class="checkbox-group">
+          <div class="checkbox-item">
+            <span>${data.receptionMethod === 'visit' ? '☑' : '☐'}</span>
+            <span>방문</span>
+          </div>
+          <div class="checkbox-item">
+            <span>${data.receptionMethod === 'delivery' ? '☑' : '☐'}</span>
+            <span>택배</span>
+          </div>
+          <div class="checkbox-item">
+            <span>${data.receptionMethod === 'onsite' ? '☑' : '☐'}</span>
+            <span>출장</span>
+          </div>
+          <div class="checkbox-item">
+            <span>${data.receptionMethod === 'other' ? '☑' : '☐'}</span>
+            <span>기타 ${data.receptionMethod === 'other' && data.receptionMethodOther ? `(${data.receptionMethodOther})` : ''}</span>
+          </div>
+        </div>
+      </div>
       
-      // 신청업체 정보 섹션
-      let currentY = startY + 50
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(primaryColor)
-         .text('■ 신청업체 정보', 40, currentY)
-      
-      currentY += 25
-      
-      // 신청업체 테이블
-      const tableData = [
-        ['업체명', data.companyName || '', '사업자등록번호', data.businessNumber || ''],
-        ['대표자', data.representative || '', '업태', data.businessType || ''],
-        ['업종', data.businessCategory || '', '전화', data.phone || ''],
-        ['팩스', data.fax || '', '휴대폰', data.mobile || ''],
-        ['주소', data.address || '', '', ''],
-      ]
-      
-      const rowHeight = 30
-      const col1Width = 100
-      const col2Width = 180
-      const col3Width = 100
-      const col4Width = (doc.page.width - 80 - col1Width - col2Width - col3Width - 20)
-      
-      doc.font('Helvetica')
-         .fontSize(10)
-         .fillColor('#000000')
-      
-      tableData.forEach((row, i) => {
-        const y = currentY + (i * rowHeight)
-        
-        // 배경색 (홀수 행)
-        if (i % 2 === 0) {
-          doc.rect(40, y, doc.page.width - 80, rowHeight)
-             .fill(bgColor)
-             .fillColor('#000000')
-        }
-        
-        // 테두리
-        doc.rect(40, y, doc.page.width - 80, rowHeight)
-           .stroke(borderColor)
-        
-        // 첫 번째 열 (라벨)
-        doc.rect(40, y, col1Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[0], 50, y + 10, { width: col1Width - 20 })
-        
-        // 두 번째 열 (값)
-        doc.rect(40 + col1Width, y, col2Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-        
-        if (row[0] === '주소') {
-          // 주소는 전체 너비 사용
-          doc.text(row[1], 50 + col1Width, y + 10, { width: doc.page.width - 80 - col1Width - 20 })
-        } else {
-          doc.text(row[1], 50 + col1Width, y + 10, { width: col2Width - 20 })
-          
-          // 세 번째 열 (라벨)
-          if (row[2]) {
-            doc.rect(40 + col1Width + col2Width, y, col3Width, rowHeight)
-               .stroke(borderColor)
-            doc.font('Helvetica-Bold')
-               .text(row[2], 50 + col1Width + col2Width, y + 10, { width: col3Width - 20 })
-            
-            // 네 번째 열 (값)
-            doc.rect(40 + col1Width + col2Width + col3Width, y, col4Width, rowHeight)
-               .stroke(borderColor)
-            doc.font('Helvetica')
-               .text(row[3], 50 + col1Width + col2Width + col3Width, y + 10, { width: col4Width - 20 })
-          }
-        }
-      })
-      
-      currentY += tableData.length * rowHeight + 30
-      
-      // 성적서 발급처 정보
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(primaryColor)
-         .text('■ 성적서 발급처', 40, currentY)
-      
-      currentY += 25
-      
-      const certData = [
-        ['신청인', data.applicantName || '', 'E-mail', data.email || ''],
-      ]
-      
-      certData.forEach((row, i) => {
-        const y = currentY + (i * rowHeight)
-        
-        if (i % 2 === 0) {
-          doc.rect(40, y, doc.page.width - 80, rowHeight)
-             .fill(bgColor)
-             .fillColor('#000000')
-        }
-        
-        doc.rect(40, y, doc.page.width - 80, rowHeight)
-           .stroke(borderColor)
-        
-        doc.rect(40, y, col1Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[0], 50, y + 10, { width: col1Width - 20 })
-        
-        doc.rect(40 + col1Width, y, col2Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[1], 50 + col1Width, y + 10, { width: col2Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width, y, col3Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[2], 50 + col1Width + col2Width, y + 10, { width: col3Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width + col3Width, y, col4Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[3], 50 + col1Width + col2Width + col3Width, y + 10, { width: col4Width - 20 })
-      })
-      
-      currentY += certData.length * rowHeight + 30
-      
-      // 시험 정보
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(primaryColor)
-         .text('■ 시험 정보', 40, currentY)
-      
-      currentY += 25
-      
-      const testInfo = [
-        ['시험 종류', `${data.testItem?.category || ''} - ${data.testItem?.name || ''}`, '성적서 타입', data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'],
-        ['시료 개수', `${data.samples?.length || 0}개`, '접수 방법', data.receiptMethod === 'delivery' ? '택배' : data.receiptMethod === 'visit' ? '방문' : '기타'],
-      ]
-      
-      testInfo.forEach((row, i) => {
-        const y = currentY + (i * rowHeight)
-        
-        if (i % 2 === 0) {
-          doc.rect(40, y, doc.page.width - 80, rowHeight)
-             .fill(bgColor)
-             .fillColor('#000000')
-        }
-        
-        doc.rect(40, y, doc.page.width - 80, rowHeight)
-           .stroke(borderColor)
-        
-        doc.rect(40, y, col1Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[0], 50, y + 10, { width: col1Width - 20 })
-        
-        doc.rect(40 + col1Width, y, col2Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[1], 50 + col1Width, y + 10, { width: col2Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width, y, col3Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[2], 50 + col1Width + col2Width, y + 10, { width: col3Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width + col3Width, y, col4Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[3], 50 + col1Width + col2Width + col3Width, y + 10, { width: col4Width - 20 })
-      })
-      
-      currentY += testInfo.length * rowHeight + 30
-      
-      // 시료 정보 (페이지 체크)
-      if (currentY > doc.page.height - 150) {
-        doc.addPage()
-        currentY = 50
-      }
-      
-      if (data.samples && data.samples.length > 0) {
-        doc.fontSize(12)
-           .font('Helvetica-Bold')
-           .fillColor(primaryColor)
-           .text('■ 시료 정보', 40, currentY)
-        
-        currentY += 25
-        
-        data.samples.forEach((sample: any, index: number) => {
-          if (currentY > doc.page.height - 100) {
-            doc.addPage()
-            currentY = 50
-          }
-          
-          const y = currentY
-          
-          doc.rect(40, y, doc.page.width - 80, 40)
-             .fill(bgColor)
-             .fillColor('#000000')
-          
-          doc.rect(40, y, doc.page.width - 80, 40)
-             .stroke(borderColor)
-          
-          doc.font('Helvetica-Bold')
-             .text(`시료 ${index + 1}`, 50, y + 5)
-          doc.font('Helvetica')
-             .fontSize(9)
-             .text(`품명: ${sample.name || ''}`, 50, y + 20)
-             .text(`제조사: ${sample.manufacturer || ''}`, 200, y + 20)
-             .text(`모델: ${sample.model || ''}`, 350, y + 20)
-          
-          currentY += 45
-        })
-      }
-      
-      // 푸터 정보
-      const footerY = doc.page.height - 80
-      doc.rect(40, footerY, doc.page.width - 80, 40)
-         .fill(bgColor)
-         .fillColor('#000000')
-      
-      doc.fontSize(8)
-         .text('본사: 경기 양주시 은현면 화합로 941번길 83 | Tel: 031-862-8556~7', 50, footerY + 10)
-         .text('시험소: 경기 양주시 은현면 화합로 701-11 | Tel: 031-858-3012', 50, footerY + 25)
-      
-      doc.end()
-    } catch (error) {
-      console.error('[PDF Generation] Error in generateTestPDF:', error)
-      reject(error)
-    }
-  })
+      ${generateFooter()}
+    </body>
+    </html>
+  `
+  
+  return html
 }
 
-export async function generateCalibrationPDF(data: any): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log('[PDF Generation] Starting calibration PDF generation...')
-      const doc = new PDFDocument({
-        size: 'A4',
-        margin: 40,
-        info: {
-          Title: '교정 신청서',
-          Author: '한국안전용품시험연구원'
+// 시험 신청서 HTML 생성
+function generateTestHTML(data: any): string {
+  const currentDate = new Date().toLocaleDateString('ko-KR')
+  const receiptNo = `T-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
+  
+  const html = `
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        ${commonStyles}
+        .test-items-box {
+          background: #f0f9ff;
+          border: 1px solid #bfdbfe;
+          border-radius: 6px;
+          padding: 10px;
         }
-      })
-      
-      const chunks: Buffer[] = []
-      doc.on('data', (chunk: Buffer) => chunks.push(chunk))
-      doc.on('end', () => {
-        console.log('[PDF Generation] Calibration PDF generated successfully')
-        resolve(Buffer.concat(chunks))
-      })
-      doc.on('error', (error: any) => {
-        console.error('[PDF Generation] Error:', error)
-        reject(error)
-      })
-      
-      // 색상 정의
-      const primaryColor = '#1e40af'  // 파란색
-      const borderColor = '#d1d5db'   // 회색 테두리
-      const bgColor = '#f3f4f6'       // 배경 회색
-      
-      // 헤더 - 회사명과 제목
-      doc.rect(40, 40, doc.page.width - 80, 80)
-         .fill(bgColor)
-      
-      doc.fillColor('#000000')
-         .fontSize(22)
-         .font('Helvetica-Bold')
-         .text('한국안전용품시험연구원', 0, 55, { align: 'center' })
-      doc.fontSize(16)
-         .font('Helvetica')
-         .text('교 정 신 청 서', 0, 85, { align: 'center' })
-      
-      // 접수 정보 박스
-      const receiptNo = `2024-CAL-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`
-      const currentDate = new Date().toLocaleDateString('ko-KR')
-      
-      doc.fontSize(10)
-         .fillColor('#000000')
-      
-      // 접수번호와 접수일
-      const startY = 140
-      doc.rect(40, startY, doc.page.width - 80, 30)
-         .stroke(borderColor)
-      doc.text(`접수번호: ${receiptNo}`, 50, startY + 10)
-      doc.text(`접수일: ${currentDate}`, 400, startY + 10)
-      
-      // 신청업체 정보 섹션
-      let currentY = startY + 50
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(primaryColor)
-         .text('■ 신청업체 정보', 40, currentY)
-      
-      currentY += 25
-      
-      // 신청업체 테이블
-      const tableData = [
-        ['업체명', data.companyName || '', '사업자등록번호', data.businessNumber || ''],
-        ['대표자', data.representative || '', '업태', data.businessType || ''],
-        ['업종', data.businessCategory || '', '전화', data.phone || ''],
-        ['팩스', data.fax || '', '휴대폰', data.mobile || ''],
-        ['주소', data.address || '', '', ''],
-      ]
-      
-      const rowHeight = 30
-      const col1Width = 100
-      const col2Width = 180
-      const col3Width = 100
-      const col4Width = (doc.page.width - 80 - col1Width - col2Width - col3Width - 20)
-      
-      doc.font('Helvetica')
-         .fontSize(10)
-         .fillColor('#000000')
-      
-      tableData.forEach((row, i) => {
-        const y = currentY + (i * rowHeight)
-        
-        // 배경색 (홀수 행)
-        if (i % 2 === 0) {
-          doc.rect(40, y, doc.page.width - 80, rowHeight)
-             .fill(bgColor)
-             .fillColor('#000000')
+        .test-item {
+          padding: 5px 0;
+          border-bottom: 1px dashed #e0e7ff;
         }
-        
-        // 테두리
-        doc.rect(40, y, doc.page.width - 80, rowHeight)
-           .stroke(borderColor)
-        
-        // 첫 번째 열 (라벨)
-        doc.rect(40, y, col1Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[0], 50, y + 10, { width: col1Width - 20 })
-        
-        // 두 번째 열 (값)
-        doc.rect(40 + col1Width, y, col2Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-        
-        if (row[0] === '주소') {
-          // 주소는 전체 너비 사용
-          doc.text(row[1], 50 + col1Width, y + 10, { width: doc.page.width - 80 - col1Width - 20 })
-        } else {
-          doc.text(row[1], 50 + col1Width, y + 10, { width: col2Width - 20 })
-          
-          // 세 번째 열 (라벨)
-          if (row[2]) {
-            doc.rect(40 + col1Width + col2Width, y, col3Width, rowHeight)
-               .stroke(borderColor)
-            doc.font('Helvetica-Bold')
-               .text(row[2], 50 + col1Width + col2Width, y + 10, { width: col3Width - 20 })
-            
-            // 네 번째 열 (값)
-            doc.rect(40 + col1Width + col2Width + col3Width, y, col4Width, rowHeight)
-               .stroke(borderColor)
-            doc.font('Helvetica')
-               .text(row[3], 50 + col1Width + col2Width + col3Width, y + 10, { width: col4Width - 20 })
-          }
+        .test-item:last-child {
+          border-bottom: none;
         }
-      })
+      </style>
+    </head>
+    <body>
+      ${generateHeader('시험 신청서')}
       
-      currentY += tableData.length * rowHeight + 30
+      <div class="receipt-info">
+        <div>
+          <label>접수번호:</label>
+          <span>${receiptNo}</span>
+        </div>
+        <div>
+          <label>접수일자:</label>
+          <span>${currentDate}</span>
+        </div>
+      </div>
       
-      // 성적서 발급처 정보
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(primaryColor)
-         .text('■ 성적서 발급처', 40, currentY)
+      <div class="section">
+        <div class="section-title">신청인 정보</div>
+        <table>
+          <tr>
+            <td class="label-cell">신청인</td>
+            <td>${data.applicantName || ''}</td>
+            <td class="label-cell">이메일</td>
+            <td>${data.email || ''}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">휴대폰</td>
+            <td colspan="3">${data.mobile || ''}</td>
+          </tr>
+        </table>
+      </div>
       
-      currentY += 25
+      <div class="section">
+        <div class="section-title">신청업체 정보</div>
+        <table>
+          <tr>
+            <td class="label-cell">업체명</td>
+            <td colspan="3">${data.companyName || ''}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">주소</td>
+            <td colspan="3">${data.address || ''}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">전화</td>
+            <td>${data.phone || ''}</td>
+            <td class="label-cell">팩스</td>
+            <td>${data.fax || ''}</td>
+          </tr>
+        </table>
+      </div>
       
-      const certData = [
-        ['신청인', data.applicantName || '', 'E-mail', data.email || ''],
-      ]
+      <div class="section">
+        <div class="section-title">성적서 정보</div>
+        <table>
+          <tr>
+            <td class="label-cell">성적서 타입</td>
+            <td>${data.certificateType === 'official' ? '공인 성적서' : '비공인 성적서'}</td>
+          </tr>
+          <tr>
+            <td class="label-cell">시험항목</td>
+            <td>${data.testItem?.category || ''} - ${data.testItem?.name || ''}</td>
+          </tr>
+        </table>
+      </div>
       
-      certData.forEach((row, i) => {
-        const y = currentY + (i * rowHeight)
-        
-        if (i % 2 === 0) {
-          doc.rect(40, y, doc.page.width - 80, rowHeight)
-             .fill(bgColor)
-             .fillColor('#000000')
-        }
-        
-        doc.rect(40, y, doc.page.width - 80, rowHeight)
-           .stroke(borderColor)
-        
-        doc.rect(40, y, col1Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[0], 50, y + 10, { width: col1Width - 20 })
-        
-        doc.rect(40 + col1Width, y, col2Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[1], 50 + col1Width, y + 10, { width: col2Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width, y, col3Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[2], 50 + col1Width + col2Width, y + 10, { width: col3Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width + col3Width, y, col4Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[3], 50 + col1Width + col2Width + col3Width, y + 10, { width: col4Width - 20 })
-      })
+      <div class="section">
+        <div class="section-title">시료 정보</div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">번호</th>
+              <th>시료명</th>
+              <th>제조사</th>
+              <th>모델/규격</th>
+              <th style="width: 50px;">수량</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.samples?.map((sample: any, index: number) => `
+              <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td>${sample.name || ''}</td>
+                <td>${sample.manufacturer || ''}</td>
+                <td>${sample.model || ''}</td>
+                <td style="text-align: center;">1</td>
+                <td>${sample.notes || ''}</td>
+              </tr>
+            `).join('') || '<tr><td colspan="6" style="text-align: center;">등록된 시료가 없습니다.</td></tr>'}
+          </tbody>
+        </table>
+      </div>
       
-      currentY += certData.length * rowHeight + 30
+      ${data.testItems && data.testItems.length > 0 ? `
+      <div class="section">
+        <div class="section-title">시험 항목</div>
+        <div class="test-items-box">
+          ${data.testItems.map((item: string, index: number) => `
+            <div class="test-item">${index + 1}. ${item}</div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
       
-      // 교정 정보
-      doc.fontSize(12)
-         .font('Helvetica-Bold')
-         .fillColor(primaryColor)
-         .text('■ 교정 정보', 40, currentY)
+      ${data.requirements ? `
+      <div class="section">
+        <div class="section-title">고객 요구사항</div>
+        <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 10px;">
+          ${data.requirements}
+        </div>
+      </div>
+      ` : ''}
       
-      currentY += 25
-      
-      const calibInfo = [
-        ['교정 주기', data.calibrationPeriod === 'national' ? '국가에서 정한 교정주기' : '자체설정주기', '접수 방법', 
-         data.receptionMethod === 'visit' ? '방문' : 
-         data.receptionMethod === 'delivery' ? '택배' :
-         data.receptionMethod === 'pickup' ? '픽업' :
-         data.receptionMethod === 'onsite' ? '출장' : '기타'],
-      ]
-      
-      calibInfo.forEach((row, i) => {
-        const y = currentY + (i * rowHeight)
-        
-        if (i % 2 === 0) {
-          doc.rect(40, y, doc.page.width - 80, rowHeight)
-             .fill(bgColor)
-             .fillColor('#000000')
-        }
-        
-        doc.rect(40, y, doc.page.width - 80, rowHeight)
-           .stroke(borderColor)
-        
-        doc.rect(40, y, col1Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[0], 50, y + 10, { width: col1Width - 20 })
-        
-        doc.rect(40 + col1Width, y, col2Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[1], 50 + col1Width, y + 10, { width: col2Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width, y, col3Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica-Bold')
-           .text(row[2], 50 + col1Width + col2Width, y + 10, { width: col3Width - 20 })
-        
-        doc.rect(40 + col1Width + col2Width + col3Width, y, col4Width, rowHeight)
-           .stroke(borderColor)
-        doc.font('Helvetica')
-           .text(row[3], 50 + col1Width + col2Width + col3Width, y + 10, { width: col4Width - 20 })
-      })
-      
-      currentY += calibInfo.length * rowHeight + 30
-      
-      // 기기 정보 (페이지 체크)
-      if (currentY > doc.page.height - 150) {
-        doc.addPage()
-        currentY = 50
+      ${generateFooter()}
+    </body>
+    </html>
+  `
+  
+  return html
+}
+
+// Puppeteer를 사용한 PDF 생성
+async function generatePDFFromHTML(html: string): Promise<Buffer> {
+  let browser;
+  
+  try {
+    // Puppeteer 브라우저 실행
+    browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    
+    const page = await browser.newPage();
+    
+    // HTML 콘텐츠 설정
+    await page.setContent(html, {
+      waitUntil: 'networkidle0'
+    });
+    
+    // PDF 생성
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20mm',
+        right: '20mm',
+        bottom: '20mm',
+        left: '20mm'
       }
-      
-      if (data.equipments && data.equipments.length > 0) {
-        doc.fontSize(12)
-           .font('Helvetica-Bold')
-           .fillColor(primaryColor)
-           .text('■ 기기 정보', 40, currentY)
-        
-        currentY += 25
-        
-        // 기기 헤더
-        doc.rect(40, currentY, doc.page.width - 80, 25)
-           .fill(primaryColor)
-           .fillColor('#ffffff')
-        
-        doc.fontSize(9)
-           .font('Helvetica-Bold')
-           .text('No.', 50, currentY + 8, { width: 30 })
-           .text('기기명', 90, currentY + 8, { width: 150 })
-           .text('제조사', 250, currentY + 8, { width: 100 })
-           .text('모델/규격', 360, currentY + 8, { width: 100 })
-           .text('기기번호', 470, currentY + 8, { width: 80 })
-        
-        currentY += 25
-        
-        data.equipments.forEach((eq: any, index: number) => {
-          if (currentY > doc.page.height - 100) {
-            doc.addPage()
-            currentY = 50
-          }
-          
-          const y = currentY
-          
-          if (index % 2 === 0) {
-            doc.rect(40, y, doc.page.width - 80, 30)
-               .fill(bgColor)
-          }
-          
-          doc.rect(40, y, doc.page.width - 80, 30)
-             .stroke(borderColor)
-          
-          doc.fillColor('#000000')
-             .font('Helvetica')
-             .fontSize(9)
-             .text(`${index + 1}`, 50, y + 10, { width: 30 })
-             .text(eq.name || '', 90, y + 10, { width: 150 })
-             .text(eq.manufacturer || '', 250, y + 10, { width: 100 })
-             .text(eq.model || '', 360, y + 10, { width: 100 })
-             .text(eq.serialNumber || '', 470, y + 10, { width: 80 })
-          
-          if (eq.isUncertified) {
-            doc.fillColor('#dc2626')
-               .fontSize(8)
-               .text('[비공인]', 40 + doc.page.width - 130, y + 10)
-          }
-          
-          currentY += 30
-        })
-      }
-      
-      // 고객 요구사항
-      if (data.requirements) {
-        if (currentY > doc.page.height - 150) {
-          doc.addPage()
-          currentY = 50
-        }
-        
-        currentY += 20
-        doc.fontSize(12)
-           .font('Helvetica-Bold')
-           .fillColor(primaryColor)
-           .text('■ 고객 요구사항', 40, currentY)
-        
-        currentY += 25
-        
-        doc.rect(40, currentY, doc.page.width - 80, 60)
-           .stroke(borderColor)
-        
-        doc.fillColor('#000000')
-           .font('Helvetica')
-           .fontSize(9)
-           .text(data.requirements, 50, currentY + 10, { 
-             width: doc.page.width - 100,
-             height: 50
-           })
-      }
-      
-      // 푸터 정보
-      const footerY = doc.page.height - 80
-      doc.rect(40, footerY, doc.page.width - 80, 40)
-         .fill(bgColor)
-         .fillColor('#000000')
-      
-      doc.fontSize(8)
-         .text('본사: 경기 양주시 은현면 화합로 941번길 83 | Tel: 031-862-8556~7', 50, footerY + 10)
-         .text('시험소: 경기 양주시 은현면 화합로 701-11 | Tel: 031-858-3012', 50, footerY + 25)
-      
-      doc.end()
-    } catch (error) {
-      console.error('[PDF Generation] Error in generateCalibrationPDF:', error)
-      reject(error)
+    });
+    
+    await browser.close();
+    
+    return Buffer.from(pdfBuffer);
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    if (browser) {
+      await browser.close();
     }
-  })
+    throw error;
+  }
+}
+
+// 교정 신청서 PDF 생성
+export async function generateCalibrationPDF(data: any): Promise<Buffer> {
+  const html = generateCalibrationHTML(data);
+  return generatePDFFromHTML(html);
+}
+
+// 시험 신청서 PDF 생성
+export async function generateTestPDF(data: any): Promise<Buffer> {
+  const html = generateTestHTML(data);
+  return generatePDFFromHTML(html);
 }
