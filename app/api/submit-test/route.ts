@@ -3,8 +3,9 @@ import nodemailer from 'nodemailer'
 import { generateEmailTemplate, formatTableRow, formatSection, formatSampleCard, formatAlert, formatButton } from '@/lib/email-template'
 import { generateTestPDF } from '@/lib/pdf-generator'
 
-// Vercel의 제한사항을 고려한 파일 크기 제한 (3MB)
-const MAX_FILE_SIZE = 3 * 1024 * 1024 
+// Vercel Pro의 제한사항을 고려한 파일 크기 제한
+const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024 // 개별 파일 2MB 제한
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 전체 4MB 제한 (Vercel Pro는 4.5MB까지 지원)
 
 export async function POST(request: NextRequest) {
   console.log('[Test Submit] Starting request processing')
@@ -29,19 +30,24 @@ export async function POST(request: NextRequest) {
     // 사업자등록증 처리
     if (businessRegistration && businessRegistration.size > 0) {
       try {
-        if (businessRegistration.size <= MAX_FILE_SIZE) {
+        console.log(`[Test Submit] Processing business registration: ${businessRegistration.name} (${businessRegistration.size} bytes)`)
+        
+        if (businessRegistration.size <= MAX_SINGLE_FILE_SIZE && totalSize + businessRegistration.size <= MAX_TOTAL_SIZE) {
           const buffer = await businessRegistration.arrayBuffer()
           const fileBuffer = Buffer.from(buffer)
-          totalSize += fileBuffer.length
           
           attachments.push({
             filename: businessRegistration.name,
             content: fileBuffer
           })
-          console.log(`[Test Submit] Business registration attached: ${businessRegistration.name} (${businessRegistration.size} bytes)`)
+          totalSize += fileBuffer.length
+          console.log(`[Test Submit] ✅ Business registration attached: ${businessRegistration.name}`)
         } else {
-          skippedFiles.push(`사업자등록증 (파일 크기 초과: ${(businessRegistration.size / 1024 / 1024).toFixed(2)}MB)`)
-          console.log(`[Test Submit] Business registration skipped due to size: ${businessRegistration.size} bytes`)
+          const reason = businessRegistration.size > MAX_SINGLE_FILE_SIZE ? 
+            `파일 크기 초과 (${(businessRegistration.size / 1024 / 1024).toFixed(2)}MB)` : 
+            '전체 크기 제한'
+          skippedFiles.push(`사업자등록증: ${reason}`)
+          console.log(`[Test Submit] ⚠️ Business registration skipped: ${reason}`)
         }
       } catch (error) {
         console.error('[Test Submit] Error processing business registration:', error)
@@ -56,20 +62,25 @@ export async function POST(request: NextRequest) {
       try {
         const file = formData.get(key) as File
         if (file && file.size > 0) {
-          // 전체 첨부 파일 크기가 3MB를 넘지 않도록 제한
-          if (totalSize + file.size <= MAX_FILE_SIZE && file.size <= MAX_FILE_SIZE) {
+          console.log(`[Test Submit] Processing ${key}: ${file.name} (${file.size} bytes)`)
+          
+          // 개별 파일 크기와 전체 크기 체크
+          if (file.size <= MAX_SINGLE_FILE_SIZE && totalSize + file.size <= MAX_TOTAL_SIZE) {
             const buffer = await file.arrayBuffer()
             const fileBuffer = Buffer.from(buffer)
-            totalSize += fileBuffer.length
             
             attachments.push({
               filename: file.name,
               content: fileBuffer
             })
-            console.log(`[Test Submit] Sample image attached: ${file.name} (${file.size} bytes)`)
+            totalSize += fileBuffer.length
+            console.log(`[Test Submit] ✅ Sample image attached: ${file.name}`)
           } else {
-            skippedFiles.push(`${file.name} (파일 크기 제한)`)
-            console.log(`[Test Submit] Sample image skipped: ${file.name} (${file.size} bytes)`)
+            const reason = file.size > MAX_SINGLE_FILE_SIZE ? 
+              `파일 크기 초과 (${(file.size / 1024 / 1024).toFixed(2)}MB)` : 
+              '전체 크기 제한'
+            skippedFiles.push(`${file.name}: ${reason}`)
+            console.log(`[Test Submit] ⚠️ Sample image skipped: ${reason}`)
           }
         }
       } catch (error) {
@@ -77,32 +88,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // PDF 생성 - Vercel에서도 시도
-    try {
-      console.log('[Test Submit] Attempting PDF generation')
-      
-      // 신청서 PDF 생성
-      const pdfBuffer = await generateTestPDF(data)
-      
-      // PDF 크기가 적절한 경우에만 첨부
-      if (pdfBuffer.length <= MAX_FILE_SIZE && totalSize + pdfBuffer.length <= MAX_FILE_SIZE * 2) {
-        attachments.push({
-          filename: `시험신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
-          content: pdfBuffer
-        })
-        totalSize += pdfBuffer.length
-        console.log(`[Test Submit] Test PDF generated and attached (${pdfBuffer.length} bytes)`)
-      } else {
-        console.log(`[Test Submit] Test PDF skipped due to size constraints`)
+    // PDF 생성 시도 (크기가 허용되는 경우만)
+    if (totalSize < MAX_TOTAL_SIZE * 0.7) { // 전체 제한의 70% 미만일 때만 PDF 생성 시도
+      try {
+        console.log('[Test Submit] Attempting PDF generation')
+        const pdfBuffer = await generateTestPDF(data)
+        
+        if (pdfBuffer.length <= MAX_SINGLE_FILE_SIZE && totalSize + pdfBuffer.length <= MAX_TOTAL_SIZE) {
+          attachments.push({
+            filename: `시험신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
+            content: pdfBuffer
+          })
+          totalSize += pdfBuffer.length
+          console.log(`[Test Submit] ✅ PDF generated and attached (${pdfBuffer.length} bytes)`)
+        } else {
+          console.log(`[Test Submit] ⚠️ PDF skipped due to size constraints (${pdfBuffer.length} bytes)`)
+          skippedFiles.push('시험신청서 PDF: 크기 제한')
+        }
+      } catch (pdfError) {
+        console.error('[Test Submit] PDF generation error:', pdfError)
       }
-      
-      // 견적서 PDF는 별도 요청 시 생성
-    } catch (pdfError) {
-      console.error('[Test Submit] PDF generation error:', pdfError)
-      // PDF 생성 실패해도 계속 진행
+    } else {
+      console.log('[Test Submit] Skipping PDF generation due to total size constraints')
     }
 
-    console.log(`[Test Submit] Total attachments: ${attachments.length}, Total size: ${totalSize} bytes`)
+    console.log(`[Test Submit] Final status - Attachments: ${attachments.length}, Total size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, Skipped: ${skippedFiles.length}`)
 
     // 이메일 전송 설정
     const transporter = nodemailer.createTransport({
@@ -161,17 +171,19 @@ export async function POST(request: NextRequest) {
       `) : ''}
       
       ${skippedFiles.length > 0 ? formatSection('⚠️', '첨부되지 않은 파일', `
-        <p style="margin: 0; padding: 12px; background-color: #fef3c7; border-radius: 8px; color: #92400e;">
-          다음 파일들은 크기 제한으로 첨부되지 않았습니다:<br>
-          ${skippedFiles.join('<br>')}
-        </p>
+        <div style="padding: 12px; background-color: #fef3c7; border-radius: 8px; color: #92400e;">
+          <p style="margin: 0 0 8px 0;"><strong>크기 제한으로 일부 파일이 첨부되지 않았습니다:</strong></p>
+          <ul style="margin: 0; padding-left: 20px;">
+            ${skippedFiles.map(file => `<li>${file}</li>`).join('')}
+          </ul>
+        </div>
       `) : ''}
       
       ${formatSection('📎', '첨부 파일 정보', `
-        <p style="margin: 0; padding: 12px; background-color: #f3f4f6; border-radius: 8px;">
-          첨부된 파일 수: ${attachments.length}개<br>
-          전체 크기: ${(totalSize / 1024 / 1024).toFixed(2)}MB
-        </p>
+        <div style="padding: 12px; background-color: #f3f4f6; border-radius: 8px;">
+          <p style="margin: 0;">첨부된 파일: <strong>${attachments.length}개</strong></p>
+          <p style="margin: 4px 0 0 0;">전체 크기: <strong>${(totalSize / 1024 / 1024).toFixed(2)}MB</strong> / 4MB</p>
+        </div>
       `)}
     `
 
@@ -205,52 +217,64 @@ export async function POST(request: NextRequest) {
       to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[시험 신청] ${data.testItem.category} - ${data.companyName}`,
       html: generateEmailTemplate('새로운 시험 신청', adminContent, true),
-      attachments: attachments,
+      attachments: attachments.length > 0 ? attachments : undefined,
       replyTo: 'yukwho@hanmail.net'
     }
 
     // 이메일 전송
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.log('[Test Submit] Email credentials not configured')
-      console.log('Admin email:', adminMailOptions)
-    } else {
-      try {
-        // 관리자 이메일 전송
-        console.log('[Test Submit] Sending admin email...')
-        await transporter.sendMail(adminMailOptions)
-        console.log('[Test Submit] Admin email sent successfully')
-        
-        // 고객 확인 이메일 전송
-        if (data.email && data.email.trim() !== '') {
-          const customerMailOptions = {
-            from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
-            to: data.email,
-            subject: '[한국안전용품시험연구원] 시험 신청서가 접수되었습니다.',
-            html: generateEmailTemplate('시험 신청 접수 완료', customerContent, false),
-            replyTo: 'yukwho@hanmail.net'
-          }
-          console.log('[Test Submit] Sending customer email...')
-          await transporter.sendMail(customerMailOptions)
-          console.log('[Test Submit] Customer email sent successfully')
-        }
-      } catch (emailError) {
-        console.error('[Test Submit] Email sending error:', emailError)
-        // 이메일 전송 실패해도 성공 응답
-      }
+      return NextResponse.json({ 
+        message: '이메일 설정이 완료되지 않았습니다.',
+        details: { attachments: attachments.length, skipped: skippedFiles.length }
+      })
     }
 
-    return NextResponse.json({ 
-      message: '시험 신청서가 성공적으로 제출되었습니다.',
-      details: {
-        attachments: attachments.length,
-        skipped: skippedFiles.length
+    try {
+      // 관리자 이메일 전송
+      console.log('[Test Submit] Sending admin email with', attachments.length, 'attachments...')
+      await transporter.sendMail(adminMailOptions)
+      console.log('[Test Submit] ✅ Admin email sent successfully')
+      
+      // 고객 확인 이메일 전송
+      if (data.email && data.email.trim() !== '') {
+        const customerMailOptions = {
+          from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
+          to: data.email,
+          subject: '[한국안전용품시험연구원] 시험 신청서가 접수되었습니다.',
+          html: generateEmailTemplate('시험 신청 접수 완료', customerContent, false),
+          replyTo: 'yukwho@hanmail.net'
+        }
+        console.log('[Test Submit] Sending customer email...')
+        await transporter.sendMail(customerMailOptions)
+        console.log('[Test Submit] ✅ Customer email sent successfully')
       }
-    })
+      
+      return NextResponse.json({ 
+        message: '시험 신청서가 성공적으로 제출되었습니다.',
+        details: {
+          attachments: attachments.length,
+          skipped: skippedFiles.length,
+          totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`
+        }
+      })
+      
+    } catch (emailError) {
+      console.error('[Test Submit] Email sending error:', emailError)
+      return NextResponse.json({ 
+        message: '신청서는 접수되었으나 이메일 전송 중 오류가 발생했습니다.',
+        error: emailError instanceof Error ? emailError.message : 'Unknown error',
+        details: { attachments: attachments.length, skipped: skippedFiles.length }
+      })
+    }
 
   } catch (error) {
     console.error('[Test Submit] Error:', error)
     return NextResponse.json(
-      { error: '신청서 제출 중 오류가 발생했습니다.' },
+      { 
+        error: '신청서 제출 중 오류가 발생했습니다.',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }

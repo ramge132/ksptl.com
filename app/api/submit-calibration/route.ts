@@ -9,8 +9,9 @@ import {
 } from '@/lib/email-template'
 import { generateCalibrationPDF } from '@/lib/pdf-generator'
 
-// Vercel의 제한사항을 고려한 파일 크기 제한 (3MB)
-const MAX_FILE_SIZE = 3 * 1024 * 1024
+// Vercel Pro의 제한사항을 고려한 파일 크기 제한
+const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024 // 개별 파일 2MB 제한
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 전체 4MB 제한 (Vercel Pro는 4.5MB까지 지원)
 
 export async function POST(request: NextRequest) {
   console.log('[Calibration Submit] Starting request processing')
@@ -35,19 +36,24 @@ export async function POST(request: NextRequest) {
     // 사업자등록증 첨부
     if (businessLicense && businessLicense.size > 0) {
       try {
-        if (businessLicense.size <= MAX_FILE_SIZE) {
+        console.log(`[Calibration Submit] Processing business license: ${businessLicense.name} (${businessLicense.size} bytes)`)
+        
+        if (businessLicense.size <= MAX_SINGLE_FILE_SIZE && totalSize + businessLicense.size <= MAX_TOTAL_SIZE) {
           const buffer = await businessLicense.arrayBuffer()
           const fileBuffer = Buffer.from(buffer)
-          totalSize += fileBuffer.length
           
           attachments.push({
             filename: businessLicense.name,
             content: fileBuffer
           })
-          console.log(`[Calibration Submit] Business license attached: ${businessLicense.name} (${businessLicense.size} bytes)`)
+          totalSize += fileBuffer.length
+          console.log(`[Calibration Submit] ✅ Business license attached: ${businessLicense.name}`)
         } else {
-          skippedFiles.push(`사업자등록증 (파일 크기 초과: ${(businessLicense.size / 1024 / 1024).toFixed(2)}MB)`)
-          console.log(`[Calibration Submit] Business license skipped due to size: ${businessLicense.size} bytes`)
+          const reason = businessLicense.size > MAX_SINGLE_FILE_SIZE ? 
+            `파일 크기 초과 (${(businessLicense.size / 1024 / 1024).toFixed(2)}MB)` : 
+            '전체 크기 제한'
+          skippedFiles.push(`사업자등록증: ${reason}`)
+          console.log(`[Calibration Submit] ⚠️ Business license skipped: ${reason}`)
         }
       } catch (error) {
         console.error('[Calibration Submit] Error processing business license:', error)
@@ -62,20 +68,25 @@ export async function POST(request: NextRequest) {
       try {
         const file = formData.get(key) as File
         if (file && file.size > 0) {
-          // 전체 첨부 파일 크기가 3MB를 넘지 않도록 제한
-          if (totalSize + file.size <= MAX_FILE_SIZE && file.size <= MAX_FILE_SIZE) {
+          console.log(`[Calibration Submit] Processing ${key}: ${file.name} (${file.size} bytes)`)
+          
+          // 개별 파일 크기와 전체 크기 체크
+          if (file.size <= MAX_SINGLE_FILE_SIZE && totalSize + file.size <= MAX_TOTAL_SIZE) {
             const buffer = await file.arrayBuffer()
             const fileBuffer = Buffer.from(buffer)
-            totalSize += fileBuffer.length
             
             attachments.push({
               filename: file.name,
               content: fileBuffer
             })
-            console.log(`[Calibration Submit] Equipment image attached: ${file.name} (${file.size} bytes)`)
+            totalSize += fileBuffer.length
+            console.log(`[Calibration Submit] ✅ Equipment image attached: ${file.name}`)
           } else {
-            skippedFiles.push(`${file.name} (파일 크기 제한)`)
-            console.log(`[Calibration Submit] Equipment image skipped: ${file.name} (${file.size} bytes)`)
+            const reason = file.size > MAX_SINGLE_FILE_SIZE ? 
+              `파일 크기 초과 (${(file.size / 1024 / 1024).toFixed(2)}MB)` : 
+              '전체 크기 제한'
+            skippedFiles.push(`${file.name}: ${reason}`)
+            console.log(`[Calibration Submit] ⚠️ Equipment image skipped: ${reason}`)
           }
         }
       } catch (error) {
@@ -83,30 +94,31 @@ export async function POST(request: NextRequest) {
       }
     }
     
-    // PDF 생성 - Vercel에서도 시도
-    try {
-      console.log('[Calibration Submit] Attempting PDF generation')
-      
-      // 교정신청서 PDF 생성
-      const pdfBuffer = await generateCalibrationPDF(data)
-      
-      // PDF 크기가 적절한 경우에만 첨부
-      if (pdfBuffer.length <= MAX_FILE_SIZE && totalSize + pdfBuffer.length <= MAX_FILE_SIZE * 2) {
-        attachments.push({
-          filename: `교정신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
-          content: pdfBuffer
-        })
-        totalSize += pdfBuffer.length
-        console.log(`[Calibration Submit] Calibration PDF generated and attached (${pdfBuffer.length} bytes)`)
-      } else {
-        console.log(`[Calibration Submit] Calibration PDF skipped due to size constraints`)
+    // PDF 생성 시도 (크기가 허용되는 경우만)
+    if (totalSize < MAX_TOTAL_SIZE * 0.7) { // 전체 제한의 70% 미만일 때만 PDF 생성 시도
+      try {
+        console.log('[Calibration Submit] Attempting PDF generation')
+        const pdfBuffer = await generateCalibrationPDF(data)
+        
+        if (pdfBuffer.length <= MAX_SINGLE_FILE_SIZE && totalSize + pdfBuffer.length <= MAX_TOTAL_SIZE) {
+          attachments.push({
+            filename: `교정신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
+            content: pdfBuffer
+          })
+          totalSize += pdfBuffer.length
+          console.log(`[Calibration Submit] ✅ PDF generated and attached (${pdfBuffer.length} bytes)`)
+        } else {
+          console.log(`[Calibration Submit] ⚠️ PDF skipped due to size constraints (${pdfBuffer.length} bytes)`)
+          skippedFiles.push('교정신청서 PDF: 크기 제한')
+        }
+      } catch (pdfError) {
+        console.error('[Calibration Submit] PDF generation error:', pdfError)
       }
-    } catch (pdfError) {
-      console.error('[Calibration Submit] PDF generation error:', pdfError)
-      // PDF 생성 실패해도 계속 진행
+    } else {
+      console.log('[Calibration Submit] Skipping PDF generation due to total size constraints')
     }
 
-    console.log(`[Calibration Submit] Total attachments: ${attachments.length}, Total size: ${totalSize} bytes`)
+    console.log(`[Calibration Submit] Final status - Attachments: ${attachments.length}, Total size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, Skipped: ${skippedFiles.length}`)
 
     // 관리자용 이메일 내용 생성
     const adminEmailContent = `
@@ -166,17 +178,19 @@ export async function POST(request: NextRequest) {
       `)}
       
       ${skippedFiles.length > 0 ? formatSection('⚠️', '첨부되지 않은 파일', `
-        <p style="margin: 0; padding: 12px; background-color: #fef3c7; border-radius: 8px; color: #92400e;">
-          다음 파일들은 크기 제한으로 첨부되지 않았습니다:<br>
-          ${skippedFiles.join('<br>')}
-        </p>
+        <div style="padding: 12px; background-color: #fef3c7; border-radius: 8px; color: #92400e;">
+          <p style="margin: 0 0 8px 0;"><strong>크기 제한으로 일부 파일이 첨부되지 않았습니다:</strong></p>
+          <ul style="margin: 0; padding-left: 20px;">
+            ${skippedFiles.map(file => `<li>${file}</li>`).join('')}
+          </ul>
+        </div>
       `) : ''}
       
       ${formatSection('📎', '첨부 파일 정보', `
-        <p style="margin: 0; padding: 12px; background-color: #f3f4f6; border-radius: 8px;">
-          첨부된 파일 수: ${attachments.length}개<br>
-          전체 크기: ${(totalSize / 1024 / 1024).toFixed(2)}MB
-        </p>
+        <div style="padding: 12px; background-color: #f3f4f6; border-radius: 8px;">
+          <p style="margin: 0;">첨부된 파일: <strong>${attachments.length}개</strong></p>
+          <p style="margin: 4px 0 0 0;">전체 크기: <strong>${(totalSize / 1024 / 1024).toFixed(2)}MB</strong> / 4MB</p>
+        </div>
       `)}
     `
 
@@ -239,7 +253,7 @@ export async function POST(request: NextRequest) {
       to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[교정 신청서] ${data.companyName} - ${data.applicantName}`,
       html: generateEmailTemplate('[교정 신청서] 새로운 신청이 접수되었습니다', adminEmailContent, true),
-      attachments: attachments,
+      attachments: attachments.length > 0 ? attachments : undefined,
       replyTo: 'yukwho@hanmail.net'
     }
 
@@ -255,37 +269,48 @@ export async function POST(request: NextRequest) {
     // 이메일 전송
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
       console.log('[Calibration Submit] Email credentials not configured')
-      console.log('Admin email:', adminMailOptions)
-      console.log('Customer email:', customerMailOptions)
-    } else {
-      try {
-        // 관리자 이메일 전송
-        console.log('[Calibration Submit] Sending admin email...')
-        await transporter.sendMail(adminMailOptions)
-        console.log('[Calibration Submit] Admin email sent successfully')
-        
-        // 고객 확인 이메일 전송
-        console.log('[Calibration Submit] Sending customer email...')
-        await transporter.sendMail(customerMailOptions)
-        console.log('[Calibration Submit] Customer email sent successfully')
-      } catch (emailError) {
-        console.error('[Calibration Submit] Email sending error:', emailError)
-        // 이메일 전송 실패해도 성공 응답
-      }
+      return NextResponse.json({ 
+        message: '이메일 설정이 완료되지 않았습니다.',
+        details: { attachments: attachments.length, skipped: skippedFiles.length }
+      })
     }
 
-    return NextResponse.json({ 
-      message: '신청서가 성공적으로 제출되었습니다.',
-      details: {
-        attachments: attachments.length,
-        skipped: skippedFiles.length
-      }
-    })
+    try {
+      // 관리자 이메일 전송
+      console.log('[Calibration Submit] Sending admin email with', attachments.length, 'attachments...')
+      await transporter.sendMail(adminMailOptions)
+      console.log('[Calibration Submit] ✅ Admin email sent successfully')
+      
+      // 고객 확인 이메일 전송
+      console.log('[Calibration Submit] Sending customer email...')
+      await transporter.sendMail(customerMailOptions)
+      console.log('[Calibration Submit] ✅ Customer email sent successfully')
+      
+      return NextResponse.json({ 
+        message: '신청서가 성공적으로 제출되었습니다.',
+        details: {
+          attachments: attachments.length,
+          skipped: skippedFiles.length,
+          totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`
+        }
+      })
+      
+    } catch (emailError) {
+      console.error('[Calibration Submit] Email sending error:', emailError)
+      return NextResponse.json({ 
+        message: '신청서는 접수되었으나 이메일 전송 중 오류가 발생했습니다.',
+        error: emailError instanceof Error ? emailError.message : 'Unknown error',
+        details: { attachments: attachments.length, skipped: skippedFiles.length }
+      })
+    }
 
   } catch (error) {
     console.error('[Calibration Submit] Error:', error)
     return NextResponse.json(
-      { error: '신청서 제출 중 오류가 발생했습니다.' },
+      { 
+        error: '신청서 제출 중 오류가 발생했습니다.',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
