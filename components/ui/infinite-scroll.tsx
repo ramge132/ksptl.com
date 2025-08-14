@@ -28,10 +28,33 @@ export function InfiniteScroll({ items, className, speed = 30 }: InfiniteScrollP
     const totalWidth = scrollContent.offsetWidth
     const duration = totalWidth / speed
 
-    scrollContent.style.animation = `scroll ${duration}s linear infinite`
-    clone.style.animation = `scroll ${duration}s linear infinite`
+    // Create style element for animations
+    const styleId = `infinite-scroll-${Math.random().toString(36).substr(2, 9)}`
+    const styleElement = document.createElement('style')
+    styleElement.id = styleId
+    styleElement.textContent = `
+      @keyframes scroll-${styleId} {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
+      }
+      .scroll-content-${styleId} {
+        animation: scroll-${styleId} ${duration}s linear infinite;
+      }
+    `
+    document.head.appendChild(styleElement)
+
+    scrollContent.classList.add(`scroll-content-${styleId}`)
+    clone.classList.add(`scroll-content-${styleId}`)
 
     return () => {
+      const style = document.getElementById(styleId)
+      if (style) {
+        style.remove()
+      }
       if (clone.parentNode) {
         clone.parentNode.removeChild(clone)
       }
@@ -49,16 +72,6 @@ export function InfiniteScroll({ items, className, speed = 30 }: InfiniteScrollP
           ))}
         </div>
       </div>
-      <style jsx>{`
-        @keyframes scroll {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-      `}</style>
     </div>
   )
 }
