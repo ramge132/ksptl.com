@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,20 +19,9 @@ export async function POST(request: NextRequest) {
 
     const inquiryTypeKorean = inquiryTypeMap[inquiryType] || inquiryType
 
-    // 이메일 전송 설정
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
-
     // 관리자에게 보낼 이메일
     const adminMailOptions = {
-      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
+      from: '한국안전용품시험연구원 <no-reply@ksptl.com>',
       to: to || process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
       subject: `[문의] ${inquiryTypeKorean} - ${company} ${name}`,
       replyTo: email, // 문의자 이메일로 직접 답장 가능
@@ -85,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // 문의자에게 보낼 확인 이메일
     const customerMailOptions = {
-      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
+      from: '한국안전용품시험연구원 <no-reply@ksptl.com>',
       to: email,
       subject: `[한국안전용품시험연구원] 문의가 정상적으로 접수되었습니다`,
       replyTo: 'yukwho@hanmail.net', // 답장 받을 실제 이메일
@@ -142,33 +133,44 @@ export async function POST(request: NextRequest) {
       `,
     }
 
-    // 이메일 전송
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.log('Email credentials not configured - Email would be sent:')
-      console.log('Admin email:', adminMailOptions)
-      console.log('Customer email:', customerMailOptions)
-    } else {
-      try {
-        // 관리자 이메일 전송
-        await transporter.sendMail(adminMailOptions)
-        console.log('Admin email sent successfully to:', adminMailOptions.to)
-        
-        // 고객 확인 이메일 전송
-        await transporter.sendMail(customerMailOptions)
-        console.log('Customer confirmation email sent successfully to:', customerMailOptions.to)
-      } catch (emailError) {
-        console.error('Email sending error:', emailError)
-        // 이메일 전송 실패해도 성공 응답 (사용자에게는 접수되었다고 표시)
-        console.log('Failed to send email, but inquiry was received')
-      }
+    // Resend를 사용한 이메일 발송
+    if (!process.env.RESEND_API_KEY) {
+      console.log('[Inquiry Submit] Resend API key not configured')
+      return NextResponse.json({ 
+        success: false,
+        message: 'Resend API 키가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
+      })
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: '문의가 성공적으로 접수되었습니다.' 
-    })
+    try {
+      // 관리자 이메일 전송
+      console.log('[Inquiry Submit] Sending admin email with Resend...')
+      const adminEmail = await resend.emails.send(adminMailOptions)
+      console.log('[Inquiry Submit] ✅ Admin email sent successfully:', adminEmail.data?.id)
+      
+      // 고객 확인 이메일 전송
+      if (email && email.trim() !== '') {
+        console.log('[Inquiry Submit] Sending customer email with Resend...')
+        const customerEmail = await resend.emails.send(customerMailOptions)
+        console.log('[Inquiry Submit] ✅ Customer email sent successfully:', customerEmail.data?.id)
+      }
+      
+      return NextResponse.json({ 
+        success: true, 
+        message: '문의가 성공적으로 접수되었습니다.' 
+      })
+      
+    } catch (emailError) {
+      console.error('[Inquiry Submit] Resend email error:', emailError)
+      // 이메일 전송 실패해도 성공 응답 (사용자에게는 접수되었다고 표시)
+      return NextResponse.json({ 
+        success: true, 
+        message: '문의가 접수되었습니다. 곧 담당자가 연락드리겠습니다.' 
+      })
+    }
+
   } catch (error) {
-    console.error('Error submitting inquiry:', error)
+    console.error('[Inquiry Submit] Error:', error)
     return NextResponse.json(
       { 
         success: false, 

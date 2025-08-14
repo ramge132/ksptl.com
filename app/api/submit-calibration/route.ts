@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import { 
   generateEmailTemplate, 
   formatSection, 
@@ -9,9 +9,11 @@ import {
 } from '@/lib/email-template'
 import { generateCalibrationPDF } from '@/lib/pdf-generator'
 
+const resend = new Resend(process.env.RESEND_API_KEY)
+
 // Vercel Pro의 제한사항을 고려한 파일 크기 제한
 const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024 // 개별 파일 2MB 제한
-const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 전체 4MB 제한 (Vercel Pro는 4.5MB까지 지원)
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 전체 4MB 제한
 
 export async function POST(request: NextRequest) {
   console.log('[Calibration Submit] Starting request processing')
@@ -40,13 +42,13 @@ export async function POST(request: NextRequest) {
         
         if (businessLicense.size <= MAX_SINGLE_FILE_SIZE && totalSize + businessLicense.size <= MAX_TOTAL_SIZE) {
           const buffer = await businessLicense.arrayBuffer()
-          const fileBuffer = Buffer.from(buffer)
+          const base64 = Buffer.from(buffer).toString('base64')
           
           attachments.push({
             filename: businessLicense.name,
-            content: fileBuffer
+            content: base64
           })
-          totalSize += fileBuffer.length
+          totalSize += businessLicense.size
           console.log(`[Calibration Submit] ✅ Business license attached: ${businessLicense.name}`)
         } else {
           const reason = businessLicense.size > MAX_SINGLE_FILE_SIZE ? 
@@ -70,16 +72,15 @@ export async function POST(request: NextRequest) {
         if (file && file.size > 0) {
           console.log(`[Calibration Submit] Processing ${key}: ${file.name} (${file.size} bytes)`)
           
-          // 개별 파일 크기와 전체 크기 체크
           if (file.size <= MAX_SINGLE_FILE_SIZE && totalSize + file.size <= MAX_TOTAL_SIZE) {
             const buffer = await file.arrayBuffer()
-            const fileBuffer = Buffer.from(buffer)
+            const base64 = Buffer.from(buffer).toString('base64')
             
             attachments.push({
               filename: file.name,
-              content: fileBuffer
+              content: base64
             })
-            totalSize += fileBuffer.length
+            totalSize += file.size
             console.log(`[Calibration Submit] ✅ Equipment image attached: ${file.name}`)
           } else {
             const reason = file.size > MAX_SINGLE_FILE_SIZE ? 
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
         if (pdfBuffer.length <= MAX_SINGLE_FILE_SIZE && totalSize + pdfBuffer.length <= MAX_TOTAL_SIZE) {
           attachments.push({
             filename: `교정신청서_${data.companyName}_${new Date().toISOString().split('T')[0]}.pdf`,
-            content: pdfBuffer
+            content: Buffer.from(pdfBuffer).toString('base64')
           })
           totalSize += pdfBuffer.length
           console.log(`[Calibration Submit] ✅ PDF generated and attached (${pdfBuffer.length} bytes)`)
@@ -114,8 +115,6 @@ export async function POST(request: NextRequest) {
       } catch (pdfError) {
         console.error('[Calibration Submit] PDF generation error:', pdfError)
       }
-    } else {
-      console.log('[Calibration Submit] Skipping PDF generation due to total size constraints')
     }
 
     console.log(`[Calibration Submit] Final status - Attachments: ${attachments.length}, Total size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, Skipped: ${skippedFiles.length}`)
@@ -236,55 +235,40 @@ export async function POST(request: NextRequest) {
       </div>
     `
 
-    // 이메일 전송 설정
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
-
-    // 관리자에게 이메일 발송
-    const adminMailOptions = {
-      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
-      to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
-      subject: `[교정 신청서] ${data.companyName} - ${data.applicantName}`,
-      html: generateEmailTemplate('[교정 신청서] 새로운 신청이 접수되었습니다', adminEmailContent, true),
-      attachments: attachments.length > 0 ? attachments : undefined,
-      replyTo: 'yukwho@hanmail.net'
-    }
-
-    // 신청자에게 확인 이메일 발송
-    const customerMailOptions = {
-      from: `"한국안전용품시험연구원 (발신전용)" <${process.env.EMAIL_USER}>`,
-      to: data.email,
-      subject: '[한국안전용품시험연구원] 교정 신청서 접수 확인',
-      html: generateEmailTemplate('교정 신청서 접수 확인', customerEmailContent, false),
-      replyTo: 'yukwho@hanmail.net'
-    }
-
-    // 이메일 전송
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-      console.log('[Calibration Submit] Email credentials not configured')
+    // Resend를 사용한 이메일 발송
+    if (!process.env.RESEND_API_KEY) {
+      console.log('[Calibration Submit] Resend API key not configured')
       return NextResponse.json({ 
-        message: '이메일 설정이 완료되지 않았습니다.',
+        message: 'Resend API 키가 설정되지 않았습니다. 환경 변수를 확인해주세요.',
         details: { attachments: attachments.length, skipped: skippedFiles.length }
       })
     }
 
     try {
-      // 관리자 이메일 전송
-      console.log('[Calibration Submit] Sending admin email with', attachments.length, 'attachments...')
-      await transporter.sendMail(adminMailOptions)
-      console.log('[Calibration Submit] ✅ Admin email sent successfully')
+      // 관리자 이메일 발송
+      console.log('[Calibration Submit] Sending admin email with Resend...')
+      const adminEmail = await resend.emails.send({
+        from: '한국안전용품시험연구원 <no-reply@ksptl.com>',
+        to: process.env.RECIPIENT_EMAIL || 'yukwho@hanmail.net',
+        subject: `[교정 신청서] ${data.companyName} - ${data.applicantName}`,
+        html: generateEmailTemplate('[교정 신청서] 새로운 신청이 접수되었습니다', adminEmailContent, true),
+        attachments: attachments.length > 0 ? attachments : undefined,
+        replyTo: data.email
+      })
+      console.log('[Calibration Submit] ✅ Admin email sent successfully:', adminEmail.data?.id)
       
-      // 고객 확인 이메일 전송
-      console.log('[Calibration Submit] Sending customer email...')
-      await transporter.sendMail(customerMailOptions)
-      console.log('[Calibration Submit] ✅ Customer email sent successfully')
+      // 고객 확인 이메일 발송
+      if (data.email && data.email.trim() !== '') {
+        console.log('[Calibration Submit] Sending customer email with Resend...')
+        const customerEmail = await resend.emails.send({
+          from: '한국안전용품시험연구원 <no-reply@ksptl.com>',
+          to: data.email,
+          subject: '[한국안전용품시험연구원] 교정 신청서 접수 확인',
+          html: generateEmailTemplate('교정 신청서 접수 확인', customerEmailContent, false),
+          replyTo: 'yukwho@hanmail.net'
+        })
+        console.log('[Calibration Submit] ✅ Customer email sent successfully:', customerEmail.data?.id)
+      }
       
       return NextResponse.json({ 
         message: '신청서가 성공적으로 제출되었습니다.',
@@ -296,7 +280,7 @@ export async function POST(request: NextRequest) {
       })
       
     } catch (emailError) {
-      console.error('[Calibration Submit] Email sending error:', emailError)
+      console.error('[Calibration Submit] Resend email error:', emailError)
       return NextResponse.json({ 
         message: '신청서는 접수되었으나 이메일 전송 중 오류가 발생했습니다.',
         error: emailError instanceof Error ? emailError.message : 'Unknown error',
