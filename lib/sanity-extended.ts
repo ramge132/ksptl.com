@@ -1,15 +1,55 @@
-import { client } from './sanity'
-import { createClient } from '@sanity/client'
+import { createClient, type SanityClient } from '@sanity/client'
+
+let serverClient: SanityClient | null = null
+let readClient: SanityClient | null = null
 
 // 서버 사이드 전용 클라이언트 (토큰 포함)
-// API 라우트에서만 사용되므로 항상 서버 사이드
-const serverClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  useCdn: false,
-  apiVersion: '2024-01-01',
-  token: process.env.SANITY_API_TOKEN,
-})
+function getServerClient(): SanityClient {
+  if (serverClient) {
+    return serverClient
+  }
+  
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const token = process.env.SANITY_API_TOKEN
+  
+  if (!projectId || !dataset) {
+    throw new Error('Missing Sanity configuration')
+  }
+  
+  serverClient = createClient({
+    projectId,
+    dataset,
+    useCdn: false,
+    apiVersion: '2024-01-01',
+    token,
+  })
+  
+  return serverClient
+}
+
+// 읽기 전용 클라이언트 (토큰 없음)
+function getReadClient(): SanityClient {
+  if (readClient) {
+    return readClient
+  }
+  
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  
+  if (!projectId || !dataset) {
+    throw new Error('Missing Sanity configuration')
+  }
+  
+  readClient = createClient({
+    projectId,
+    dataset,
+    useCdn: false,
+    apiVersion: '2024-01-01',
+  })
+  
+  return readClient
+}
 
 // Landing Page 관련 함수
 export interface LandingPage {
@@ -182,7 +222,7 @@ export interface LandingPage {
 
 export async function getLandingPage(): Promise<LandingPage | null> {
   try {
-    const result = await client.fetch(`*[_type == "landingPage"][0]`)
+    const result = await getReadClient().fetch(`*[_type == "landingPage"][0]`)
     return result
   } catch (error) {
     console.error('Failed to fetch landing page:', error)
@@ -193,10 +233,11 @@ export async function getLandingPage(): Promise<LandingPage | null> {
 export async function updateLandingPage(data: Partial<LandingPage>): Promise<LandingPage | null> {
   try {
     const existing = await getLandingPage()
+    const client = getServerClient()
     if (existing) {
-      return await serverClient.patch(existing._id).set(data).commit() as unknown as LandingPage
+      return await client.patch(existing._id).set(data).commit() as unknown as LandingPage
     } else {
-      return await serverClient.create({
+      return await client.create({
         _id: 'landingPage-singleton',
         _type: 'landingPage',
         ...data
@@ -292,7 +333,7 @@ export interface AboutPage {
 
 export async function getAboutPage(): Promise<AboutPage | null> {
   try {
-    const result = await client.fetch(`*[_type == "aboutPage"][0]`)
+    const result = await getReadClient().fetch(`*[_type == "aboutPage"][0]`)
     return result
   } catch (error) {
     console.error('Failed to fetch about page:', error)
@@ -303,10 +344,11 @@ export async function getAboutPage(): Promise<AboutPage | null> {
 export async function updateAboutPage(data: Partial<AboutPage>): Promise<AboutPage | null> {
   try {
     const existing = await getAboutPage()
+    const client = getServerClient()
     if (existing) {
-      return await serverClient.patch(existing._id).set(data).commit() as unknown as AboutPage
+      return await client.patch(existing._id).set(data).commit() as unknown as AboutPage
     } else {
-      return await serverClient.create({
+      return await client.create({
         _id: 'aboutPage-singleton',
         _type: 'aboutPage',
         ...data
@@ -335,7 +377,7 @@ export interface TestItem {
 
 export async function getTestItems(): Promise<TestItem[]> {
   try {
-    const result = await client.fetch(`*[_type == "testItem"] | order(order asc)`)
+    const result = await getReadClient().fetch(`*[_type == "testItem"] | order(order asc)`)
     return result || []
   } catch (error) {
     console.error('Failed to fetch test items:', error)
@@ -345,7 +387,7 @@ export async function getTestItems(): Promise<TestItem[]> {
 
 export async function createTestItem(data: Omit<TestItem, '_id' | '_type'>): Promise<TestItem | null> {
   try {
-    return await serverClient.create({
+    return await getServerClient().create({
       _type: 'testItem',
       ...data
     })
@@ -357,7 +399,7 @@ export async function createTestItem(data: Omit<TestItem, '_id' | '_type'>): Pro
 
 export async function updateTestItem(id: string, data: Partial<TestItem>): Promise<TestItem | null> {
   try {
-    return await serverClient.patch(id).set(data).commit()
+    return await getServerClient().patch(id).set(data).commit()
   } catch (error) {
     console.error('Failed to update test item:', error)
     return null
@@ -366,7 +408,7 @@ export async function updateTestItem(id: string, data: Partial<TestItem>): Promi
 
 export async function deleteTestItem(id: string): Promise<boolean> {
   try {
-    await serverClient.delete(id)
+    await getServerClient().delete(id)
     return true
   } catch (error) {
     console.error('Failed to delete test item:', error)
@@ -407,7 +449,7 @@ export interface SupportPage {
 
 export async function getSupportPage(): Promise<SupportPage | null> {
   try {
-    const result = await client.fetch(`*[_type == "supportPage"][0]`)
+    const result = await getReadClient().fetch(`*[_type == "supportPage"][0]`)
     return result
   } catch (error) {
     console.error('Failed to fetch support page:', error)
@@ -418,10 +460,11 @@ export async function getSupportPage(): Promise<SupportPage | null> {
 export async function updateSupportPage(data: Partial<SupportPage>): Promise<SupportPage | null> {
   try {
     const existing = await getSupportPage()
+    const client = getServerClient()
     if (existing) {
-      return await serverClient.patch(existing._id).set(data).commit() as unknown as SupportPage
+      return await client.patch(existing._id).set(data).commit() as unknown as SupportPage
     } else {
-      return await serverClient.create({
+      return await client.create({
         _id: 'supportPage-singleton',
         _type: 'supportPage',
         ...data
@@ -459,7 +502,7 @@ export interface SupportInfo {
 
 export async function getSupportInfo(): Promise<SupportInfo | null> {
   try {
-    const result = await client.fetch(`*[_type == "supportInfo"][0]`)
+    const result = await getReadClient().fetch(`*[_type == "supportInfo"][0]`)
     return result
   } catch (error) {
     console.error('Failed to fetch support info:', error)
@@ -470,10 +513,11 @@ export async function getSupportInfo(): Promise<SupportInfo | null> {
 export async function updateSupportInfo(data: Partial<SupportInfo>): Promise<SupportInfo | null> {
   try {
     const existing = await getSupportInfo()
+    const client = getServerClient()
     if (existing) {
-      return await serverClient.patch(existing._id).set(data).commit() as unknown as SupportInfo
+      return await client.patch(existing._id).set(data).commit() as unknown as SupportInfo
     } else {
-      return await serverClient.create({
+      return await client.create({
         _id: 'supportInfo-singleton',
         _type: 'supportInfo',
         ...data
@@ -502,7 +546,7 @@ export interface Resource {
 
 export async function getResources(): Promise<Resource[]> {
   try {
-    const result = await client.fetch(`*[_type == "resource"] | order(order asc)`)
+    const result = await getReadClient().fetch(`*[_type == "resource"] | order(order asc)`)
     return result || []
   } catch (error) {
     console.error('Failed to fetch resources:', error)
@@ -512,7 +556,7 @@ export async function getResources(): Promise<Resource[]> {
 
 export async function createResource(data: Omit<Resource, '_id' | '_type'>): Promise<Resource | null> {
   try {
-    return await serverClient.create({
+    return await getServerClient().create({
       _type: 'resource',
       ...data
     })
@@ -524,7 +568,7 @@ export async function createResource(data: Omit<Resource, '_id' | '_type'>): Pro
 
 export async function updateResource(id: string, data: Partial<Resource>): Promise<Resource | null> {
   try {
-    return await serverClient.patch(id).set(data).commit()
+    return await getServerClient().patch(id).set(data).commit()
   } catch (error) {
     console.error('Failed to update resource:', error)
     return null
@@ -533,7 +577,7 @@ export async function updateResource(id: string, data: Partial<Resource>): Promi
 
 export async function deleteResource(id: string): Promise<boolean> {
   try {
-    await serverClient.delete(id)
+    await getServerClient().delete(id)
     return true
   } catch (error) {
     console.error('Failed to delete resource:', error)

@@ -1,10 +1,36 @@
 import { NextResponse } from 'next/server'
-import { client } from '@/lib/sanity'
+import { createClient, type SanityClient } from '@sanity/client'
+
+let client: SanityClient | null = null
+
+function getClient(): SanityClient {
+  if (client) {
+    return client
+  }
+  
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const token = process.env.SANITY_API_TOKEN
+  
+  if (!projectId || !dataset) {
+    throw new Error('Missing Sanity configuration')
+  }
+  
+  client = createClient({
+    projectId,
+    dataset,
+    useCdn: false,
+    apiVersion: '2024-01-01',
+    token,
+  })
+  
+  return client
+}
 
 // GET: 모든 시험 카테고리 가져오기
 export async function GET() {
   try {
-    const categories = await client.fetch(`
+    const categories = await getClient().fetch(`
       *[_type == "testCategory"] | order(order asc) {
         _id,
         key,
@@ -29,7 +55,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     
-    const result = await client.create({
+    const result = await getClient().create({
       _type: 'testCategory',
       ...body
     })
@@ -47,7 +73,7 @@ export async function PUT(request: Request) {
     const body = await request.json()
     const { _id, ...updates } = body
     
-    const result = await client
+    const result = await getClient()
       .patch(_id)
       .set(updates)
       .commit()
@@ -69,7 +95,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 })
     }
     
-    await client.delete(id)
+    await getClient().delete(id)
     
     return NextResponse.json({ success: true })
   } catch (error) {

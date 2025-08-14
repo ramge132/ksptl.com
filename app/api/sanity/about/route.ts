@@ -1,18 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@sanity/client'
+import { createClient, type SanityClient } from '@sanity/client'
+
+let serverClient: SanityClient | null = null
 
 // 서버 사이드 전용 클라이언트
-const serverClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  useCdn: false,
-  apiVersion: '2024-01-01',
-  token: process.env.SANITY_API_TOKEN,
-})
+function getServerClient(): SanityClient {
+  if (serverClient) {
+    return serverClient
+  }
+  
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const token = process.env.SANITY_API_TOKEN
+  
+  if (!projectId || !dataset) {
+    throw new Error('Missing Sanity configuration')
+  }
+  
+  serverClient = createClient({
+    projectId,
+    dataset,
+    useCdn: false,
+    apiVersion: '2024-01-01',
+    token,
+  })
+  
+  return serverClient
+}
 
 export async function GET() {
   try {
-    const aboutPage = await serverClient.fetch(`
+    const aboutPage = await getServerClient().fetch(`
       *[_type == "aboutPage"][0] {
         _id,
         _type,
@@ -61,13 +79,14 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
+    const client = getServerClient()
     
     // 먼저 기존 문서가 있는지 확인
-    const existing = await serverClient.fetch(`*[_type == "aboutPage"][0]`)
+    const existing = await client.fetch(`*[_type == "aboutPage"][0]`)
     
     if (existing) {
       // 기존 문서가 있으면 업데이트
-      const result = await serverClient
+      const result = await client
         .patch(existing._id)
         .set(data)
         .commit()
@@ -75,7 +94,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(result)
     } else {
       // 기존 문서가 없으면 새로 생성
-      const result = await serverClient.create({
+      const result = await client.create({
         _id: 'aboutPage-singleton',
         _type: 'aboutPage',
         ...data

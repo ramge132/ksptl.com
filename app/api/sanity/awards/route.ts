@@ -1,18 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@sanity/client'
+import { createClient, type SanityClient } from '@sanity/client'
+
+let serverClient: SanityClient | null = null
 
 // 서버 사이드 전용 클라이언트
-const serverClient = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  useCdn: false,
-  apiVersion: '2024-01-01',
-  token: process.env.SANITY_API_TOKEN,
-})
+function getServerClient(): SanityClient {
+  if (serverClient) {
+    return serverClient
+  }
+  
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const token = process.env.SANITY_API_TOKEN
+  
+  if (!projectId || !dataset) {
+    throw new Error('Missing Sanity configuration')
+  }
+  
+  serverClient = createClient({
+    projectId,
+    dataset,
+    useCdn: false,
+    apiVersion: '2024-01-01',
+    token,
+  })
+  
+  return serverClient
+}
 
 export async function GET() {
   try {
-    const awards = await serverClient.fetch(`
+    const awards = await getServerClient().fetch(`
       *[_type == "award"] | order(order asc) {
         _id,
         _type,
@@ -57,6 +75,7 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
     console.log('Received award data:', data)
+    const client = getServerClient()
     
     if (data._id) {
       // Update existing award
@@ -75,7 +94,7 @@ export async function POST(request: NextRequest) {
       
       console.log('Updating award with:', updateData)
       
-      const result = await serverClient
+      const result = await client
         .patch(data._id)
         .set(updateData)
         .commit()
@@ -98,7 +117,7 @@ export async function POST(request: NextRequest) {
       
       console.log('Creating award with:', createData)
       
-      const result = await serverClient.create(createData)
+      const result = await client.create(createData)
       
       console.log('Create result:', result)
       return NextResponse.json(result)
@@ -150,7 +169,7 @@ export async function PUT(request: NextRequest) {
     
     console.log('Final update data:', updateData)
     
-    const result = await serverClient
+    const result = await getServerClient()
       .patch(id)
       .set(updateData)
       .commit()
@@ -175,7 +194,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 })
     }
     
-    await serverClient.delete(id)
+    await getServerClient().delete(id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete award:', error)
