@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -141,6 +139,8 @@ export async function POST(request: NextRequest) {
         message: 'Resend API 키가 설정되지 않았습니다. 환경 변수를 확인해주세요.'
       })
     }
+
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     try {
       // 관리자 이메일 전송

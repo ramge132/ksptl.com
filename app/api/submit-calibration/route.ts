@@ -7,9 +7,7 @@ import {
   formatEquipmentCard,
   formatAlert 
 } from '@/lib/email-template'
-import { generateCalibrationPDF } from '@/lib/pdf-generator'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
+import { generateCalibrationPDF } from '@/lib/pdf-generator-simple'
 
 // Vercel Pro의 제한사항을 고려한 파일 크기 제한
 const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024 // 개별 파일 2MB 제한
@@ -243,6 +241,8 @@ export async function POST(request: NextRequest) {
         details: { attachments: attachments.length, skipped: skippedFiles.length }
       })
     }
+
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     try {
       // 관리자 이메일 발송
