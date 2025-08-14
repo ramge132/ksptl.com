@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { generateEmailTemplate, formatTableRow, formatSection, formatSampleCard, formatAlert, formatButton } from '@/lib/email-template'
-import { generateTestPDF } from '../../../lib/pdf-generator-simple'
+import { generateTestPDF } from '@/lib/pdf-generator-simple'
 
 // Vercel Pro의 제한사항을 고려한 파일 크기 제한
 const MAX_SINGLE_FILE_SIZE = 2 * 1024 * 1024 // 개별 파일 2MB 제한
