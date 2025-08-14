@@ -1,26 +1,36 @@
-import { createClient } from '@sanity/client'
+import { createClient, type SanityClient } from '@sanity/client'
 import imageUrlBuilder from '@sanity/image-url'
 
-if (!process.env.NEXT_PUBLIC_SANITY_PROJECT_ID) {
-  throw new Error('Missing NEXT_PUBLIC_SANITY_PROJECT_ID')
+let client: SanityClient | null = null
+
+function getClient(): SanityClient {
+  if (client) {
+    return client
+  }
+  
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET
+  const apiVersion = '2024-01-01'
+  const token = process.env.SANITY_API_TOKEN
+
+  if (!projectId || !dataset) {
+    throw new Error('Missing Sanity project ID or dataset')
+  }
+
+  client = createClient({
+    projectId,
+    dataset,
+    useCdn: false,
+    apiVersion,
+    token,
+  })
+  
+  return client
 }
-
-if (!process.env.NEXT_PUBLIC_SANITY_DATASET) {
-  throw new Error('Missing NEXT_PUBLIC_SANITY_DATASET')
-}
-
-export const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
-  useCdn: false, // false for write operations
-  apiVersion: '2024-01-01',
-  token: process.env.SANITY_API_TOKEN, // 쓰기 권한용
-})
-
-const builder = imageUrlBuilder(client)
 
 export function urlFor(source: any) {
-  return builder.image(source)
+  // urlFor는 빌드 시점에도 사용될 수 있으므로, 클라이언트를 동적으로 가져옵니다.
+  return imageUrlBuilder(getClient()).image(source)
 }
 
 // 타입 정의
@@ -63,7 +73,7 @@ export interface Timeline {
 // Sanity 쿼리 함수들
 export async function getAwards(): Promise<Award[]> {
   try {
-    const awards = await client.fetch(`
+    const awards = await getClient().fetch(`
       *[_type == "award"] | order(order asc) {
         _id,
         _type,
@@ -83,7 +93,7 @@ export async function getAwards(): Promise<Award[]> {
 
 export async function getCompanyInfo(): Promise<CompanyInfo | null> {
   try {
-    const companyInfo = await client.fetch(`
+    const companyInfo = await getClient().fetch(`
       *[_type == "companyInfo"][0] {
         _id,
         _type,
@@ -108,7 +118,7 @@ export async function updateCompanyInfo(data: Partial<CompanyInfo>): Promise<Com
     
     if (existing) {
       // 기존 문서가 있으면 업데이트
-      const result = await client
+      const result = await getClient()
         .patch(existing._id)
         .set(data)
         .commit()
@@ -116,7 +126,7 @@ export async function updateCompanyInfo(data: Partial<CompanyInfo>): Promise<Com
       return result as unknown as CompanyInfo
     } else {
       // 기존 문서가 없으면 새로 생성
-      const result = await client.create({
+      const result = await getClient().create({
         _id: 'companyInfo-singleton',
         _type: 'companyInfo',
         ...data
@@ -132,7 +142,7 @@ export async function updateCompanyInfo(data: Partial<CompanyInfo>): Promise<Com
 
 export async function createAward(award: Omit<Award, '_id' | '_type' | 'createdAt'>): Promise<Award | null> {
   try {
-    const result = await client.create({
+    const result = await getClient().create({
       _type: 'award',
       ...award,
     })
@@ -146,7 +156,7 @@ export async function createAward(award: Omit<Award, '_id' | '_type' | 'createdA
 
 export async function updateAward(id: string, data: Partial<Award>): Promise<Award | null> {
   try {
-    const result = await client
+    const result = await getClient()
       .patch(id)
       .set(data)
       .commit()
@@ -160,7 +170,7 @@ export async function updateAward(id: string, data: Partial<Award>): Promise<Awa
 
 export async function deleteAward(id: string): Promise<boolean> {
   try {
-    await client.delete(id)
+    await getClient().delete(id)
     return true
   } catch (error) {
     console.error('Failed to delete award:', error)
@@ -171,7 +181,7 @@ export async function deleteAward(id: string): Promise<boolean> {
 // Timeline 함수들
 export async function getTimeline(): Promise<Timeline[]> {
   try {
-    const timeline = await client.fetch(`
+    const timeline = await getClient().fetch(`
       *[_type == "timeline"] | order(order asc) {
         _id,
         _type,
@@ -191,7 +201,7 @@ export async function getTimeline(): Promise<Timeline[]> {
 
 export async function createTimelineItem(item: Omit<Timeline, '_id' | '_type'>): Promise<Timeline | null> {
   try {
-    const result = await client.create({
+    const result = await getClient().create({
       _type: 'timeline',
       ...item,
     })
@@ -205,7 +215,7 @@ export async function createTimelineItem(item: Omit<Timeline, '_id' | '_type'>):
 
 export async function updateTimelineItem(id: string, data: Partial<Timeline>): Promise<Timeline | null> {
   try {
-    const result = await client
+    const result = await getClient()
       .patch(id)
       .set(data)
       .commit()
@@ -219,7 +229,7 @@ export async function updateTimelineItem(id: string, data: Partial<Timeline>): P
 
 export async function deleteTimelineItem(id: string): Promise<boolean> {
   try {
-    await client.delete(id)
+    await getClient().delete(id)
     return true
   } catch (error) {
     console.error('Failed to delete timeline item:', error)
