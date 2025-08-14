@@ -14,7 +14,6 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
 
 const navItems = [
@@ -152,56 +151,61 @@ export default function Header() {
               />
             </a>
 
-            {/* Mobile Menu Toggle */}
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild className="lg:hidden">
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">메뉴 열기</span>
-                </Button>
-              </SheetTrigger>
-            <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-              <nav className="flex flex-col space-y-4 mt-8">
-                {navItems.map((item) => (
-                  <div key={item.title}>
-                    <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
-                    <ul className="space-y-2 pl-4">
-                      {item.items.map((subItem) => (
-                        <li key={subItem.title}>
-                          <Link
-                            href={subItem.href}
-                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
-                          >
-                            {subItem.title}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-                <div className="pt-4 border-t">
-                  <a 
-                    href="https://www.quro.co.kr/" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center hover:opacity-80 transition-opacity"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <Image
-                      src="/quro_logo.png"
-                      alt="QURO"
-                      width={120}
-                      height={40}
-                      className="h-8 w-auto"
-                    />
-                  </a>
-                </div>
-              </nav>
-            </SheetContent>
-            </Sheet>
+            {/* Mobile Menu Toggle - Simplified without Sheet */}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              <span className="sr-only">메뉴 열기</span>
+            </Button>
           </div>
         </div>
+
+        {/* Mobile Menu Dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t py-4">
+            <nav className="flex flex-col space-y-4">
+              {navItems.map((item) => (
+                <div key={item.title}>
+                  <h3 className="font-semibold text-lg mb-2">{item.title}</h3>
+                  <ul className="space-y-2 pl-4">
+                    {item.items.map((subItem) => (
+                      <li key={subItem.title}>
+                        <Link
+                          href={subItem.href}
+                          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                          onClick={() => setMobileMenuOpen(false)}
+                        >
+                          {subItem.title}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+              <div className="pt-4 border-t">
+                <a 
+                  href="https://www.quro.co.kr/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center hover:opacity-80 transition-opacity"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Image
+                    src="/quro_logo.png"
+                    alt="QURO"
+                    width={120}
+                    height={40}
+                    className="h-8 w-auto"
+                  />
+                </a>
+              </div>
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   )
