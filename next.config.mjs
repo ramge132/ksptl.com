@@ -9,7 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  serverExternalPackages: ['@radix-ui/react-dialog', '@sparticuz/chromium', 'puppeteer-core'],
+  experimental: {
+    serverComponentsExternalPackages: ['@radix-ui/react-dialog', '@sparticuz/chromium', 'puppeteer-core', 'pdfkit'],
+  },
   webpack: (config, { isServer }) => {
     config.module.rules.push({
       test: /\.map$/,
